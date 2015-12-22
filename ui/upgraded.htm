@@ -1,0 +1,32 @@
+		<div class="grid-wrapper">
+			<h2>Moving files and writing configuration file:</h2>
+			<check if="{{ isset(@error) }}">
+				<true><div class="gb-60 alert-box error">{{ nl2br(@error)}}<br /></div></true>
+				<false>
+					<check if="{{ isset(@remaining) }}"><true>
+						<div class="gb-full">The following files or folders were not recognized and have not been moved:</div>
+						<check if="{{ isset(@remaining.folders) }}">
+							<div class="gb-10"><small>Folders:</small></div>
+							<div class="gb-90">
+								<repeat group="{{ @@remaining.folders }}" value="{{ @folders }}" counter="{{ @ctr }}">
+									<span class="alert-box warning"><small>{{ @folders }}</small></span>
+								</repeat>
+							</div>
+						</check>
+						<check if="{{ isset(@remaining.files) }}">
+							<div class="gb-10"><small>Files:</small></div>
+							<div class="gb-90">
+								<repeat group="{{ @@remaining.files }}" value="{{ @files }}" counter="{{ @ctr }}">
+									<span class="alert-box warning"><small>{{ @files }}</small></span>
+								</repeat>
+							</div>
+						</check>
+						<div class="gb-full">They do not belong to the new eFiction, so they can safely be removed.</div>
+					</true>
+					<false>
+						<div class="gb-full alert-box success">All old files and folders were moved to the backup inside the installer folder</div>
+					</false></check>
+					<div class="gb-full"><a href='../'>->Go to the eFiction installation<-</a></div>
+				</false>
+			</check>
+		</div>

@@ -1,0 +1,32 @@
+		<div class="grid-wrapper">
+			<check if="{{ isset(@currently) }}"><div class="gb-full"><h2>Currently processing `{{ @currently }}`</h2></div></check>
+			<check if="{{ isset(@continue.step) }}">
+				<div class="gb-full">
+					<b>{{ @continue.message}}</b>, click <a href='{{ @BASE }}
+					<check if="{{ isset( @continue.sub ) }}">
+						<true>{{ "stepsub", "step={@continue.step},sub={@continue.sub}" | alias }}'</true>
+						<false>{{ "steps", "step={@continue.step}" | alias }}'</false>
+					</check>
+						>->here<-</a> to continue<check if="{{ isset( @continue.message2 ) }}">{{ @continue.message2 }}</check>.<br />
+				</div>
+			</check>
+			<check if="{{ isset(@error) }}">
+				<div class="gb-50 alert-box error">
+					{{ nl2br(@error)}}<br />
+				</div>
+			</check>
+			<check if="{{ isset(@link) }}">
+				<div class="gb-50">
+					<a href='{{ @BASE }}{{ "stepsub", "step={@link.step},sub={@link.sub}" | alias }}'>->Click here<-</a> to {{ @link.message }}
+				</div>
+			</check>
+			<repeat group="{{ @@reports }}" value="{{ @report }}" counter="{{ @ctr }}">
+				<div class="gb-30"><small>#{{ @ctr }}: {{ @report.step }}</small></div>
+				<div class="gb-60"><span class="alert-box {{ @report.class }}"><small>{{ @report.message }}</small></div></repeat>
+		</div>
+		<check if="{{ isset(@redirect) }}">
+			<script type='text/javascript'>
+				function delayedRedirect(){
+					window.location = '{{ @BASE }}{{ "steps", "step={@redirect}" | alias }}'
+				}
+			</script>

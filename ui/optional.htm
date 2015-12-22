@@ -1,0 +1,32 @@
+<div class="grid-wrapper">
+	<div class="gb-full"><h2>Optional modules:</h2></div>
+	<repeat group="{{ @installerCFG.optional }}" key="{{ @module }}" value="{{ @select }}">
+		<check if="{{ @select.0!='*' }}">
+			<div class="gb-40">"{{ @module }}" ({{ @description[@module] }})</div>
+			<div class="gb-20"><check if="{{ @select.0!='?' }}">Current setting:</check>&nbsp;</div>
+			<div class="gb-20">
+				<check if="{{ @select.0=='-' }}"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=add.'.@module | alias }}">Install module</a></div><div class="gb-20"><span class='error'>not installing.</span></check>
+				<check if="{{ @select.0=='+' }}"><span class='success'>installing</span></div><div class="gb-20"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=drop.'.@module | alias }}">Don't install</a></check>
+				<check if="{{ @select.0=='?' }}"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=add.'.@module | alias }}">Install</a></div><div class="gb-20"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=drop.'.@module | alias }}">Don't install</a></check>
+			</div>
+		</check>
+	</repeat>
+	<div class="gb-full"><br /><h2>New core modules:</h2></div>
+	<repeat group="{{ @installerCFG.optional }}" key="{{ @module }}" value="{{ @select }}" counter="{{ @ctr }}">
+		<check if="{{ @select.0=='*' AND @select.1!='*'}}"><check if="{{ @opt=TRUE }}"></check>
+			<div class="gb-40">"{{ @module }}" ({{ @description[@module] }})</div>
+			<div class="gb-20"><check if="{{ @select.0!='?' }}">Current setting:</check>&nbsp;</div>
+			<div class="gb-20">
+				<check if="{{ @select.1=='-' }}"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=add.'.@module | alias }}">import data</a></div><div class="gb-20"><span class='error'>dropping old data</span></check>
+				<check if="{{ @select.1=='+' }}"><span class='success'>importing old data</span></div><div class="gb-20"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=drop.'.@module | alias }}">drop old data</a></check>
+			</div>
+		</check>
+	</repeat>
+	<check if="{{ !@@opt }}">
+		<div class="gb-full">Nothing</div>
+	</check>
+	<div class="gb-full">
+		<br /><br />
+		<a href="{{ @BASE }}{{ 'steps', 'step=2' | alias }}">Continue</a>
+	</div>
+</div>

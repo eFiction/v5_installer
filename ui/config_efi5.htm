@@ -1,0 +1,69 @@
+
+/**
+ * eFiction v5
+ *
+ * @package eFI
+ * @author eFiction Team @ efiction.org
+ * @copyright 2015 eFiction
+ * @license to do
+ *
+ * @version 0.0.b1
+ */
+ 
+/* -----------------------------------------------------------------------------------
+
+This is the core config file, it should be the only place you need to change settings.
+
+If something went wrong in the admin panel, the full config file can be found in
+
+/cache/config.cached.php
+
+Only change settings there if use of the admin panel is not possible due to failure.
+
+If you need the main config rebuilt, simply delete/rename /cache/config.cached.php
+
+DO NOT DELETE THIS FILE !!!
+
+----------------------------------------------------------------------------------- */
+
+define("_INIT_",TRUE);
+
+/* DSN examples
+MySQL:
+mysql:host=localhost;dbname=testdb
+mysql:host=db.server.tld;port=3307;dbname=testdb
+mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
+
+PGSQL:
+pgsql:host=localhost;port=5432;dbname=testdb;user=bruce;password=mypass
+
+MS SQL / Sybase:
+mssql:host=localhost;dbname=testdb
+sybase:host=localhost;dbname=testdb
+dblib:host=localhost;dbname=testdb
+
+SQLite:
+sqlite:/path/to/database/folder/file.sq3
+*/
+
+$db_config = array (
+			"type"			=>	"{{ @installerCFG.dbdriver }}",		// must be the type used in the DSN statements, see above examples
+			"dsn"				=>	"{{ @installerCFG.dsn.5 }}",
+//			"server"		=>	"@@SERVER@@",
+//			"database"	=>	"@@DATABASE@@",
+			"username"	=>	"{{ @installerCFG.dbuser }}",
+			"password"	=>	"{{ @installerCFG.dbpass }}",
+			"prefix"		=>	"{{ @installerCFG.pre_new }}",
+			"encoding"	=>	"{{ @installerCFG.charset }}",
+			);
+
+$extended_php_log = TRUE;
+
+// Set to 1 when required, otherwise 0 to avoid exposing server data
+ini_set('display_errors',1);
+
+// define the current server as: protocol://domain.tld/subfolder/
+define ("__baseURL__", (((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')) ? 'https://' : 'http://' ).$_SERVER["SERVER_NAME"].substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/') + 1));
+// define the current script file, including the file. in case eFI is not called via index.php
+define ("__SELF__", str_replace("/index.php","",((((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')) ? 'https://' : 'http://' ).$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"] )));
+
