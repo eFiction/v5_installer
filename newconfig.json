@@ -1,0 +1,11 @@
+{
+    "56ac1413ca6e38.04572321": {
+        "ACTIVE_DB": "MYSQL",
+        "DB_MYSQL": {
+            "dsn": "mysql:dbname=efiction_dev_a0011;host=localhost;charset=UTF8MB4",
+            "user": "efiction",
+            "password": "CzFc67feLMptV73P"
+        },
+        "prefix": "efi5_"
+    }
+}

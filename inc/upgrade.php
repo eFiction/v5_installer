@@ -18,7 +18,7 @@ class upgrade {
 		{
 			$this->fw['installerCFG.step'] = 0;
 			$this->fw->dbCFG->write('config.json',$this->fw['installerCFG']);
-			$this->fw->reroute('@steps(@step=0)');
+			$this->fw->reroute('@upgrade');
 		}
 		elseif ( is_numeric($step_requested)  AND $step_requested > $step_remembered )
 		{
@@ -26,17 +26,24 @@ class upgrade {
 			$this->fw['installerCFG.step'] = $step_requested;
 			$this->fw->dbCFG->write('config.json',$this->fw['installerCFG']);
 		}
-		elseif ( is_numeric($step_requested)  AND $step_requested < $step_remembered )
+		elseif ( (is_numeric($step_requested)  AND $step_requested < $step_remembered) OR ( $step_requested==NULL AND $step_remembered > 0 ) )
 		{
 			// Tell about the current step and let user decide to continue or restart from scratch
 			$this->fw->set('content', "Already done, reset?");
-			exit;
+			$this->fw->set('resume', $step_remembered);
 			//$this->fw->reroute('@steps(@step='.$step_remembered.')');
 		}
 	}
 	
 	function base()
 	{
+		if(null!==$resume=$this->fw->get('resume'))
+		{
+			$this->fw->set('content', Template::instance()->render('resume.htm'));
+			return TRUE;
+		}
+		// See if the DB connection has been set up and checked, if not force to config
+		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@config');
 		// Say Hi and show, which storage for chapter data is available and offer advise
 		$this->fw->set('scenario', upgradetools::storageSelect() );
 		$this->fw->set('content', Template::instance()->render('storage.htm'));
@@ -49,6 +56,14 @@ class upgrade {
 	
 	function steps ()
 	{
+		if(null!==$this->fw->get('resume'))
+		{
+			$this->fw->set('content', Template::instance()->render('resume.htm'));
+			return TRUE;
+		}
+		// See if the DB connection has been set up and checked, if not force to config
+		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@config');
+
 		// $this->fw->get('PARAMS.step')
 		$options = array(
 			\PDO::ATTR_ERRMODE 			=> \PDO::ERRMODE_EXCEPTION, // generic attribute

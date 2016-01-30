@@ -558,7 +558,7 @@ class upgradetools {
 			
 			$fw->dbsqlite->begin();
 			$fw->dbsqlite->exec ( "DROP TABLE IF EXISTS 'chapters'" );
-			$fw->dbsqlite->exec ( "CREATE TABLE IF NOT EXISTS 'chapters' ('chapid' INTEGER PRIMARY KEY NOT NULL, 'sid' INTEGER, 'inorder' INTEGER,'storytext' BLOB);" );
+			$fw->dbsqlite->exec ( "CREATE TABLE IF NOT EXISTS 'chapters' ('chapid' INTEGER PRIMARY KEY NOT NULL, 'sid' INTEGER, 'inorder' INTEGER,'chaptertext' BLOB);" );
 			$fw->dbsqlite->commit();
 
 			$ht = fopen( realpath('..').'/data/.htaccess', "w" );
@@ -574,7 +574,7 @@ class upgradetools {
 		// SQL query to get chapter information - and content, depending on source
 		$sql_get_chap = "SELECT A.aid as folder, Ch.chapid as chapter";
 		if($target == "filebase") $sql_get_chap .= ", Ch.sid, Ch.inorder";
-		if($source== "mysql") $sql_get_chap .= ", Ch.storytext";
+		if($source== "mysql") $sql_get_chap .= ", Ch.chaptertext";
 		$sql_get_chap .= " FROM `{$new}chapters`Ch 
 					INNER JOIN `{$new}stories_authors`A ON ( Ch.sid = A.sid AND A.ca = 0 )
 					WHERE Ch.chapid > :lastid
@@ -609,18 +609,18 @@ class upgradetools {
 			{
 				foreach($chapters as $chapter)
 				{
-					$storytext = NULL;
+					$chaptertext = NULL;
 					if ( $source=="files")
 					{
 						$s = upgradetools::getChapterFile($chapter);
-						if ($s[0]) $storytext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
+						if ($s[0]) $chaptertext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
 						else{
 							// report error
 						}
 					}
-					elseif( $sources=="mysql")
+					elseif( $source=="mysql")
 					{
-						$storytext = $chapter['storytext'];
+						$chaptertext = $chapter['chaptertext'];
 					}
 					else
 					{
@@ -630,7 +630,7 @@ class upgradetools {
 					$newchapter->chapid		= $chapter['chapter'];
 					$newchapter->sid			= $chapter['sid'];
 					$newchapter->inorder	= $chapter['inorder'];
-					$newchapter->storytext	= $storytext;
+					$newchapter->chaptertext	= $chaptertext;
 					$newchapter->save();
 					$newchapter->reset();
 				}
@@ -669,7 +669,7 @@ class upgradetools {
 			// Target database implies source files
 			// Probe for last finished ID
 			try {
-				$probe = $fw->db5->exec("SELECT `chapid`, COUNT(`chapid`) as current FROM `{$new}chapters` WHERE `storytext` IS NULL ORDER BY `chapid` ASC LIMIT 0,1");
+				$probe = $fw->db5->exec("SELECT `chapid`, COUNT(`chapid`) as current FROM `{$new}chapters` WHERE `chaptertext` IS NULL ORDER BY `chapid` ASC LIMIT 0,1");
 				$lastid = ( isset($probe[0]['chapid']) ) ? ($probe[0]['chapid']-1) : FALSE;
 			}
 			catch (PDOException $e) {
@@ -687,13 +687,13 @@ class upgradetools {
 				foreach($chapters as $chapter)
 				{
 					$s = upgradetools::getChapterFile($chapter);
-					if ($s[0]) $storytext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
+					if ($s[0]) $chaptertext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
 					else{
 						// report error
 					}
 					
 					$updatechapter->load(array('chapid=?',$chapter['chapter']));
-					$updatechapter->storytext = $storytext;
+					$updatechapter->chaptertext = $chaptertext;
 					$updatechapter->save();
 				}
 				$reports[] = [
@@ -731,6 +731,32 @@ class upgradetools {
 	public static function moveFiles() 	// Step  #7
 	{
 		$fw = \Base::instance();
+		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+		
+		// create instance of the final config file
+		$fw->newCFG = new \DB\Jig ( "../data" , \DB\Jig::FORMAT_JSON );
+		$mapper = new \DB\Jig\Mapper($fw->newCFG, 'config.json');
+		
+		$mapper->ACTIVE_DB = "MYSQL";
+		$mapper->DB_MYSQL = array (
+				"dsn" 			=> $fw->get('installerCFG.dsn.5'),
+				"user" 			=> $fw->get('installerCFG.dbuser'),
+				"password"	=> $fw->get('installerCFG.dbpass'),
+			);
+		$mapper->prefix = $fw->get('installerCFG.pre_new');
+		
+		$cfgData = $fw->db5->exec("SELECT `name`, `value` FROM `{$new}config` WHERE `to_config_file` = 1  ORDER BY `name` ASC ");
+		foreach ( $cfgData as $cfgItem)
+		{
+			$mapper->{$cfgItem['name']} = $cfgItem['value'];
+		}
+		$modules = [];
+		foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )
+		{
+			if ( $moduleOpt[0]!="-" ) $modules[$moduleName] = 1;
+		}
+		if ( sizeof($modules)>0 ) $mapper->modules_enabled = $modules;
+		$mapper->save();
 		
 		if ( 1 )
 		{
@@ -802,11 +828,7 @@ class upgradetools {
 			];
 			$fw->set('error', implode("\n", $error) );
 		}
-		/*
-		$cfile = fopen("../config.php","w");
-		fwrite($cfile, "<?php".Template::instance()->render('config_efi5.htm')."?>");
-		fclose($cfile);
-		*/
+
 		return Template::instance()->render('upgraded.htm');
 	}
 

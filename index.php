@@ -6,7 +6,7 @@ $f3=require('lib/base.php');
 // A few version checks
 if ((float)PCRE_VERSION<7.9)
 	trigger_error('PCRE version is out of date');
-if ( version_compare(PHP_VERSION, '5.3.6', '<') )
+if ( version_compare(PHP_VERSION, '5.4.0', '<') )
 {
 	echo "You do not meet the minimum requirements to run this script on this server ( PHP 5.3.6 required ).<br>You are running ".PHP_VERSION;
 	exit;
