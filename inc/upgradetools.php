@@ -543,6 +543,7 @@ class upgradetools {
 		$fw = \Base::instance();
 		
 		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+		$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
 
 		if(null!==$fw->get('PARAMS.sub') AND $fw->get('PARAMS.sub')=="init")
 		{
@@ -553,6 +554,8 @@ class upgradetools {
 			
 			// Init part, called when jumping from step #5
 			if ( !is_dir('../data') ) mkdir ('../data');
+			
+			if ( file_exists(realpath('..').'/data/chapters.sq3')) unlink ( realpath('..').'/data/chapters.sq3' ) ;
 
 			$fw->dbsqlite = new DB\SQL('sqlite:'.realpath('..').'/data/chapters.sq3');
 			
@@ -572,11 +575,18 @@ class upgradetools {
 		$target = $fw->get('installerCFG.chapters');	// "filebase" or "database"
 		
 		// SQL query to get chapter information - and content, depending on source
-		$sql_get_chap = "SELECT A.aid as folder, Ch.chapid as chapter";
+/*		$sql_get_chap = "SELECT A.aid as folder, Ch.chapid as chapter";
 		if($target == "filebase") $sql_get_chap .= ", Ch.sid, Ch.inorder";
 		if($source== "mysql") $sql_get_chap .= ", Ch.chaptertext";
 		$sql_get_chap .= " FROM `{$new}chapters`Ch 
 					INNER JOIN `{$new}stories_authors`A ON ( Ch.sid = A.sid AND A.ca = 0 )
+					WHERE Ch.chapid > :lastid
+					ORDER BY Ch.chapid ASC
+				LIMIT 0,25";	*/
+		$sql_get_chap = "SELECT Ch.uid as folder, Ch.chapid as chapter";
+		if($target == "filebase") $sql_get_chap .= ", Ch.sid, Ch.inorder";
+		if($source== "mysql") $sql_get_chap .= ", Ch.storytext as chaptertext";
+		$sql_get_chap .= " FROM `{$old}chapters`Ch 
 					WHERE Ch.chapid > :lastid
 					ORDER BY Ch.chapid ASC
 				LIMIT 0,25";
@@ -584,7 +594,7 @@ class upgradetools {
 		if ( $source=="mysql" AND $target=="database" )
 		{
 			// refuse to do stupid things
-
+			// chapter text was copied during table setup
 		}
 		elseif ( $target=="filebase" )
 		{

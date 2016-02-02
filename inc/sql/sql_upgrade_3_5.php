@@ -780,8 +780,8 @@ INSERT INTO `{$new}feedback`
 INSERT INTO `{$new}feedback`
 	(`reference`, `reference_sub`, `writer_uid`, `text`, `type`)
 	SELECT
-		item, 
 		reviewid, 
+		NULL, 
 		U.uid,
 		TRIM(TRAILING '</i>' FROM SUBSTRING_INDEX(SUBSTRING_INDEX(review, '{$review_split}', -1), ': ', -1) ),
 		'C'
