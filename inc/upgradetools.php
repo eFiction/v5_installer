@@ -586,6 +586,15 @@ class upgradetools {
 				);
 			}
 			
+			$fw->set('redirect', $step );
+			$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
+			$fw->set('continue', 
+				[
+					"step" 			=> $step,
+					"message"		=> 'This page will automatically re-load until all records have been compiled',
+					"message2"	=> " manually",
+				]
+			);
 
 			$fw->set('reports',$reports);
 		}
