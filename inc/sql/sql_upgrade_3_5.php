@@ -21,9 +21,9 @@ $init = array
 								array ( "convert", 0, "eFiction conversion table" ),
 								array ( "layout", 0, "Layout" ),
 								array ( "iconsets", 0, "Layout: Iconset" ),
-								array ( "menu", 0, "Page menu" ),
-								array ( "menu_adminpanel", 0, "Admin panel menu" ),
-								array ( "menu_userpanel", 0, "User panel menu" ),
+								array ( "menu", 0, "Page menus" ),
+								array ( "menu_adminpanel", 0, "Admin panel menu" ), // meta entry
+								array ( "menu_userpanel", 0, "User panel menu" ), // meta entry
 								array ( "textblocks", 0, "Textblocks (former: messages)" ),
 								array ( "tag_groups", 0, "Tag groups" ),
 								array ( "tags", 0, "Tags" ),
@@ -50,6 +50,7 @@ $init = array
 								array ( "tracker", 0, "Story tracker (new feature)" ),
 								array ( "stories_blockcache", 0, "Story cache" ),
 								array ( "series_blockcache", 0, "Series cache" ),
+								array ( "categories_statcache", 0, "Categories stats cache" ),
 								array ( "stats_cache", 0, "Page stats cache" ),
 									),
 );
@@ -201,23 +202,42 @@ $steps[] = array
 $sql['init']['categories'] = <<<EOF
 CREATE TABLE IF NOT EXISTS `{$new}categories` (
   `cid` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_cid` int(11) NOT NULL DEFAULT '-1',
+  `parent_cid` int(11) NOT NULL DEFAULT '0',
   `category` varchar(60) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `description` text NOT NULL,
   `image` varchar(100) NOT NULL DEFAULT '',
-  `locked` char(1) NOT NULL DEFAULT '0',
-  `leveldown` tinyint(4) NOT NULL DEFAULT '0',
+  `locked` tinyint(1) NOT NULL DEFAULT '0',
+  `leveldown` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `inorder` int(11) NOT NULL DEFAULT '0',
   `count` int(11) NOT NULL DEFAULT '0',
+  `stats` text NOT NULL,
   PRIMARY KEY (`cid`), KEY `byparent` (`parent_cid`,`inorder`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset} COMMENT='(eFI5): derived from _categories';
 EOF;
+
+
+//$sql['init']['categories_statcache'] = "SELECT 1;--NOTESeries Cache - empty table created";
+$sql['data']['categories_statcache'] = "SELECT 2;--NOTECategory stats cache";
+
+$sql['probe']['categories'] = "SELECT 1 FROM `{$new}categories`C INNER JOIN (SELECT leveldown FROM `{$new}categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )";
+
+$sql['proc']['categories'] = "SELECT C.cid, C.category, COUNT(DISTINCT S.sid) as counted, GROUP_CONCAT(DISTINCT C1.category SEPARATOR '||' ) as sub_categories, GROUP_CONCAT(DISTINCT C1.stats SEPARATOR '||' ) as sub_stats
+	FROM `efiction_dev_a0011`.`efi6_categories`C 
+	INNER JOIN (SELECT leveldown FROM `efiction_dev_a0011`.`efi6_categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )
+	LEFT JOIN `efiction_dev_a0011`.`efi6_stories_categories`SC ON ( C.cid = SC.cid )
+	LEFT JOIN `efiction_dev_a0011`.`efi6_stories`S ON ( S.sid = SC.sid )
+	LEFT JOIN `efiction_dev_a0011`.`efi6_categories`C1 ON ( C.cid = C1.parent_cid )
+GROUP BY C.cid";
+
+
 
 $sql['data']['categories'] = <<<EOF
 INSERT INTO `{$new}categories`
 	( `cid`, `parent_cid`, `category`, `description`, `image`, `locked`, `leveldown`, `inorder`, `count` )
 	SELECT C.catid, C.parentcatid, C.category, C.description, C.image, C.locked, C.leveldown, C.displayorder, C.numitems 
 	FROM `{$old}categories`C;
+--SPLIT--
+UPDATE `{$new}categories` SET `parent_cid`= 0 WHERE `parent_cid`= '-1';
 EOF;
 
 /* --------------------------------------------------------------------------------------------
@@ -313,12 +333,12 @@ $sql['data']['stories_tags'] = <<<EOF
 INSERT INTO `{$new}stories_tags` ( `sid`,`tid` )
 	SELECT S.sid,T.tid
 		FROM `{$old}stories`S
-		INNER JOIN `{$new}tags` T ON (FIND_IN_SET(T.tid,S.classes)>0);
+		INNER JOIN `{$new}tags` T ON (FIND_IN_SET(T.tid,S.classes)>0);--NOTEStory <-> Tags relations (from classes)
 --SPLIT--
 INSERT INTO `{$new}stories_tags` ( `sid`,`tid` )
 	SELECT S.sid,T.tid
 		FROM `{$old}stories`S
-		INNER JOIN `{$new}tags`T ON (FIND_IN_SET(T.oldid,S.charid)>0);
+		INNER JOIN `{$new}tags`T ON (FIND_IN_SET(T.oldid,S.charid)>0);--NOTEStory <-> Tags relations (from characters)
 --SPLIT--
 --LOOP
 UPDATE `{$new}tags` T1 
@@ -331,7 +351,7 @@ LEFT JOIN
 		GROUP BY T.tid
 		LIMIT 0,25
 ) AS T2 ON T1.tid = T2.tid
-SET T1.count = T2.counter WHERE T1.tid = T2.tid
+SET T1.count = T2.counter WHERE T1.tid = T2.tid--NOTERecount tags
 EOF;
 
 /* --------------------------------------------------------------------------------------------
@@ -806,7 +826,7 @@ $steps[] = array
 	"info"	=>	"Polls and votes",
 	"steps" => array (
 								array ( "poll", 0, "Copy poll data" ),
-								array ( "poll_votes", 0, "Copy votes" ),
+								array ( "poll", 1, "Copy votes" ),
 									),
 );
 
@@ -820,13 +840,7 @@ CREATE TABLE IF NOT EXISTS `{$new}poll` (
   `poll_results` varchar(250) DEFAULT NULL,
   PRIMARY KEY (`poll_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET={$characterset};
-EOF;
-
-/* --------------------------------------------------------------------------------------------
-																																								 * POLL VOTES *
-requires: -
--------------------------------------------------------------------------------------------- */
-$sql['init']['poll_votes'] = <<<EOF
+--SPLIT--
 CREATE TABLE IF NOT EXISTS `{$new}poll_votes` (
   `vote_id` int(11) NOT NULL AUTO_INCREMENT,
   `vote_user` int(11) NOT NULL DEFAULT '0',
@@ -876,7 +890,7 @@ CREATE TABLE IF NOT EXISTS `{$new}stories_blockcache` (
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
 
-$sql['data']['stories_blockcache'] = "SELECT 1;--NOTEStory Cache";
+$sql['data']['stories_blockcache'] = "SELECT 1;--NOTEStory Cache - empty table created";
 
 $sql['probe']['stories_blockcache'] = "SELECT S.sid,C.sid from `{$new}stories`S LEFT JOIN `{$new}stories_blockcache`C ON S.sid = C.sid WHERE C.sid IS NULL LIMIT 0,1";
 
@@ -931,7 +945,7 @@ CREATE TABLE IF NOT EXISTS `{$new}series_blockcache` (
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
 EOF;
 
-$sql['data']['series_blockcache'] = "SELECT 1;--NOTESeries Cache";
+$sql['data']['series_blockcache'] = "SELECT 1;--NOTESeries Cache - empty table created";
 
 $sql['probe']['series_blockcache'] = "SELECT S.seriesid,C.seriesid from `{$new}series`S LEFT JOIN `{$new}series_blockcache`C ON S.seriesid = C.seriesid WHERE C.seriesid IS NULL LIMIT 0,1";
 

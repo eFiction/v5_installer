@@ -199,24 +199,7 @@ CREATE TABLE IF NOT EXISTS `{$new}menu` (
   `active` int(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
-EOF;
-
-$sql['data']['menu'] = <<<EOF
-INSERT INTO `{$new}menu` (`id`, `label`, `order`, `link`, `meta`, `child_of`, `active`) VALUES
-(1, 'Home', 1, '', NULL, NULL, 1),
-(2, 'Authors', 5, 'story,authors', NULL, NULL, 1),
-(3, 'Fandoms', 1, 'story,categories', NULL, NULL, 1),
-(5, 'Updates', 3, 'story,updates', NULL, NULL, 1),
-(6, 'Archive', 2, 'story', NULL, NULL, 1),
-(8, 'Search', 6, 'story,search', NULL, NULL, 1),
-(11, 'Challenges', 6, 'story,contests', NULL, NULL, 1);
-EOF;
-
-/* --------------------------------------------------------------------------------------------
-																																								 * ADMIN MENU *
-requires: -
--------------------------------------------------------------------------------------------- */
-$sql['init']['menu_adminpanel'] = <<<EOF
+--SPLIT--
 CREATE TABLE IF NOT EXISTS `{$new}menu_adminpanel` (
   `id` int(2) unsigned NOT NULL AUTO_INCREMENT,
   `label` tinytext NOT NULL,
@@ -230,9 +213,32 @@ CREATE TABLE IF NOT EXISTS `{$new}menu_adminpanel` (
   PRIMARY KEY (`id`),
   KEY `child_of` (`child_of`)
 ) ENGINE=MyISAM  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
+--SPLIT--
+CREATE TABLE IF NOT EXISTS `{$new}menu_userpanel` (
+  `id` int(2) unsigned NOT NULL AUTO_INCREMENT,
+  `label` tinytext NOT NULL,
+  `order` int(2) NOT NULL,
+  `link` tinytext,
+  `icon` tinytext,
+  `child_of` varchar(16) DEFAULT NULL,
+  `active` int(1) NOT NULL DEFAULT '1',
+  `evaluate` tinytext,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `menu` (`child_of`,`order`),
+  KEY `child_of` (`child_of`)
+) ENGINE=InnoDB  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
 EOF;
 
-$sql['data']['menu_adminpanel'] = <<<EOF
+$sql['data']['menu'] = <<<EOF
+INSERT INTO `{$new}menu` (`label`, `order`, `link`) VALUES
+('Home', 1, ''),
+('Authors', 5, 'authors'),
+('Fandoms', 1, 'story/categories'),
+('Updates', 3, 'story/updates'),
+('Archive', 2, 'story'),
+('Search', 6, 'story/search'),
+('Challenges', 6, 'story/contests');--NOTEPage menu
+--SPLIT--
 INSERT INTO `{$new}menu_adminpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `requires`, `evaluate`) VALUES
 ('LN__AdminMenu_Tags', 2, 'archive/tags,tag', '{ICON:tag}', 'archive', 1, 1, NULL),
 ('LN__AdminMenu_Featured', 1, 'archive/featured', '{ICON:blank}', 'archive', 1, 1, NULL),
@@ -261,52 +267,31 @@ INSERT INTO `{$new}menu_adminpanel` (`label`, `order`, `link`, `icon`, `child_of
 ('LN__AdminMenu_Categories', 3, 'archive/categories', '{ICON:blank}', 'archive', 1, 1, NULL),
 ('LN__AdminMenu_Pending', 1, 'stories/pending', '{ICON:waiting}', 'stories', 1, 2, NULL),
 ('LN__AdminMenu_Edit', 2, 'stories/edit', '{ICON:edit}', 'stories', 1, 1, NULL),
-('LN__AdminMenu_Add', 3, 'stories/add', '{ICON:document-new}', 'stories', 1, 1, NULL);
-EOF;
-/* --------------------------------------------------------------------------------------------
-																																									* USER MENU *
-requires: -
--------------------------------------------------------------------------------------------- */
-$sql['init']['menu_userpanel'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}menu_userpanel` (
-  `id` int(2) unsigned NOT NULL AUTO_INCREMENT,
-  `label` tinytext NOT NULL,
-  `order` int(2) NOT NULL,
-  `link` tinytext,
-  `icon` tinytext,
-  `child_of` varchar(16) DEFAULT NULL,
-  `active` int(1) NOT NULL DEFAULT '1',
-  `evaluate` tinytext,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `menu` (`child_of`,`order`),
-  KEY `child_of` (`child_of`)
-) ENGINE=InnoDB  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
-EOF;
-
-$sql['data']['menu_userpanel'] = <<<EOF
-INSERT INTO `{$new}menu_userpanel` (`id`, `label`, `order`, `link`, `icon`, `child_of`, `active`, `evaluate`) VALUES
-(1, 'Profile', 1, 'profile', '{ICON:member}', NULL, 1, NULL),
-(2, 'Message', 2, 'messaging', '{ICON:mail}', NULL, 1, NULL),
-(3, 'Authoring', 3, 'author', '{ICON:keyboard}', NULL, 1, NULL),
-(4, 'My Library', 4, 'library', '{ICON:book}', NULL, 1, NULL),
-(5, 'Reviews', 4, 'reviews', '{ICON:comments}', NULL, 1, NULL),
-(6, '__preferences', 6, 'preferences', '{ICON:settings}', NULL, 1, NULL),
-(7, '%AUTHORS%', 1, 'author&amp;uid=%UID%', '{ICON:member}', 'story', 1, NULL),
-(8, '%FINISHED%', 1, 'author/%UID/finished', NULL, 'authoring', 1, NULL),
-(9, '%UNFINISHED%', 2, 'author/%UID%/unfinished', NULL, 'authoring', 1, NULL),
-(10, '%DRAFTS%', 3, 'author/%UID%/drafts', '{ICON:folder}', 'authoring', 1, NULL),
-(11, 'LN__UserMenu_AddStory', 4, 'author%UID%/add', '{ICON:text}', 'authoring', 1, NULL),
-(12, '__Bookmarks%BMS%', 1, 'library/bm', '{ICON:bookmark}', '4', 1, NULL),
-(13, '__Favourites%FAVS%', 2, 'library/fav', '{ICON:heart}', '4', 1, NULL),
-(14, '__Recommendations%RECS%', 3, 'library/rec', '{ICON:star}', '4', 1, NULL),
-(15, 'Inbox', 1, 'messaging/inbox', '{ICON:inbox}', 'messaging', 1, NULL),
-(16, 'Write', 2, 'messaging/write', '{ICON:edit}', 'messaging', 1, NULL),
-(17, '__aboutMe', 1, 'profile/about', '{ICON:text}', 'profile', 1, NULL),
-(19, '__changePW', 3, 'profile/changepw', '{ICON:key}', 'profile', 1, NULL),
-(20, '__Authors', 1, 'library/fav/AU', NULL, '13', 1, NULL),
-(21, '__Stories', 2, 'library/fav/ST', NULL, '13', 1, NULL),
-(22, 'Outbox', 3, 'messaging/outbox', '{ICON:bars}', 'messaging', 1, NULL),
-(23, 'LN__UserMenu_Curator', 2, 'author/curator', NULL, 'story', 1, NULL);
+('LN__AdminMenu_Add', 3, 'stories/add', '{ICON:document-new}', 'stories', 1, 1, NULL);--NOTEAdmin panel menu
+--SPLIT--
+INSERT INTO `{$new}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `evaluate`) VALUES
+('Profile', 1, 'profile', '{ICON:member}', NULL, 1, NULL),
+('Message', 2, 'messaging', '{ICON:mail}', NULL, 1, NULL),
+('Authoring', 3, 'author', '{ICON:keyboard}', NULL, 1, NULL),
+('My Library', 4, 'library', '{ICON:book}', NULL, 1, NULL),
+('Reviews', 4, 'reviews', '{ICON:comments}', NULL, 1, NULL),
+('__preferences', 6, 'preferences', '{ICON:settings}', NULL, 1, NULL),
+('%AUTHORS%', 1, 'author&amp;uid=%UID%', '{ICON:member}', 'story', 1, NULL),
+('%FINISHED%', 1, 'author/%UID/finished', NULL, 'authoring', 1, NULL),
+('%UNFINISHED%', 2, 'author/%UID%/unfinished', NULL, 'authoring', 1, NULL),
+('%DRAFTS%', 3, 'author/%UID%/drafts', '{ICON:folder}', 'authoring', 1, NULL),
+('LN__UserMenu_AddStory', 4, 'author%UID%/add', '{ICON:text}', 'authoring', 1, NULL),
+('__Bookmarks%BMS%', 1, 'library/bm', '{ICON:bookmark}', '4', 1, NULL),
+('__Favourites%FAVS%', 2, 'library/fav', '{ICON:heart}', '4', 1, NULL),
+('__Recommendations%RECS%', 3, 'library/rec', '{ICON:star}', '4', 1, NULL),
+('Inbox', 1, 'messaging/inbox', '{ICON:inbox}', 'messaging', 1, NULL),
+('Write', 2, 'messaging/write', '{ICON:edit}', 'messaging', 1, NULL),
+('__aboutMe', 1, 'profile/about', '{ICON:text}', 'profile', 1, NULL),
+('__changePW', 3, 'profile/changepw', '{ICON:key}', 'profile', 1, NULL),
+('__Authors', 1, 'library/fav/AU', NULL, '13', 1, NULL),
+('__Stories', 2, 'library/fav/ST', NULL, '13', 1, NULL),
+('Outbox', 3, 'messaging/outbox', '{ICON:bars}', 'messaging', 1, NULL),
+('LN__UserMenu_Curator', 2, 'author/curator', NULL, 'story', 1, NULL);--NOTEUser panel menu
 EOF;
 
 ?>

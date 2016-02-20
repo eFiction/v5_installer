@@ -11,12 +11,12 @@
 				</div>
 			</check>
 			<check if="{{ isset(@error) }}">
-				<div class="gb-50 alert-box error">
+				<div class="gb-full alert-box error">
 					{{ nl2br(@error)}}<br />
 				</div>
 			</check>
 			<check if="{{ isset(@link) }}">
-				<div class="gb-50">
+				<div class="gb-full">
 					<a href='{{ @BASE }}{{ "stepsub", "step={@link.step},sub={@link.sub}" | alias }}'>->Click here<-</a> to {{ @link.message }}
 				</div>
 			</check>

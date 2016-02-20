@@ -139,7 +139,7 @@ class upgradetools {
 			if(null!==$fw->get('PARAMS.sub') AND $fw->get('PARAMS.sub')=="flush")
 			{
 				foreach ( $init['steps'] as $tables ) {
-					$fw->db3->exec ( "DROP TABLE `{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}{$tables[0]}`;" );
+					$fw->db3->exec ( "DROP TABLE IF EXISTS `{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}{$tables[0]}`;" );
 				}
 				$fw->reroute('@steps(@step=2)');
 			}
@@ -168,19 +168,26 @@ class upgradetools {
 			$fw->set('currently', "Creating tables");
 			foreach ( $init['steps'] as $create )
 			{
-				$r['step'] = $create[2];
-				try {
-					$fw->db3->exec ( $sql['init'][$create[0]] );
-					$r['class'] = 'success';
-					$r['message'] = 'OK';
+				if(isset($sql['init'][$create[0]]))
+				{
+					$sql_steps = explode("--SPLIT--", $sql['init'][$create[0]]);
+					foreach ( $sql_steps as $sql_step )
+					{
+						$r['step'] = $create[2];
+						try {
+							$fw->db3->exec ( $sql_step );
+							$r['class'] = 'success';
+							$r['message'] = 'OK';
+						}
+						catch (PDOException $e) {
+							$error = print_r($fw->db3->errorInfo(),TRUE);
+							$r['class'] = 'error';
+							$r['message'] = "ERROR (".$error.")".$sql_step ;
+							$errors++;
+						}
+						$reports[]=$r;
+					}
 				}
-				catch (PDOException $e) {
-					$error = print_r($fw->db3->errorInfo(),TRUE);
-					$r['class'] = 'error';
-					$r['message'] = "ERROR (".$error.")".$sql['init'][$create[0]] ;
-					$errors++;
-				}
-				$reports[]=$r;
 			}
 			$fw->set('reports',$reports);
 			if(!$errors)
@@ -499,7 +506,7 @@ class upgradetools {
 			
 			foreach ( $items as $item)
 			{
-				$fw->db3->exec
+				$fw->db5->exec
 				(
 					"INSERT INTO `{$new}series_blockcache` VALUES
 					({$item['seriesid']}, :tagblock, :authorblock, :categoryblock, :max_rating, '{$item['chapter_count']}', '{$item['word_count']}');",
@@ -521,6 +528,65 @@ class upgradetools {
 				]
 			);
 			//return "Story cache";
+			$fw->set('reports',$reports);
+		}
+		elseif($fw->db5->exec($sql['probe']['categories']) AND $fw->db5->count()>0)
+		{
+			// Tell that stories have been completed
+			$reports[] = [
+				'step'		=> $data->step_description,
+				'class'		=> 'success',
+				'message'	=> "finished (".($data->items - 1)." items)",
+			];
+
+			$data->load(['job=?','series_blockcache']);
+
+			// Series also ...
+			
+			$reports[] = [
+				'step'		=> $data->step_description,
+				'class'		=> 'success',
+				'message'	=> "finished (".($data->items - 1)." items)",
+			];
+			
+			// Prepare series job for access
+			$data->load(['job=?','categories_statcache']);
+
+			// Report current status
+			$reports[] = [
+				'step'		=> $data->step_description,
+				'class'		=> 'warning',
+				'message'	=> "processing (".($data->items - 1)." items so far)",
+			];
+			
+			$items = $fw->db5->exec( $sql['proc']['categories'] ); echo $sql['proc']['categories'];
+			foreach ( $items as $item)
+			{
+				if ( $item['sub_categories']==NULL ) $sub = NULL;
+				else
+				{
+					$sub_categories = explode("||", $item['sub_categories']);
+					$sub_stats = explode("||", $item['sub_stats']);
+					$sub_stats = array_map("unserialize", $sub_stats);
+					foreach( $sub_categories as $key => $value )
+					{
+						$item['counted'] += $sub_stats[$key]['count'];
+						$sub[$value] = $sub_stats[$key]['count'];
+					}
+				}
+				$stats = serialize([ "count" => (int)$item['counted'], "cid" => $item['cid'], "sub" => $sub ]);
+				unset($sub);
+				$data->items = $data->items+1;
+				$data->save();
+
+				$fw->db5->exec
+				(
+					"UPDATE `{$new}categories`C SET C.stats = :stats WHERE C.cid = :cid",
+					[ ":stats" => $stats, ":cid" => $item['cid'] ]
+				);
+			}
+			
+
 			$fw->set('reports',$reports);
 		}
 		else
