@@ -234,10 +234,15 @@ GROUP BY C.cid";
 $sql['data']['categories'] = <<<EOF
 INSERT INTO `{$new}categories`
 	( `cid`, `parent_cid`, `category`, `description`, `image`, `locked`, `leveldown`, `inorder`, `count` )
-	SELECT C.catid, C.parentcatid, C.category, C.description, C.image, C.locked, C.leveldown, C.displayorder, C.numitems 
+	SELECT C.catid, C.parentcatid, C.category, C.description, C.image, C.locked, C.leveldown, C.displayorder, 0 
 	FROM `{$old}categories`C;
 --SPLIT--
 UPDATE `{$new}categories` SET `parent_cid`= 0 WHERE `parent_cid`= '-1';
+--SPLIT--
+UPDATE `{$new}categories`C
+LEFT JOIN ( SELECT `cid`, COUNT(DISTINCT `sid`) as recount FROM `{$new}stories_categories` GROUP BY `cid` ) AS R
+ON R.cid = C.cid
+SET C.count = R.recount WHERE R.cid = C.cid
 EOF;
 
 /* --------------------------------------------------------------------------------------------

@@ -270,12 +270,12 @@ INSERT INTO `{$new}menu_adminpanel` (`label`, `order`, `link`, `icon`, `child_of
 ('LN__AdminMenu_Add', 3, 'stories/add', '{ICON:document-new}', 'stories', 1, 1, NULL);--NOTEAdmin panel menu
 --SPLIT--
 INSERT INTO `{$new}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `evaluate`) VALUES
-('Profile', 1, 'profile', '{ICON:member}', NULL, 1, NULL),
-('Message', 2, 'messaging', '{ICON:mail}', NULL, 1, NULL),
-('Authoring', 3, 'author', '{ICON:keyboard}', NULL, 1, NULL),
-('My Library', 4, 'library', '{ICON:book}', NULL, 1, NULL),
-('Reviews', 4, 'reviews', '{ICON:comments}', NULL, 1, NULL),
-('__preferences', 6, 'preferences', '{ICON:settings}', NULL, 1, NULL),
+('LN__UserMenu_Profile', 1, 'profile', '{ICON:member}', NULL, 1, NULL),
+('LN__UserMenu_Message', 2, 'messaging', '{ICON:mail}', NULL, 1, NULL),
+('LN__UserMenu_Authoring', 3, 'author', '{ICON:keyboard}', NULL, 1, NULL),
+('LN__UserMenu_MyLibrary', 4, 'library', '{ICON:book}', NULL, 1, NULL),
+('LN__UserMenu_Reviews', 4, 'reviews', '{ICON:comments}', NULL, 1, NULL),
+('LN__UserMenu_Preferences', 6, 'preferences', '{ICON:settings}', NULL, 1, NULL),
 ('%AUTHORS%', 1, 'author&amp;uid=%UID%', '{ICON:member}', 'story', 1, NULL),
 ('%FINISHED%', 1, 'author/%UID/finished', NULL, 'authoring', 1, NULL),
 ('%UNFINISHED%', 2, 'author/%UID%/unfinished', NULL, 'authoring', 1, NULL),
@@ -284,13 +284,13 @@ INSERT INTO `{$new}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`
 ('__Bookmarks%BMS%', 1, 'library/bm', '{ICON:bookmark}', '4', 1, NULL),
 ('__Favourites%FAVS%', 2, 'library/fav', '{ICON:heart}', '4', 1, NULL),
 ('__Recommendations%RECS%', 3, 'library/rec', '{ICON:star}', '4', 1, NULL),
-('Inbox', 1, 'messaging/inbox', '{ICON:inbox}', 'messaging', 1, NULL),
-('Write', 2, 'messaging/write', '{ICON:edit}', 'messaging', 1, NULL),
+('LN__UserMenu_PMInbox', 1, 'messaging/inbox', '{ICON:inbox}', 'messaging', 1, NULL),
+('LN__UserMenu_PMWrite', 2, 'messaging/write', '{ICON:edit}', 'messaging', 1, NULL),
+('LN__UserMenu_PMOutbox', 3, 'messaging/outbox', '{ICON:bars}', 'messaging', 1, NULL),
 ('__aboutMe', 1, 'profile/about', '{ICON:text}', 'profile', 1, NULL),
 ('__changePW', 3, 'profile/changepw', '{ICON:key}', 'profile', 1, NULL),
 ('__Authors', 1, 'library/fav/AU', NULL, '13', 1, NULL),
 ('__Stories', 2, 'library/fav/ST', NULL, '13', 1, NULL),
-('Outbox', 3, 'messaging/outbox', '{ICON:bars}', 'messaging', 1, NULL),
 ('LN__UserMenu_Curator', 2, 'author/curator', NULL, 'story', 1, NULL);--NOTEUser panel menu
 EOF;
 
