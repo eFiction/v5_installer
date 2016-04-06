@@ -35,6 +35,7 @@ $init = array
 								array ( "ratings", 0, "Ratings" ),
 								array ( "series", 0, "Series" ),
 								array ( "series_stories", 0, "Stories in Series" ),
+								array ( "log", 0, "Logs" ),
 								array ( "users", 0, "Users" ),
 								array ( "user_fields", 0, "User fields" ),
 								array ( "user_info", 0, "User info" ),
@@ -222,11 +223,11 @@ $sql['data']['categories_statcache'] = "SELECT 2;--NOTECategory stats cache";
 $sql['probe']['categories'] = "SELECT 1 FROM `{$new}categories`C INNER JOIN (SELECT leveldown FROM `{$new}categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )";
 
 $sql['proc']['categories'] = "SELECT C.cid, C.category, COUNT(DISTINCT S.sid) as counted, GROUP_CONCAT(DISTINCT C1.category SEPARATOR '||' ) as sub_categories, GROUP_CONCAT(DISTINCT C1.stats SEPARATOR '||' ) as sub_stats
-	FROM `efiction_dev_a0011`.`efi6_categories`C 
-	INNER JOIN (SELECT leveldown FROM `efiction_dev_a0011`.`efi6_categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )
-	LEFT JOIN `efiction_dev_a0011`.`efi6_stories_categories`SC ON ( C.cid = SC.cid )
-	LEFT JOIN `efiction_dev_a0011`.`efi6_stories`S ON ( S.sid = SC.sid )
-	LEFT JOIN `efiction_dev_a0011`.`efi6_categories`C1 ON ( C.cid = C1.parent_cid )
+	FROM `{$new}categories`C 
+	INNER JOIN (SELECT leveldown FROM `{$new}categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )
+	LEFT JOIN `{$new}stories_categories`SC ON ( C.cid = SC.cid )
+	LEFT JOIN `{$new}stories`S ON ( S.sid = SC.sid )
+	LEFT JOIN `{$new}categories`C1 ON ( C.cid = C1.parent_cid )
 GROUP BY C.cid";
 
 
@@ -559,6 +560,36 @@ UPDATE `{$new}users`U
 --SPLIT--
 UPDATE `{$new}users`U
 	SET groups = 1 WHERE U.groups IS NULL AND U.uid > 0;--NOTESet remaining users as `active`
+EOF;
+
+/* --------------------------------------------------------------------------------------------
+																																								* USER FIELDS *
+requires: -
+-------------------------------------------------------------------------------------------- */
+$steps[] = array
+(
+	"info"	=> "Log entries",
+	"steps"	=> array (
+								array ( "log", 0, "Copy old log entries" ),
+	)
+);
+
+$sql['init']['log'] = <<<EOF
+CREATE TABLE IF NOT EXISTS `{$new}log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `action` varchar(255) DEFAULT NULL,
+  `uid` int(11) NOT NULL DEFAULT '0',
+  `ip` int(11) unsigned DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `type` varchar(2) NOT NULL,
+  `version` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`), KEY `type` (`type`), KEY `uid` (`uid`)
+) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
+EOF;
+
+$sql['data']['log'] = <<<EOF
+INSERT INTO `{$new}log`
+	SELECT L.log_id, L.log_action, L.log_uid, L.log_ip, L.log_timestamp, L.log_type, 1 FROM `{$old}log`L;
 EOF;
 
 /* --------------------------------------------------------------------------------------------

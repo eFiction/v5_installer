@@ -559,7 +559,7 @@ class upgradetools {
 				'message'	=> "processing (".($data->items - 1)." items so far)",
 			];
 			
-			$items = $fw->db5->exec( $sql['proc']['categories'] ); echo $sql['proc']['categories'];
+			$items = $fw->db5->exec( $sql['proc']['categories'] );// echo $sql['proc']['categories'];
 			foreach ( $items as $item)
 			{
 				if ( $item['sub_categories']==NULL ) $sub = NULL;
@@ -666,12 +666,14 @@ class upgradetools {
 					ORDER BY Ch.chapid ASC
 				LIMIT 0,25";
 
+/*
 		if ( $source=="mysql" AND $target=="database" )
 		{
 			// refuse to do stupid things
 			// chapter text was copied during table setup
 		}
-		elseif ( $target=="filebase" )
+*/
+		if ( $target=="filebase" )
 		{
 			$fw->set('currently', "Relocating chapter data");
 
