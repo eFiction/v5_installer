@@ -240,7 +240,7 @@ INSERT INTO `{$new}menu` (`label`, `order`, `link`) VALUES
 ('Challenges', 6, 'story/contests');--NOTEPage menu
 --SPLIT--
 INSERT INTO `{$new}menu_adminpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `requires`, `evaluate`) VALUES
-('LN__AdminMenu_Tags', 2, 'archive/tags,tag', '{ICON:tag}', 'archive', 1, 1, NULL),
+('LN__AdminMenu_Tags', 2, 'archive/tags', '{ICON:tag}', 'archive', 1, 1, NULL),
 ('LN__AdminMenu_Featured', 1, 'archive/featured', '{ICON:blank}', 'archive', 1, 1, NULL),
 ('LN__AdminMenu_Groups', 3, 'members/groups', '{ICON:members}', 'members', 1, 2, NULL),
 ('LN__AdminMenu_Pending', 2, 'members/pending', '{ICON:waiting}', 'members', 1, 2, NULL),
@@ -261,7 +261,7 @@ INSERT INTO `{$new}menu_adminpanel` (`label`, `order`, `link`, `icon`, `child_of
 ('LN__AdminMenu_Members', 3, 'members', '{ICON:member}', NULL, 1, 2, NULL),
 ('LN__AdminMenu_Settings', 2, 'settings', '{ICON:settings}', NULL, 1, 2, NULL),
 ('LN__AdminMenu_Home', 1, 'home', '{ICON:home}', NULL, 1, 1, NULL),
-('LN__AdminMenu_Edit', 1, 'archive/tags/tag', '{ICON:tag}', 'archive/tags', 1, 1, NULL),
+('LN__AdminMenu_Edit', 1, 'archive/tags/edit', '{ICON:tag}', 'archive/tags', 1, 1, NULL),
 ('LN__AdminMenu_Taggroups', 2, 'archive/tags/groups', '{ICON:tags}', 'archive/tags', 1, 2, NULL),
 ('LN__AdminMenu_Tagcloud', 3, 'archive/tags/cloud', '{ICON:cloud}', 'archive/tags', 1, 2, NULL),
 ('LN__AdminMenu_Categories', 3, 'archive/categories', '{ICON:blank}', 'archive', 1, 1, NULL),
