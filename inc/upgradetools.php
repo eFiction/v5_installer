@@ -42,7 +42,7 @@ class upgradetools {
 
 		$probe = $fw->db3->exec
 		(
-			'SELECT `sitename` , `slogan`, `siteemail`, `storiespath`, `store` FROM `'.$fw['installerCFG.dbname'].'`.`'.$fw['installerCFG.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
+			'SELECT `sitename` , `slogan`, `siteemail`, `storiespath`, `store`, `itemsperpage` FROM `'.$fw['installerCFG.dbname'].'`.`'.$fw['installerCFG.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
 			[
 				':sitekey'	=> $fw['installerCFG.sitekey']
 			]
@@ -461,12 +461,13 @@ class upgradetools {
 				$fw->db3->exec
 				(
 					"INSERT INTO `{$new}stories_blockcache` VALUES
-					({$item['sid']}, :tagblock, :authorblock, :categoryblock, :rating, '{$item['reviews']}', '{$item['chapters']}' );",
+					({$item['sid']}, :tagblock, :characterblock, :authorblock, :categoryblock, :rating, '{$item['reviews']}', '{$item['chapters']}' );",
 					[
-						':tagblock'				=> serialize(upgradetools::cleanResult($item['tagblock'])),
+						':tagblock'			=> serialize(upgradetools::cleanResult($item['tagblock'])),
+						':characterblock'	=> serialize(upgradetools::cleanResult($item['characterblock'])),
 						':authorblock'		=> serialize(upgradetools::cleanResult($item['authorblock'])),
-						':categoryblock'		=> serialize(upgradetools::cleanResult($item['categoryblock'])),
-						':rating'					=> serialize(explode(",",$item['rating'])),
+						':categoryblock'	=> serialize(upgradetools::cleanResult($item['categoryblock'])),
+						':rating'			=> serialize(explode(",",$item['rating'])),
 					]
 				);
 			}
@@ -509,12 +510,13 @@ class upgradetools {
 				$fw->db5->exec
 				(
 					"INSERT INTO `{$new}series_blockcache` VALUES
-					({$item['seriesid']}, :tagblock, :authorblock, :categoryblock, :max_rating, '{$item['chapter_count']}', '{$item['word_count']}');",
+					({$item['seriesid']}, :tagblock, :characterblock, :authorblock, :categoryblock, :max_rating, '{$item['chapter_count']}', '{$item['word_count']}');",
 					[
-						':tagblock'				=> serialize(upgradetools::cleanResult($item['tagblock'])),
+						':tagblock'			=> serialize(upgradetools::cleanResult($item['tagblock'])),
+						':characterblock'	=> serialize(upgradetools::cleanResult($item['characterblock'])),
 						':authorblock'		=> serialize(upgradetools::cleanResult($item['authorblock'])),
-						':categoryblock'		=> serialize(upgradetools::cleanResult($item['categoryblock'])),
-						':max_rating'			=> serialize(explode(",",$item['max_rating'])),
+						':categoryblock'	=> serialize(upgradetools::cleanResult($item['categoryblock'])),
+						':max_rating'		=> serialize(explode(",",$item['max_rating'])),
 					]
 				);
 			}
