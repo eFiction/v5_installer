@@ -106,17 +106,9 @@ $steps[] = array
 									),
 );
 
-$sql['init']['textblocks'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}textblocks` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `label` varchar(50) NOT NULL DEFAULT '',
-  `title` varchar(200) NOT NULL DEFAULT '',
-  `content` text NOT NULL,
-  `as_page` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  KEY `label` (`label`)
-) ENGINE=InnoDB  DEFAULT CHARSET={$characterset};
-EOF;
+/*
+	Init in shard_00_core
+*/
 
 $sql['data']['textblocks'] = <<<EOF
 INSERT INTO `{$new}textblocks` ( `id`, `label`, `title`, `content`, `as_page` )
@@ -128,6 +120,8 @@ UPDATE `{$new}textblocks`T SET T.as_page=0 WHERE T.id IN(1,2,4,5,7,9);
 INSERT INTO `{$new}textblocks` (`label`, `title`, `content`, `as_page`) VALUES
 ('registration', '__Registration', 'By registering, you consent to the following rules: No BS-ing!', 0);
 EOF;
+
+require_once('shard_01_storyinfo.php');
 
 /* --------------------------------------------------------------------------------------------
 																																								 * TAGS GROUPS*
@@ -141,17 +135,9 @@ $steps[] = array
 									),
 );
 
-$sql['init']['characters'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}characters` (
-  `charid` int(11) NOT NULL,
-  `catid` int(11) NOT NULL DEFAULT '0',
-  `charname` tinytext NOT NULL,
-  `biography` mediumtext NOT NULL,
-  `image` tinytext NOT NULL,
-  `count` int(10) unsigned DEFAULT NULL,
-  PRIMARY KEY (`charid`), UNIQUE KEY `charname` (`charname`(64))
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table';
-EOF;
+/*
+	Init in shard_01_storyinfo
+*/
 
 $sql['data']['characters'] = <<<EOF
 INSERT INTO `{$new}characters` ( charid, catid, charname, biography, image )
@@ -172,15 +158,9 @@ $steps[] = array
 									),
 );
 
-$sql['init']['tag_groups'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}tag_groups` (
-  `tgid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `label` varchar(64) NOT NULL,
-  `order` int(11) NOT NULL DEFAULT '0',
-  `description` mediumtext,
-  PRIMARY KEY (`tgid`)
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='New table, eFiction 5';
-EOF;
+/*
+	Init in shard_01_storyinfo
+*/
 
 $sql['data']['tag_groups'] = <<<EOF
 INSERT INTO `{$new}tag_groups` ( tgid, label, description )
@@ -192,17 +172,10 @@ EOF;
 																																											 * TAGS *
 requires: tag_groups
 -------------------------------------------------------------------------------------------- */
-$sql['init']['tags'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}tags` (
-  `tid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `oldid` int(11) NOT NULL,
-  `tgid` int(10) unsigned NOT NULL,
-  `label` tinytext NOT NULL,
-  `description` mediumtext NOT NULL,
-  `count` int(10) unsigned DEFAULT NULL,
-  PRIMARY KEY (`tid`), UNIQUE KEY `label` (`label`(64)), KEY `tgid` (`tgid`)
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table';
-EOF;
+
+/*
+	Init in shard_01_storyinfo
+*/
 
 $sql['data']['tags'] = <<<EOF
 INSERT INTO `{$new}tags` ( tid, tgid, label )
@@ -222,22 +195,9 @@ $steps[] = array
 									),
 );
 
-$sql['init']['categories'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}categories` (
-  `cid` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_cid` int(11) NOT NULL DEFAULT '0',
-  `category` varchar(60) CHARACTER SET utf8 NOT NULL DEFAULT '',
-  `description` text NOT NULL,
-  `image` varchar(100) NOT NULL DEFAULT '',
-  `locked` tinyint(1) NOT NULL DEFAULT '0',
-  `leveldown` tinyint(2) unsigned NOT NULL DEFAULT '0',
-  `inorder` int(11) NOT NULL DEFAULT '0',
-  `counter` int(11) NOT NULL DEFAULT '0',
-  `stats` text NOT NULL,
-  PRIMARY KEY (`cid`), KEY `byparent` (`parent_cid`,`inorder`)
-) ENGINE=MyISAM DEFAULT CHARSET={$characterset} COMMENT='(eFI5): derived from _categories';
-EOF;
-
+/*
+	Init in shard_01_storyinfo
+*/
 
 //$sql['init']['categories_statcache'] = "SELECT 1;--NOTESeries Cache - empty table created";
 $sql['data']['categories_statcache'] = "SELECT 2;--NOTECategory stats cache";
@@ -251,7 +211,6 @@ $sql['proc']['categories'] = "SELECT C.cid, C.category, COUNT(DISTINCT S.sid) as
 	LEFT JOIN `{$new}stories`S ON ( S.sid = SC.sid )
 	LEFT JOIN `{$new}categories`C1 ON ( C.cid = C1.parent_cid )
 GROUP BY C.cid";
-
 
 
 $sql['data']['categories'] = <<<EOF
@@ -444,25 +403,25 @@ CREATE TABLE IF NOT EXISTS `{$new}stories` (
   `title` varchar(200) NOT NULL DEFAULT 'Untitled',
   `summary` text,
   `storynotes` text,
-  `rid` varchar(25) NOT NULL DEFAULT '0',
+  `ratingid` tinyint(3) DEFAULT NULL,
   `date` datetime DEFAULT NULL,
   `updated` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `print_cache` tinyint(1) NOT NULL DEFAULT '0',
+  -- `print_cache` tinyint(1) NOT NULL DEFAULT '0',
   -- `featured` char(1) NOT NULL DEFAULT '0',
   `validated` char(1) NOT NULL DEFAULT '0',
   `completed` tinyint(1) NOT NULL DEFAULT '-1' COMMENT '-2 deleted, -1 draft, 0 w.i.p., 1 all done',
-  `rr` char(1) NOT NULL DEFAULT '0',
+  `roundrobin` char(1) NOT NULL DEFAULT '0',
   `wordcount` int(11) NOT NULL DEFAULT '0',
-	`ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
+  `ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
   `count` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`sid`), KEY `title` (`title`), KEY `rid` (`rid`), KEY `completed` (`completed`), KEY `rr` (`rr`), KEY `validateduid` (`validated`), KEY `recent` (`updated`,`validated`)
+  PRIMARY KEY (`sid`), KEY `title` (`title`), KEY `ratingid` (`ratingid`), KEY `completed` (`completed`), KEY `roundrobin` (`roundrobin`), KEY `validated` (`validated`), KEY `recent` (`updated`,`validated`)
  ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
 
 $sql['data']['stories'] = <<<EOF
 INSERT INTO `{$new}stories`
-	( `sid`, `title`, `summary`, `storynotes`, `rid`, `date`, `updated`, `validated`, `completed`, `rr`, `wordcount`, `ranking`, 														`reviews`, `count` )
+	( `sid`, `title`, `summary`, `storynotes`, `ratingid`, `date`, `updated`, `validated`, `completed`, `roundrobin`, `wordcount`, `ranking`, 														`reviews`, `count` )
 	SELECT
 		S.sid, S.title, S.summary, S.storynotes, S.rid, S.date, S.updated, S.validated, S.completed, S.rr, S.wordcount, (10*SUM(R.rating)/COUNT(R.reviewid)), S.reviews, S.count
 	FROM `{$old}stories`S
@@ -487,11 +446,12 @@ $sql['init']['ratings'] = <<<EOF
 CREATE TABLE IF NOT EXISTS `{$new}ratings` (
   `rid` int(11) NOT NULL AUTO_INCREMENT,
   `rating` varchar(60) NOT NULL DEFAULT '',
+  `rating_age` tinyint(2) NOT NULL DEFAULT '0',
   `rating_image` varchar(50) NULL DEFAULT NULL,
   `ratingwarning` tinyint(1) NOT NULL DEFAULT '0',
   `warningtext` text NOT NULL,
   PRIMARY KEY (`rid`),
-  KEY `rating` (`rating`)
+  KEY `rating` (`rating`), KEY `rating_age` (`rating_age`)
 ) ENGINE=MyISAM  DEFAULT CHARSET={$characterset};
 EOF;
 
@@ -1003,14 +963,14 @@ GROUP_CONCAT(DISTINCT tid,',',tag,',',description ORDER BY `order`,tgid,tag ASC 
 GROUP_CONCAT(DISTINCT charid,',',charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
 GROUP_CONCAT(DISTINCT uid,',',nickname ORDER BY nickname ASC SEPARATOR '||' ) as authorblock,
 GROUP_CONCAT(DISTINCT cid,',',category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
-GROUP_CONCAT(DISTINCT rid,',',rating_name,',',rating_image SEPARATOR '||' ) as rating,
+GROUP_CONCAT(DISTINCT ratingid,',',rating_name,',',rating_image SEPARATOR '||' ) as rating,
 COUNT(DISTINCT fid) AS reviews,
 COUNT(DISTINCT chapid) AS chapters
 FROM
 (
 	SELECT S.sid,C.chapid,UNIX_TIMESTAMP(S.date) as published, UNIX_TIMESTAMP(S.updated) as modified,
 		F.fid,
-		S.rid, Ra.rating as rating_name, IF(Ra.rating_image,Ra.rating_image,'') as rating_image,
+		S.ratingid, Ra.rating as rating_name, IF(Ra.rating_image,Ra.rating_image,'') as rating_image,
 		U.uid, U.nickname,
 		Cat.cid, Cat.category,
 		TG.description,TG.order,TG.tgid,T.label as tag,T.tid,
@@ -1023,7 +983,7 @@ FROM
 			WHERE B.sid IS NULL
 			LIMIT 0,50
 		) AS S
-		LEFT JOIN `{$new}ratings` Ra ON ( Ra.rid = S.rid )
+		LEFT JOIN `{$new}ratings` Ra ON ( Ra.rid = S.ratingid )
 		LEFT JOIN `{$new}stories_authors`rSA ON ( rSA.sid = S.sid )
 			LEFT JOIN `{$new}users` U ON ( rSA.aid = U.uid )
 		LEFT JOIN `{$new}stories_tags`rST ON ( rST.sid = S.sid )
@@ -1089,7 +1049,7 @@ MAX(Ra.rid) as max_rating_id,
 					LEFT JOIN `{$new}chapters`Ch ON ( Ch.sid = S.sid )
 					LEFT JOIN `{$new}stories_authors`rSA ON ( rSA.sid = S.sid )
 						LEFT JOIN `{$new}users` U ON ( rSA.aid = U.uid )
-			LEFT JOIN `{$new}ratings`Ra ON ( Ra.rid = S.rid )
+			LEFT JOIN `{$new}ratings`Ra ON ( Ra.rid = S.ratingid )
 			LEFT JOIN `{$new}stories_tags`rST ON ( rST.sid = S.sid )
 				LEFT JOIN `{$new}tags`T ON ( T.tid = rST.tid AND rST.character = 0 )
 					LEFT JOIN `{$new}tag_groups`TG ON ( TG.tgid = T.tgid )

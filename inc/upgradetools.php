@@ -458,7 +458,7 @@ class upgradetools {
 
 			foreach ( $items as $item)
 			{
-				$fw->db3->exec
+				$fw->db5->exec
 				(
 					"INSERT INTO `{$new}stories_blockcache` VALUES
 					({$item['sid']}, :tagblock, :characterblock, :authorblock, :categoryblock, :rating, '{$item['reviews']}', '{$item['chapters']}' );",

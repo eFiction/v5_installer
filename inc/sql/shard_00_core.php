@@ -244,9 +244,11 @@ INSERT INTO `{$new}menu` (`label`, `order`, `link`) VALUES
 INSERT INTO `{$new}menu_adminpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `requires`, `evaluate`) VALUES
 ('LN__AdminMenu_Tags', 3, 'archive/tags', '{ICON:tag}', 'archive', 1, 64, NULL),
 ('LN__AdminMenu_Featured', 1, 'archive/featured', '{ICON:blank}', 'archive', 1, 64, NULL),
-('LN__AdminMenu_Groups', 3, 'members/groups', '{ICON:members}', 'members', 1, 128, NULL),
-('LN__AdminMenu_Pending', 2, 'members/pending', '{ICON:waiting}', 'members', 1, 128, NULL),
 ('LN__AdminMenu_Search', 1, 'members/search', '{ICON:search}', 'members', 1, 128, NULL),
+('LN__AdminMenu_Pending', 2, 'members/pending', '{ICON:waiting}', 'members', 1, 128, NULL),
+('LN__AdminMenu_Groups', 3, 'members/groups', '{ICON:members}', 'members', 1, 128, NULL),
+('LN__AdminMenu_Profile', 4, 'members/profile', '{ICON:blank}', 'members', 1, 128, NULL),
+('LN__AdminMenu_Team', 5, 'members/team', '{ICON:blank}', 'members', 1, 128, NULL),
 ('LN__AdminMenu_Language', 4, 'settings/language', '{ICON:language}', 'settings', 1, 128, NULL),
 ('LN__AdminMenu_Icons', 2, 'settings/layout/icons', '{ICON:blank}', 'settings/layout', 1, 128, NULL),
 ('LN__AdminMenu_Themes', 1, 'settings/layout/themes', '{ICON:blank}', 'settings/layout', 1, 128, NULL),
@@ -299,6 +301,23 @@ INSERT INTO `{$new}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`
 ('__Authors', 1, 'library/fav/AU', NULL, '13', 1, NULL),
 ('__Stories', 2, 'library/fav/ST', NULL, '13', 1, NULL),
 ('LN__UserMenu_Curator', 2, 'author/curator', NULL, 'story', 1, NULL);--NOTEUser panel menu
+EOF;
+
+/* --------------------------------------------------------------------------------------------
+																																									* TEXTBLOCKS *
+requires: -
+-------------------------------------------------------------------------------------------- */
+
+$sql['init']['textblocks'] = <<<EOF
+CREATE TABLE IF NOT EXISTS `{$new}textblocks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `label` varchar(50) NOT NULL DEFAULT '',
+  `title` varchar(200) NOT NULL DEFAULT '',
+  `content` text NOT NULL,
+  `as_page` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `label` (`label`)
+) ENGINE=InnoDB  DEFAULT CHARSET={$characterset};
 EOF;
 
 ?>
