@@ -50,7 +50,7 @@ INSERT INTO `{$new}config` (`name`, `value`, `comment`, `admin_module`, `section
 ('language_available', 'a:1:{s:5:"en_GB";s:7:"English";}', 'List all languages that are available to common members.', 'settings_language_file', 0, '', 1, 0),
 ('language_default', 'en_GB', NULL, 'settings_language_file', 0, '', 1, 0),
 ('language_forced', '0', 'Disable custom language selection:@SMALL@Default is <b>no</b>', 'settings_language', 0, 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1, 1),
-('layout_available', 'default', NULL, 'settings_layout_file', 0, '', 1, 0),
+('layout_available', 'a:1:{s:7:"default";s:18:"eFiction 5 default";}', NULL, 'settings_layout_file', 0, '', 1, 0),
 ('layout_default', 'default', NULL, 'settings_layout_file', 0, '', 1, 0),
 ('layout_forced', '0', 'Disable custom layout selection:@SMALL@Default is <b>no</b>', 'settings_layout', 1, 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1, 1),
 ('monday_first_day', '1', 'Weeks in calendar start with ...', 'settings_datetime', 3, 'select//{{ @LN__Weekday, strtotime(''2016/02/01'') | format }}=1//{{ @LN__Weekday, strtotime(''2016/05/01'') | format }}=0', 1, 1),
