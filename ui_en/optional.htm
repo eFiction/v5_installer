@@ -9,6 +9,7 @@
 				<check if="{{ @select.0=='+' }}"><span class='success'>installing</span></div><div class="gb-20"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=drop.'.@module | alias }}">Don't install</a></check>
 				<check if="{{ @select.0=='?' }}"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=add.'.@module | alias }}">Install</a></div><div class="gb-20"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=drop.'.@module | alias }}">Don't install</a></check>
 			</div>
+			<check if ="{{@check[@module]==1}}"><div class="gb-90"><small>(Module installed in old eFiction. Install to preserve data!)</small></div></check>
 		</check>
 	</repeat>
 	<div class="gb-full"><br /><h2>New core modules:</h2></div>

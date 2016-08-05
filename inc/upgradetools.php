@@ -110,6 +110,7 @@ class upgradetools {
 			}
 			$description[$module] = $optional[$module]['description'];
 		}
+		$fw->set('check', $check);
 		$fw->set('description', $description);
 		
 		return Template::instance()->render('optional.htm');
@@ -123,6 +124,7 @@ class upgradetools {
 		include('inc/sql/sql_upgrade_3_5.php');
 		include('inc/sql/sql_upgrade_3_5_optional.php');
 		
+		$modulesDB = [];
 		foreach ($fw['installerCFG.optional'] as $module => $setting )
 		{
 			if( $setting[0]=="+" )
@@ -132,6 +134,13 @@ class upgradetools {
 				$sql['init'][$step[0]] = $optional[$step[0]]['init'];
 				$init["steps"][] = $step;
 			}
+
+			if ( $setting[0]!="-" ) $modulesDB[$module] = 1;
+		}
+		if ( sizeof($modulesDB)>0 )
+		{
+			$fw['installerCFG.modulesDB'] = serialize($modulesDB);
+			$fw->dbCFG->write('config.json',$fw['installerCFG']);
 		}
 
 		try {
@@ -837,7 +846,20 @@ class upgradetools {
 		$cfgData = $fw->db5->exec("SELECT `name`, `value` FROM `{$new}config` WHERE `to_config_file` = 1  ORDER BY `name` ASC ");
 		foreach ( $cfgData as $cfgItem)
 		{
-			$mapper->{$cfgItem['name']} = $cfgItem['value'];
+			/* experimental */
+			if ( $cfgItem['value'] == "TRUE") $cfgItem['value'] = TRUE;
+			elseif ( $cfgItem['value'] == "FALSE") $cfgItem['value'] = FALSE;
+
+			$cfgItem['name'] = explode("__", $cfgItem['name']);
+
+			if ( isset($cfgItem['name'][1]) )
+			{	
+				// nested key structures, like bb2__verbose -> bb2[verbose]
+				if ( empty( $mapper->{$cfgItem['name'][0]} ) ) $mapper->{$cfgItem['name'][0]} = [];
+				$mapper->{$cfgItem['name'][0]}[$cfgItem['name'][1]] = $cfgItem['value'];
+			}
+			else
+				$mapper->{$cfgItem['name'][0]} = $cfgItem['value'];
 		}
 		$modules = [];
 		foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )

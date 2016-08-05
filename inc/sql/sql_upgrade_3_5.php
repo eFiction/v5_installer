@@ -691,10 +691,13 @@ CREATE TABLE IF NOT EXISTS `{$new}user_favourites` (
   `uid` int(11) NOT NULL DEFAULT '0',
   `item` int(11) NOT NULL DEFAULT '0',
   `type` char(2) NOT NULL DEFAULT '',
+  `bookmark` BOOLEAN NOT NULL,
   `notify` tinyint(1) NOT NULL DEFAULT '0',
   `visibility` tinyint(1) NOT NULL DEFAULT '2',
   `comments` text NOT NULL,
-  PRIMARY KEY (`fid`), UNIQUE KEY `byitem` (`item`,`type`,`uid`), UNIQUE KEY `byuid` (`uid`,`type`,`item`)
+  PRIMARY KEY (`fid`), 
+  UNIQUE KEY `byitem` (`item`,`type`,`bookmark`,`uid`) USING BTREE, 
+  UNIQUE KEY `byuid` (`uid`,`type`,`bookmark`,`item`) USING BTREE
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
 
