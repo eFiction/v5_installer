@@ -146,6 +146,8 @@ INSERT INTO `{$new}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, '#notes', 'requires ''@import url(//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css);'' in styles.css (See http://fortawesome.github.io/Font-Awesome/get-started/ )'),
 (1, '#pattern', '<span class="fa @1@"></span>'),
 (1, 'archive', 'fa-university'),
+(1, 'arrow-down', 'fa-arrow-down'),
+(1, 'arrow-up', 'fa-arrow-up'),
 (1, 'bars', 'fa-bars'),
 (1, 'blank', 'fa-square-o'),
 (1, 'book', 'fa-book'),
