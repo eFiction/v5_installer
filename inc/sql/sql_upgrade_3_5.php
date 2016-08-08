@@ -102,7 +102,7 @@ $steps[] = array
 	"steps" => array (
 								array ( "textblocks", 0, "Copy data" ),
 								array ( "textblocks", 1, "Mark the old admin block area as block_only" ),
-								array ( "textblocks", 2, "Add a registration page" ),
+								array ( "textblocks", 2, "Add a registration and a cookie consent page" ),
 									),
 );
 
@@ -118,7 +118,8 @@ INSERT INTO `{$new}textblocks` ( `id`, `label`, `title`, `content`, `as_page` )
 UPDATE `{$new}textblocks`T SET T.as_page=0 WHERE T.id IN(1,2,4,5,7,9);
 --SPLIT--
 INSERT INTO `{$new}textblocks` (`label`, `title`, `content`, `as_page`) VALUES
-('registration', '__Registration', 'By registering, you consent to the following rules: No BS-ing!', 0);
+('registration', '__Registration', 'By registering, you consent to the following rules: No BS-ing!', 0),
+('eucookie', '(EU) Cookie consent', 'Cookie stuff ...', '1');
 EOF;
 
 require_once('shard_01_storyinfo.php');
