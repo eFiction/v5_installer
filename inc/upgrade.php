@@ -54,6 +54,13 @@ class upgrade {
 		$this->fw->set('content', Template::instance()->render('config.htm'));
 	}
 	
+	function error ($error="")
+	{
+		$this->fw->set('error', $error);
+		$this->fw->set('content', Template::instance()->render('error.htm'));
+		//echo "ugly error: ".$error;exit;
+	}
+	
 	function steps ()
 	{
 		if(null!==$this->fw->get('resume'))
@@ -70,8 +77,24 @@ class upgrade {
 			\PDO::ATTR_PERSISTENT 		=> TRUE,  // we want to use persistent connections
 			\PDO::MYSQL_ATTR_COMPRESS 	=> TRUE, // MySQL-specific attribute
 		);
-		$this->fw->db3 = new \DB\SQL ( $this->fw['installerCFG.dsn.3'], $this->fw['installerCFG.dbuser'], $this->fw['installerCFG.dbpass'], $options );
-		$this->fw->db5 = new \DB\SQL ( $this->fw['installerCFG.dsn.5'], $this->fw['installerCFG.dbuser'], $this->fw['installerCFG.dbpass'], $options );
+		try
+		{
+			$this->fw->db3 = new \DB\SQL ( $this->fw['installerCFG.dsn.3'], $this->fw['installerCFG.dbuser'], $this->fw['installerCFG.dbpass'], $options );
+			try
+			{
+				$this->fw->db5 = new \DB\SQL ( $this->fw['installerCFG.dsn.5'], $this->fw['installerCFG.dbuser'], $this->fw['installerCFG.dbpass'], $options );
+			}
+			catch (PDOException $e)
+			{
+				$this->error ( $e->getMessage() );
+				return FALSE;
+			}
+		}
+		catch (PDOException $e)
+		{
+			$this->error ( $e->getMessage() );
+			return FALSE;
+		}
 
 		switch($this->fw->get('PARAMS.step'))
 		{

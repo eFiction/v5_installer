@@ -236,10 +236,11 @@ class upgradetools {
 				foreach($optional[$module]['steps'] as $step)
 				{
 					$sql['data'][$step[0]] = $optional[$step[0]]['data'];
+					$init["steps"][] = $step;
 				}
 			}
 		}
-		
+
 		// Check jobs table
 		$fw->db3->exec ( "SELECT 1 FROM `{$new}convert` LIMIT 0,1");
 		if($fw->db3->count()>0)
