@@ -946,7 +946,12 @@ class upgradetools {
 				$mapper->{$cfgItem['name'][0]}[$cfgItem['name'][1]] = $cfgItem['value'];
 			}
 			else
-				$mapper->{$cfgItem['name'][0]} = $cfgItem['value'];
+			{
+				if ( NULL === $c = json_decode($cfgItem['value']) )
+					$mapper->{$cfgItem['name'][0]} = $cfgItem['value'];
+				else
+					$mapper->{$cfgItem['name'][0]} = $c;
+			}
 		}
 		$modules = [];
 		foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )
