@@ -18,53 +18,128 @@ $new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
 $characterset = $fw['installerCFG.charset'];
 
 /* --------------------------------------------------------------------------------------------
-																					* RECOMMENDATIONS *
+																			* RECOMMENDATIONS *
 requires: STORIES RELATION
 -------------------------------------------------------------------------------------------- */
 $probe['recommendations'] = "SELECT 1 FROM information_schema.tables WHERE table_schema = '{$fw['installerCFG.dbname']}' AND table_name = '{$fw['installerCFG.pre_old']}fanfiction_recommendations'";
 
+$optional['recommendations'] = array
+(
+	"description"	=>	"Recommendations module",
+	"type"			=>	2,
+	"steps"			=>	array (
+							array ( "recommendations", 0, "Recommendations, optional module" ),
+							array ( "recommend_tags", 0, "Recommendation <-> Tags relations" ),
+							array ( "recommend_cache", 0, "Recommendation cache" ),
+						),
+);
+
+/*
 $optional['recommendations']['description'] = "Recommendations module";
 
 $optional['recommendations']['type'] = 2;
 
-$optional['recommendations']['steps'][] = array ( "recommendations", 0, "Recommendations, optional module" );
+$optional['recommendations']['steps'][]  = array ( "recommendations", 0, "Recommendations, optional module" );
+*/
 
 $optional['recommendations']['init'] = <<<EOF
 CREATE TABLE IF NOT EXISTS `{$new}recommendations` (
   `recid` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(11) NOT NULL,
+  `url` varchar(255) NOT NULL DEFAULT 'broken',
   `title` varchar(200) NOT NULL DEFAULT 'Untitled',
   `author` varchar(200) NOT NULL,
   `summary` text,
-  `comments` text,
-  `uid` int(11) NOT NULL,
-  `recname` varchar(50) NOT NULL,
-  `url` varchar(255) NOT NULL DEFAULT 'broken',
+  `comment` text,
   `catid` varchar(100) NOT NULL DEFAULT '0',
-  `classes` varchar(200) NOT NULL DEFAULT '0',
-  `charid` varchar(250) NOT NULL DEFAULT '0',
-  `rid` varchar(25) NOT NULL DEFAULT '0',
+  `ratingid` varchar(25) NOT NULL DEFAULT '0',
   `date` datetime DEFAULT NULL,
-  `featured` char(1) NOT NULL DEFAULT '0',
   `validated` char(1) NOT NULL DEFAULT '0',
   `completed` char(1) NOT NULL DEFAULT '0',
-  `rating` tinyint(4) NOT NULL DEFAULT '0',
-  `reviews` smallint(6) NOT NULL DEFAULT '0',
+  `ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
+  `reviews` smallint(6) DEFAULT NULL,
+  `cache_tags` text,
+  `cache_characters` text,
+  `cache_categories` text,
+  `cache_rating` tinytext NOT NULL,
   PRIMARY KEY (`recid`),
   KEY `title` (`title`),
   KEY `catid` (`catid`),
-  KEY `charid` (`charid`),
-  KEY `rid` (`rid`),
-  KEY `featured` (`featured`),
   KEY `validated` (`validated`),
-  KEY `completed` (`completed`),
-  KEY `classes` (`classes`)
+  KEY `completed` (`completed`)
 ) ENGINE=InnoDB  DEFAULT CHARSET={$characterset};
+EOF;
+
+$optional['recommend_tags']['init'] = <<<EOF
+CREATE TABLE IF NOT EXISTS `{$new}recommend_tags` (
+  `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `recid` int(10) NOT NULL,
+  `tid` int(10) unsigned NOT NULL,
+  `character` int(1) DEFAULT 0,
+  PRIMARY KEY (`lid`), KEY `relation` (`recid`,`tid`)
+) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table for recommendation-tag relations';
 EOF;
 
 $optional['recommendations']['data'] = <<<EOF
 INSERT INTO `{$new}recommendations`
-	SELECT *
+	( `recid`, `uid`, `url`, `title`, `author`, `summary`, `comment`, `catid`, `ratingid`, `date`, `validated`, `completed`, `ranking` )
+	SELECT `recid`, `uid`, `url`, `title`, `author`, `summary`, `comments`, `catid`, `rid`, `date`, `validated`, `completed`, `rating`
 	FROM `{$old}recommendations`;--NOTECopy data
+--SPLIT--
+INSERT INTO `{$new}stories_featured` ( `sid`,`status`, `type` )
+	SELECT R.recid, R.featured, 'RC'
+		FROM `{$old}recommendations`R
+			WHERE R.featured > 0;--NOTEFeatured flag from old recommendations table
+EOF;
+
+$optional['recommend_tags']['data'] = <<<EOF
+INSERT INTO `{$new}recommend_tags` ( `recid`,`tid` )
+	SELECT R.recid,T.tid
+		FROM `{$old}recommendations`R
+		INNER JOIN `{$new}tags` T ON (FIND_IN_SET(T.tid,R.classes)>0);--NOTERecommendation <-> Tags relations (from classes)
+--SPLIT--
+INSERT INTO `{$new}recommend_tags` ( `recid`,`tid`,`character` )
+	SELECT R.recid,C.charid,'1'
+		FROM `{$old}recommendations`R
+		INNER JOIN `{$new}characters`C ON (FIND_IN_SET(C.charid,R.charid)>0);--NOTERecommendation <-> Tags relations (from characters)
+EOF;
+
+$optional['recommend_cache']['init'] = "SELECT 1;--NOTERecommendation cache (stub)";
+$optional['recommend_cache']['data'] = "SELECT 1;--NOTERecommendation cache";
+
+$sql['probe']['recommend_cache'] = "SELECT R.recid FROM `{$new}recommendations`R WHERE R.reviews IS NULL LIMIT 0,1";
+
+$sql['proc']['recommend_cache'] = <<<EOF
+SELECT SELECT_OUTER.recid,
+GROUP_CONCAT(DISTINCT tid,',',tag,',',description ORDER BY `order`,tgid,tag ASC SEPARATOR '||') AS tagblock,
+GROUP_CONCAT(DISTINCT charid,',',charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
+GROUP_CONCAT(DISTINCT cid,',',category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
+GROUP_CONCAT(DISTINCT ratingid,',',rating_name,',',rating_image SEPARATOR '||' ) as rating,
+COUNT(DISTINCT fid) AS reviews
+FROM
+(
+	SELECT R.recid,
+		F.fid,
+		R.ratingid, Ra.rating as rating_name, IF(Ra.rating_image,Ra.rating_image,'') as rating_image,
+		Cat.cid, Cat.category,
+		TG.description,TG.order,TG.tgid,T.label as tag,T.tid,
+		Ch.charid, Ch.charname
+		FROM
+		(
+			SELECT R1.*
+			FROM `{$new}recommendations` R1
+			WHERE R1.reviews IS NULL
+			LIMIT 0,25
+		) AS R
+		LEFT JOIN `{$new}ratings` Ra ON ( Ra.rid = R.ratingid )
+		LEFT JOIN `{$new}recommend_tags`rRT ON ( rRT.recid = R.recid )
+			LEFT JOIN `{$new}tags` T ON ( T.tid = rRT.tid AND rRT.character = 0 )
+				LEFT JOIN `{$new}tag_groups` TG ON ( TG.tgid = T.tgid )
+			LEFT JOIN `{$new}characters` Ch ON ( Ch.charid = rRT.tid AND rRT.character = 1 )
+		LEFT JOIN `{$new}categories` Cat ON ( FIND_IN_SET(Cat.cid,R.catid) )
+		LEFT JOIN `{$new}feedback` F ON ( F.reference = R.recid AND F.type='RC' )
+)AS SELECT_OUTER
+GROUP BY recid ORDER BY recid ASC
 EOF;
 
 
@@ -88,7 +163,7 @@ EOF;
 
 
 /* --------------------------------------------------------------------------------------------
-																										  * POLL *
+																					  * POLL *
 requires: -
 -------------------------------------------------------------------------------------------- */
 $probe['poll'] = "SELECT 1 FROM information_schema.tables WHERE table_schema = '{$fw['installerCFG.dbname']}' AND table_name = '{$fw['installerCFG.pre_old']}fanfiction_poll'";

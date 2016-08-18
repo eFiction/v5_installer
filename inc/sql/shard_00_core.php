@@ -54,7 +54,7 @@ INSERT INTO `{$new}config` (`name`, `value`, `comment`, `admin_module`, `section
 ('layout_default', 'default', NULL, 'settings_layout_file', 0, '', 1, 0),
 ('layout_forced', '0', 'Disable custom layout selection:@SMALL@Default is <b>no</b>', 'settings_layout', 1, 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1, 1),
 ('monday_first_day', '1', 'Weeks in calendar start with ...', 'settings_datetime', 3, 'select//{{ @LN__Weekday, strtotime(''2016/02/01'') | format }}=1//{{ @LN__Weekday, strtotime(''2016/05/01'') | format }}=0', 1, 1),
-('optional_modules', '{$fw['installerCFG.modulesDB']}', NULL, '', 0, '', 1, 0),
+('optional_modules', '{$fw['installerCFG.modulesDB']}', NULL, '', 0, '', 0, 0),
 ('page_default', 'about', NULL, '', 0, '', 1, 1),
 ('page_mail', "{$fw['installerCFG.data.siteemail']}", 'Webmaster e-mail address', 'settings_general', 2, 'text//', 1, 1),
 ('page_slogan', "{$fw['installerCFG.data.slogan']}", 'Site slogan', 'settings_general', 3, 'text//', 1, 1),

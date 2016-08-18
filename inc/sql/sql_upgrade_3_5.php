@@ -371,11 +371,12 @@ $sql['init']['stories_featured'] = <<<EOF
 CREATE TABLE IF NOT EXISTS `{$new}stories_featured` (
   `lid` int(11) NOT NULL AUTO_INCREMENT,
   `sid` int(11) NOT NULL,
+  `type` char(2) NOT NULL DEFAULT 'ST',
   `status` tinyint(1) DEFAULT NULL,
   `start` timestamp NULL DEFAULT NULL,
   `end` timestamp NULL DEFAULT NULL,
   `uid` int(11) DEFAULT NULL,
-  PRIMARY KEY (`lid`), UNIQUE KEY `sid` (`sid`)
+  PRIMARY KEY (`lid`), UNIQUE KEY `sid` (`sid`,`type`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for featured stories';
 EOF;
 
@@ -407,24 +408,28 @@ CREATE TABLE IF NOT EXISTS `{$new}stories` (
   `ratingid` tinyint(3) DEFAULT NULL,
   `date` datetime DEFAULT NULL,
   `updated` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  -- `print_cache` tinyint(1) NOT NULL DEFAULT '0',
-  -- `featured` char(1) NOT NULL DEFAULT '0',
   `validated` char(1) NOT NULL DEFAULT '0',
   `completed` tinyint(1) NOT NULL DEFAULT '-1' COMMENT '-2 deleted, -1 draft, 0 w.i.p., 1 all done',
   `roundrobin` char(1) NOT NULL DEFAULT '0',
   `wordcount` int(11) NOT NULL DEFAULT '0',
   `ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
+  `chapters` smallint(6) NOT NULL DEFAULT '0',
   `count` int(11) NOT NULL DEFAULT '0',
+  `cache_authors` text,
+  `cache_tags` text,
+  `cache_characters` text,
+  `cache_categories` text,
+  `cache_rating` tinytext DEFAULT NULL,
   PRIMARY KEY (`sid`), KEY `title` (`title`), KEY `ratingid` (`ratingid`), KEY `completed` (`completed`), KEY `roundrobin` (`roundrobin`), KEY `validated` (`validated`), KEY `recent` (`updated`,`validated`)
  ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
 
 $sql['data']['stories'] = <<<EOF
 INSERT INTO `{$new}stories`
-	( `sid`, `title`, `summary`, `storynotes`, `ratingid`, `date`, `updated`, `validated`, `completed`, `roundrobin`, `wordcount`, `ranking`, 														`reviews`, `count` )
+	( `sid`, `title`, `summary`, `storynotes`, `ratingid`, `date`, `updated`, `validated`, `completed`, `roundrobin`, `wordcount`, `ranking`, `count` )
 	SELECT
-		S.sid, S.title, S.summary, S.storynotes, S.rid, S.date, S.updated, S.validated, S.completed, S.rr, S.wordcount, (10*SUM(R.rating)/COUNT(R.reviewid)), S.reviews, S.count
+		S.sid, S.title, S.summary, S.storynotes, S.rid, S.date, S.updated, S.validated, S.completed, S.rr, S.wordcount, (10*SUM(R.rating)/COUNT(R.reviewid)), S.count
 	FROM `{$old}stories`S
 		LEFT JOIN `{$old}reviews`R ON ( S.sid = R.item AND R.rating > 0 )
 	GROUP BY S.sid
@@ -487,10 +492,17 @@ CREATE TABLE IF NOT EXISTS `{$new}series` (
   `title` varchar(200) NOT NULL DEFAULT '',
   `summary` text NOT NULL,
   `uid` int(11) NOT NULL DEFAULT '0',
-  `isopen` tinyint(4) NOT NULL DEFAULT '0',
+  `open` tinyint(1) NOT NULL DEFAULT '0',
   `rating` tinyint(4) NOT NULL DEFAULT '0',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
-  `challenges` varchar(200) NOT NULL DEFAULT '',
+  `contests` varchar(200) NOT NULL DEFAULT '',
+  `max_rating` tinytext NOT NULL,
+  `chapters` smallint(5) unsigned NOT NULL,
+  `words` int(10) unsigned DEFAULT NULL,
+  `cache_authors` text,
+  `cache_tags` text,
+  `cache_characters` text,
+  `cache_categories` text,
   PRIMARY KEY (`seriesid`),
   KEY `owner` (`uid`,`title`)
 ) ENGINE=MyISAM  DEFAULT CHARSET={$characterset};
@@ -498,7 +510,7 @@ EOF;
 
 $sql['data']['series'] = <<<EOF
 INSERT INTO `{$new}series`
-	(`seriesid`, `title`, `summary`, `uid`, `isopen`, `rating`, `reviews`, `challenges` )
+	(`seriesid`, `title`, `summary`, `uid`, `open`, `rating`, `reviews`, `contests` )
 	SELECT
 	`seriesid`, `title`, `summary`, `uid`, `isopen`, `rating`, `reviews`, `challenges`
 	FROM `{$old}series`;
@@ -931,188 +943,6 @@ CREATE TABLE IF NOT EXISTS `{$new}tracker` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 EOF;
 
-/* --------------------------------------------------------------------------------------------
-																																											* CACHE *
-requires: *
--------------------------------------------------------------------------------------------- */
-$steps[] = array
-(
-	"info"	=>	"Story cache",
-	"steps" => array (
-								array ( "stories_blockcache", 0, "Caching stats" ),
-									),
-);
-
-$sql['init']['stories_blockcache'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}stories_blockcache` (
-  `sid` int(11) unsigned NOT NULL,
-  `tagblock` text,
-  `characterblock` text,
-  `authorblock` text,
-  `categoryblock` text,
-  `rating` tinytext NOT NULL,
-  `reviews` smallint(5) unsigned NOT NULL,
-  `chapters` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`sid`)
-) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
-EOF;
-
-$sql['data']['stories_blockcache'] = "SELECT 1;--NOTEStory Cache - populating table";
-
-$sql['probe']['stories_blockcache'] = "SELECT S.sid,C.sid from `{$new}stories`S LEFT JOIN `{$new}stories_blockcache`C ON S.sid = C.sid WHERE C.sid IS NULL LIMIT 0,1";
-
-$sql['proc']['stories_blockcache'] = <<<EOF
-SELECT SELECT_OUTER.sid,
-GROUP_CONCAT(DISTINCT tid,',',tag,',',description ORDER BY `order`,tgid,tag ASC SEPARATOR '||') AS tagblock,
-GROUP_CONCAT(DISTINCT charid,',',charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
-GROUP_CONCAT(DISTINCT uid,',',nickname ORDER BY nickname ASC SEPARATOR '||' ) as authorblock,
-GROUP_CONCAT(DISTINCT cid,',',category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
-GROUP_CONCAT(DISTINCT ratingid,',',rating_name,',',rating_image SEPARATOR '||' ) as rating,
-COUNT(DISTINCT fid) AS reviews,
-COUNT(DISTINCT chapid) AS chapters
-FROM
-(
-	SELECT S.sid,C.chapid,UNIX_TIMESTAMP(S.date) as published, UNIX_TIMESTAMP(S.updated) as modified,
-		F.fid,
-		S.ratingid, Ra.rating as rating_name, IF(Ra.rating_image,Ra.rating_image,'') as rating_image,
-		U.uid, U.nickname,
-		Cat.cid, Cat.category,
-		TG.description,TG.order,TG.tgid,T.label as tag,T.tid,
-		Ch.charid, Ch.charname
-		FROM
-		(
-			SELECT S1.*
-			FROM `{$new}stories` S1
-			LEFT JOIN `{$new}stories_blockcache` B ON ( B.sid = S1.sid )
-			WHERE B.sid IS NULL
-			LIMIT 0,50
-		) AS S
-		LEFT JOIN `{$new}ratings` Ra ON ( Ra.rid = S.ratingid )
-		LEFT JOIN `{$new}stories_authors`rSA ON ( rSA.sid = S.sid )
-			LEFT JOIN `{$new}users` U ON ( rSA.aid = U.uid )
-		LEFT JOIN `{$new}stories_tags`rST ON ( rST.sid = S.sid )
-			LEFT JOIN `{$new}tags` T ON ( T.tid = rST.tid AND rST.character = 0 )
-				LEFT JOIN `{$new}tag_groups` TG ON ( TG.tgid = T.tgid )
-			LEFT JOIN `{$new}characters` Ch ON ( Ch.charid = rST.tid AND rST.character = 1 )
-		LEFT JOIN `{$new}stories_categories`rSC ON ( rSC.sid = S.sid )
-			LEFT JOIN `{$new}categories` Cat ON ( rSC.cid = Cat.cid )
-		LEFT JOIN `{$new}chapters` C ON ( C.sid = S.sid )
-		LEFT JOIN `{$new}feedback` F ON ( F.reference = S.sid AND F.type='ST' )
-)AS SELECT_OUTER
-GROUP BY sid ORDER BY sid ASC
-EOF;
-
-$sql['init']['series_blockcache'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}series_blockcache` (
-  `seriesid` mediumint(8) unsigned NOT NULL,
-  `tagblock` text,
-  `characterblock` text,
-  `authorblock` text,
-  `categoryblock` text,
-  `max_rating` tinytext NOT NULL,
-  `chapters` smallint(5) unsigned NOT NULL,
-  `words` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`seriesid`)
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
-EOF;
-
-$sql['data']['series_blockcache'] = "SELECT 1;--NOTESeries Cache - populating table";
-
-$sql['probe']['series_blockcache'] = "SELECT S.seriesid,C.seriesid from `{$new}series`S LEFT JOIN `{$new}series_blockcache`C ON S.seriesid = C.seriesid WHERE C.seriesid IS NULL LIMIT 0,1";
-
-$sql['proc']['series_blockcache'] = <<<EOF
-SELECT 
-	SERIES.seriesid, 
-	SERIES.tagblock, 
-	SERIES.characterblock, 
-	SERIES.authorblock, 
-	SERIES.categoryblock, 
-	CONCAT(rating,'||',max_rating_id) as max_rating, 
-	chapter_count, 
-	word_count
-FROM
-(
-SELECT 
-Ser.seriesid,
-MAX(Ra.rid) as max_rating_id,
-			GROUP_CONCAT(DISTINCT U.uid,',',U.nickname ORDER BY nickname ASC SEPARATOR '||' ) as authorblock,
-			GROUP_CONCAT(DISTINCT Chara.charid,',',Chara.charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
-			GROUP_CONCAT(DISTINCT C.cid,',',C.category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
-			GROUP_CONCAT(DISTINCT T.tid,',',T.label,',',TG.description ORDER BY TG.order,TG.tgid,T.label ASC SEPARATOR '||') AS tagblock,
-			COUNT(DISTINCT Ch.chapid) as chapter_count, SUM(Ch.wordcount) as word_count
-		FROM 
-		(
-			SELECT Ser1.seriesid
-				FROM `{$new}series`Ser1
-				LEFT JOIN `{$new}series_blockcache`B ON ( B.seriesid = Ser1.seriesid )
-				WHERE B.seriesid IS NULL
-				LIMIT 0,5
-		) AS Ser
-			LEFT JOIN `{$new}series_stories`TrS ON ( Ser.seriesid = TrS.seriesid )
-				LEFT JOIN `{$new}stories`S ON ( TrS.sid = S.sid )
-					LEFT JOIN `{$new}chapters`Ch ON ( Ch.sid = S.sid )
-					LEFT JOIN `{$new}stories_authors`rSA ON ( rSA.sid = S.sid )
-						LEFT JOIN `{$new}users` U ON ( rSA.aid = U.uid )
-			LEFT JOIN `{$new}ratings`Ra ON ( Ra.rid = S.ratingid )
-			LEFT JOIN `{$new}stories_tags`rST ON ( rST.sid = S.sid )
-				LEFT JOIN `{$new}tags`T ON ( T.tid = rST.tid AND rST.character = 0 )
-					LEFT JOIN `{$new}tag_groups`TG ON ( TG.tgid = T.tgid )
-				LEFT JOIN `{$new}characters`Chara ON ( Chara.charid = rST.tid AND rST.character = 1 )
-			LEFT JOIN `{$new}stories_categories`rSC ON ( rSC.sid = S.sid )
-				LEFT JOIN `{$new}categories`C ON ( rSC.cid = C.cid )
-		GROUP BY Ser.seriesid
-) AS SERIES
-LEFT JOIN `{$new}ratings`R ON (R.rid = max_rating_id);
-EOF;
-
-/* --------------------------------------------------------------------------------------------
-																																								* STATS CACHE *
-requires: *
--------------------------------------------------------------------------------------------- */
-$steps[] = array
-(
-	"info"	=>	"Page stats cache table",
-	"steps" => array (
-								array ( "stats_cache", 0, "Users" ),
-								array ( "stats_cache", 1, "Authors" ),
-								array ( "stats_cache", 2, "Reviews" ),
-								array ( "stats_cache", 3, "Stories" ),
-								array ( "stats_cache", 4, "Chapters" ),
-								array ( "stats_cache", 5, "Words" ),
-									),
-);
-
-// numeric-only table, so CHARSET doesnt't matter much
-$sql['init']['stats_cache'] = <<<EOF
-CREATE TABLE IF NOT EXISTS `{$new}stats_cache` (
-  `field` varchar(32) NOT NULL,
-  `value` int(10) unsigned NOT NULL,
-  `name` tinytext DEFAULT NULL,
-  UNIQUE KEY `field` (`field`)
-) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
-EOF;
-
-$sql['data']['stats_cache'] = <<<EOF
-INSERT INTO `{$new}stats_cache`
-	SELECT 'users', COUNT(1), NULL FROM `{$new}users`U WHERE U.groups > 0;
---SPLIT--
-INSERT INTO `{$new}stats_cache`
-	SELECT 'authors', COUNT(1), NULL FROM `{$new}users`U WHERE ( U.groups & 4 );
---SPLIT--
-INSERT INTO `{$new}stats_cache`
-	SELECT 'reviews', COUNT(1), NULL FROM `{$new}feedback`F WHERE F.type='ST';
---SPLIT--
-INSERT INTO `{$new}stats_cache`
-	SELECT 'stories', COUNT(DISTINCT sid), NULL FROM `{$new}stories`S WHERE S.validated > 0;
---SPLIT--
-INSERT INTO `{$new}stats_cache`
-	SELECT 'chapters', COUNT(DISTINCT chapid), NULL FROM `{$new}chapters`C INNER JOIN `{$new}stories`S ON ( C.sid=S.sid AND S.validated > 0 );
---SPLIT--
-INSERT INTO `{$new}stats_cache`
-	SELECT 'words', SUM(C.wordcount), NULL FROM `{$new}chapters`C INNER JOIN `{$new}stories`S ON ( C.sid=S.sid AND S.validated > 0 );
---SPLIT--
-INSERT INTO `{$new}stats_cache`
-	SELECT 'newmember', 0, CONCAT_WS(',', U.uid, U.nickname) FROM `{$new}users`U WHERE U.groups>0 ORDER BY U.registered DESC LIMIT 1;
-EOF;
+require_once('inc/sql/shard_99_cache.php');
 
 ?>

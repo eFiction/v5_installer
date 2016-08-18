@@ -98,7 +98,7 @@ class upgradetools {
 				if($optional[$module]['type']==1)
 						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "*+" : "**";
 				if($optional[$module]['type']>1)
-						$fw['installerCFG.optional'][$module] = "?";
+						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "+" : "?";
 				$fw->dbCFG->write('config.json',$fw['installerCFG']);
 			}
 			if(@$sub[1]==$module)
@@ -139,7 +139,7 @@ class upgradetools {
 		}
 		if ( sizeof($modulesDB)>0 )
 		{
-			$fw['installerCFG.modulesDB'] = serialize($modulesDB);
+			$fw['installerCFG.modulesDB'] = json_encode($modulesDB);
 			$fw->dbCFG->write('config.json',$fw['installerCFG']);
 		}
 
@@ -446,6 +446,8 @@ class upgradetools {
 		}
 
 		include('inc/sql/sql_upgrade_3_5.php');
+		include('inc/sql/sql_upgrade_3_5_optional.php');
+		
 		$step = $fw->get('PARAMS.step');
 
 		$data = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
@@ -470,17 +472,25 @@ class upgradetools {
 			{
 				$fw->db5->exec
 				(
-					"INSERT INTO `{$new}stories_blockcache` VALUES
-					({$item['sid']}, :tagblock, :characterblock, :authorblock, :categoryblock, :rating, '{$item['reviews']}', '{$item['chapters']}' );",
+					"UPDATE `{$new}stories` SET 
+						`reviews`			= ".(int)$item['reviews'].",
+						`chapters`			= ".(int)$item['chapters'].",
+						`cache_authors`		= :authorblock,
+						`cache_tags`		= :tagblock,
+						`cache_characters`	= :characterblock,
+						`cache_categories`	= :categoryblock,
+						`cache_rating`		= :rating
+					WHERE sid = {$item['sid']} ;",
 					[
-						':tagblock'			=> serialize(upgradetools::cleanResult($item['tagblock'])),
-						':characterblock'	=> serialize(upgradetools::cleanResult($item['characterblock'])),
-						':authorblock'		=> serialize(upgradetools::cleanResult($item['authorblock'])),
-						':categoryblock'	=> serialize(upgradetools::cleanResult($item['categoryblock'])),
-						':rating'			=> serialize(explode(",",$item['rating'])),
+						':authorblock'		=> json_encode(upgradetools::cleanResult($item['authorblock'])),
+						':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
+						':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
+						':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
+						':rating'			=> json_encode(explode(",",$item['rating'])),
 					]
 				);
 			}
+
 			$fw->set('redirect', $step );
 			$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
 			$fw->set('continue', 
@@ -490,7 +500,7 @@ class upgradetools {
 					"message2"	=> " manually",
 				]
 			);
-			//return "Story cache";
+
 			$fw->set('reports',$reports);
 		}
 		elseif($fw->db5->exec($sql['probe']['series_blockcache']) AND $fw->db5->count()>0)
@@ -519,14 +529,23 @@ class upgradetools {
 			{
 				$fw->db5->exec
 				(
-					"INSERT INTO `{$new}series_blockcache` VALUES
-					({$item['seriesid']}, :tagblock, :characterblock, :authorblock, :categoryblock, :max_rating, '{$item['chapter_count']}', '{$item['word_count']}');",
+//					"INSERT INTO `{$new}series_blockcache` VALUES
+//					({$item['seriesid']}, :tagblock, :characterblock, :authorblock, :categoryblock, :max_rating, '{$item['chapter_count']}', '{$item['word_count']}');",
+					"UPDATE `{$new}series` SET 
+						`chapters`			= ".(int)$item['chapter_count'].",
+						`words`				= ".(int)$item['word_count'].",
+						`cache_authors`		= :authorblock,
+						`cache_tags`		= :tagblock,
+						`cache_characters`	= :characterblock,
+						`cache_categories`	= :categoryblock,
+						`max_rating`		= :max_rating
+					WHERE seriesid = {$item['seriesid']} ;",
 					[
-						':tagblock'			=> serialize(upgradetools::cleanResult($item['tagblock'])),
-						':characterblock'	=> serialize(upgradetools::cleanResult($item['characterblock'])),
-						':authorblock'		=> serialize(upgradetools::cleanResult($item['authorblock'])),
-						':categoryblock'	=> serialize(upgradetools::cleanResult($item['categoryblock'])),
-						':max_rating'		=> serialize(explode(",",$item['max_rating'])),
+						':authorblock'		=> json_encode(upgradetools::cleanResult($item['authorblock'])),
+						':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
+						':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
+						':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
+						':max_rating'		=> json_encode(explode(",",$item['max_rating'])),
 					]
 				);
 			}
@@ -551,17 +570,15 @@ class upgradetools {
 				'message'	=> "finished (".($data->items - 1)." items)",
 			];
 
-			$data->load(['job=?','series_blockcache']);
-
 			// Series also ...
-			
+			$data->load(['job=?','series_blockcache']);
 			$reports[] = [
 				'step'		=> $data->step_description,
 				'class'		=> 'success',
 				'message'	=> "finished (".($data->items - 1)." items)",
 			];
 			
-			// Prepare series job for access
+			// Prepare categories job for access
 			$data->load(['job=?','categories_statcache']);
 
 			// Report current status
@@ -579,14 +596,15 @@ class upgradetools {
 				{
 					$sub_categories = explode("||", $item['sub_categories']);
 					$sub_stats = explode("||", $item['sub_stats']);
-					$sub_stats = array_map("unserialize", $sub_stats);
+					$sub_stats = array_map("json_decode", $sub_stats);
+
 					foreach( $sub_categories as $key => $value )
 					{
-						$item['counted'] += $sub_stats[$key]['count'];
-						$sub[$value] = $sub_stats[$key]['count'];
+						$item['counted'] += $sub_stats[$key]->count;
+						$sub[$value] = $sub_stats[$key]->count;
 					}
 				}
-				$stats = serialize([ "count" => (int)$item['counted'], "cid" => $item['cid'], "sub" => $sub ]);
+				$stats = json_encode([ "count" => (int)$item['counted'], "cid" => $item['cid'], "sub" => $sub ]);
 				unset($sub);
 				$data->items = $data->items+1;
 				$data->save();
@@ -598,6 +616,74 @@ class upgradetools {
 				);
 			}
 			
+			$fw->set('redirect', $step );
+			$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
+			$fw->set('continue', 
+				[
+					"step" 			=> $step,
+					"message"		=> 'This page will automatically re-load until all records have been compiled',
+					"message2"	=> " manually",
+				]
+			);
+
+			$fw->set('reports',$reports);
+		}
+		elseif($fw['installerCFG.optional.recommendations']=="+" AND $fw->db5->exec($sql['probe']['recommend_cache']) AND $fw->db5->count()>0)
+		{
+			// Tell that stories have been completed
+			$reports[] = [
+				'step'		=> $data->step_description,
+				'class'		=> 'success',
+				'message'	=> "finished (".($data->items - 1)." items)",
+			];
+
+			// Series also ...
+			$data->load(['job=?','series_blockcache']);
+			$reports[] = [
+				'step'		=> $data->step_description,
+				'class'		=> 'success',
+				'message'	=> "finished (".($data->items - 1)." items)",
+			];
+			
+			// ... and categories (this is not a good solution, but it works)
+			$data->load(['job=?','categories_statcache']);
+			$reports[] = [
+				'step'		=> $data->step_description,
+				'class'		=> 'success',
+				'message'	=> "finished (".($data->items - 1)." items)",
+			];
+			
+			// Prepare categories job for access
+			$data->load(['job=?','recommend_cache']);
+
+			// Report current status
+			$reports[] = [
+				'step'		=> $data->step_description,
+				'class'		=> 'warning',
+				'message'	=> "processing (".($data->items - 1)." items so far)",
+			];
+			
+			$items = $fw->db5->exec( $sql['proc']['recommend_cache'] );// echo $sql['proc']['recommend_cache'];
+			foreach ( $items as $item)
+			{
+				$fw->db5->exec
+				(
+					"UPDATE `{$new}recommendations` SET 
+						`reviews`			= ".(int)$item['reviews'].",
+						`cache_tags`		= :tagblock,
+						`cache_characters`	= :characterblock,
+						`cache_categories`	= :categoryblock,
+						`cache_rating`		= :rating
+					WHERE recid = {$item['recid']} ;",
+					[
+						':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
+						':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
+						':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
+						':rating'			=> json_encode(explode(",",$item['rating'])),
+					]
+				);
+			}
+
 			$fw->set('redirect', $step );
 			$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
 			$fw->set('continue', 
@@ -872,6 +958,7 @@ class upgradetools {
 		
 		if ( 1 )
 		{
+			$fw->db5->exec("DROP TABLE IF EXISTS `{$new}convert`;");
 			return "Test mode, not moving files or making changes to your eFiction 3.5.x installation at this point!.<br />Thanks for testing the eFiction 5 installer.";
 		}
 		
