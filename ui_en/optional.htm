@@ -16,7 +16,7 @@
 	<repeat group="{{ @installerCFG.optional }}" key="{{ @module }}" value="{{ @select }}" counter="{{ @ctr }}">
 		<check if="{{ @select.0=='*' AND @select.1!='*'}}"><check if="{{ @opt=TRUE }}"></check>
 			<div class="gb-40">"{{ @module }}" ({{ @description[@module] }})</div>
-			<div class="gb-20"><check if="{{ @select.0!='?' }}">Current setting:</check>&nbsp;</div>
+			<div class="gb-20"><check if="{{ @select.1!='?' }}"><true>Current setting:</true><false><span class='info'>No data</span></false></check>&nbsp;</div>
 			<div class="gb-20">
 				<check if="{{ @select.1=='-' }}"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=add.'.@module | alias }}">import data</a></div><div class="gb-20"><span class='error'>dropping old data</span></check>
 				<check if="{{ @select.1=='+' }}"><span class='success'>importing old data</span></div><div class="gb-20"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=drop.'.@module | alias }}">drop old data</a></check>

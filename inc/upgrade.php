@@ -108,8 +108,9 @@ class upgrade {
 				$this->fw->set('content', upgradetools::newTables() );
 				break;
 			case 3:
-				$this->fw->set('content', upgradetools::installJobs() );
+				$this->fw->set('content', upgradetools::processJobs() );
 				break;
+				/*
 			case 4:
 				$this->fw->set('content', upgradetools::workJobs() );
 				break;
@@ -119,7 +120,11 @@ class upgrade {
 			case 6:
 				$this->fw->set('content', upgradetools::processChapters() );
 				break;
-			case 7:
+				*/
+			case 4:
+				$this->fw->set('content', upgradetools::buildConfig() );
+				break;
+			case 5:
 				$this->fw->set('content', upgradetools::moveFiles() );
 				break;
 			default:

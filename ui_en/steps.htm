@@ -24,6 +24,7 @@
 				<div class="gb-30"><small>#{{ @ctr }}: {{ @report.step }}</small></div>
 				<div class="gb-60"><span class="alert-box {{ @report.class }}"><small>{{ @report.message }}</small></div></repeat>
 		</div>
+		<check if="{{ isset(@time_end) }}"><small>Time: {{ @time_end }}</small></check>
 		<check if="{{ isset(@redirect) }}">
 			<script type='text/javascript'>
 				function delayedRedirect(){

@@ -12,8 +12,8 @@ class upgradetools {
 		1:                  -full utf8
 		2:         -sqlite, +full utf8
 		3:         -sqlite, -full utf8
-		4: -local, +sqlite
-		5: -local, -sqlite
+		4: -local, -sqlite
+		5: -local, +sqlite
 		*/
 		if ( $fw['installerCFG.dbhost']=="localhost" OR $fw['installerCFG.dbhost']=="127.0.0.1" OR ( $fw['installerCFG.dbhost']=="" AND !is_numeric($fw['installerCFG.dbport']) ) )
 		{
@@ -84,24 +84,24 @@ class upgradetools {
 		
 		$sub = explode(".",$fw->get('PARAMS.sub'));
 
-		include('inc/sql/sql_upgrade_3_5_optional.php');
+		include('inc/sql/upgrade_3_5_x/probe_optional.php');
 
-		$modules = array_keys($probe);
+		$modules = array_keys($optional);
 		foreach ( $modules as $module )
 		{
 			// Execute probe statement
-			$fw->db3->exec($probe[$module]);
+			$fw->db3->exec($optional[$module]['probe']);
 			// Log result
 			$check[$module] = $fw->db3->count();
 			if(empty($fw['installerCFG.optional'][$module]))
 			{
 				if($optional[$module]['type']==1)
-						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "*+" : "**";
+						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "*+" : "*?";
 				if($optional[$module]['type']>1)
 						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "+" : "?";
 				$fw->dbCFG->write('config.json',$fw['installerCFG']);
 			}
-			if(@$sub[1]==$module)
+			if(@$sub[1]==$module AND $check[$module]>0)
 			{
 				if($sub[0]=="add")	$fw['installerCFG.optional'][$module]=($optional[$module]['type']==1)?"*+":"+";
 				if($sub[0]=="drop")	$fw['installerCFG.optional'][$module]=($optional[$module]['type']==1)?"*-":"-";
@@ -118,23 +118,37 @@ class upgradetools {
 	
 	public static function newTables ()	// Step  #2
 	{
+		// Not really a job-related task, but the data folder must exist and be protected
+		if ( !is_dir('../data') ) mkdir ('../data');
+		$ht = fopen( realpath('..').'/data/.htaccess', "w" );
+		fwrite($ht, 'deny from all');
+		fclose($ht);
+
 		// create new tables in target database
 		$fw = \Base::instance();
-		
-		include('inc/sql/sql_upgrade_3_5.php');
-		include('inc/sql/sql_upgrade_3_5_optional.php');
-		
+
+		$upgrade = TRUE;
+		include('inc/sql/install/tables_core.php');
+		include('inc/sql/install/tables_optional.php');
+
 		$modulesDB = [];
 		foreach ($fw['installerCFG.optional'] as $module => $setting )
 		{
 			if( $setting[0]=="+" )
 			// optional module, add init sql and steps
-			foreach($optional[$module]['steps'] as $step)
 			{
-				$sql['init'][$step[0]] = $optional[$step[0]]['init'];
-				$init["steps"][] = $step;
+				$core[$module] = $optional[$module]['sql'];
+				$jobs = array_merge($jobs, $optional[$module]['steps']);
 			}
-
+			/*
+			elseif ( $setting[0]=="*" )
+			{
+				if ( $setting[1]=="+" )
+					$jobs = array_merge($jobs, $core_new[$module]);
+				elseif ( $setting[1]=="-" )
+					$tables = array_merge($tables, $core_new[$module]);
+			}
+			*/
 			if ( $setting[0]!="-" ) $modulesDB[$module] = 1;
 		}
 		if ( sizeof($modulesDB)>0 )
@@ -143,55 +157,50 @@ class upgradetools {
 			$fw->dbCFG->write('config.json',$fw['installerCFG']);
 		}
 
-		try {
-			$probe = $fw->db3->exec ( 'SELECT `value` FROM `'.$fw['installerCFG.db_new'].'`.`'.$fw['installerCFG.pre_new'].'config` WHERE `name` LIKE \'version\'' );
-			if(null!==$fw->get('PARAMS.sub') AND $fw->get('PARAMS.sub')=="flush")
-			{
-				foreach ( $init['steps'] as $tables ) {
-					$fw->db3->exec ( "DROP TABLE IF EXISTS `{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}{$tables[0]}`;" );
-				}
-				$fw->reroute('@steps(@step=2)');
-			}
-			else
-			{
-				// Flush confirmation - todo -
-				$error = 
-				[
-					"Tables already exist!",
-					" ",
-					"Change eFiction 5.x prefix in the config or",
-					"flush tables before continuing.",
-				];
-				if (isset($probe[0]['value']) ) $error[] = "\nFound tables from version ".$probe[0]['value'];
-				$fw->set('error', implode("\n", $error) );
-				$fw->set('link', [
-					'step'		=> 2,
-					'sub'			=> 'flush',
-					'message'	=> 'flush tables.'
-				]);
-				return Template::instance()->render('steps.htm');
-			}
+		try
+		{
+			// abusing the try/catch to check if the config table exists
+			$probe = $fw->db5->exec ( ($fw->get('PARAMS.sub')=="flush") ? 'SELECT error' : 'SELECT `value` FROM `'.$fw['installerCFG.db_new'].'`.`'.$fw['installerCFG.pre_new'].'config` WHERE `name` LIKE \'version\'' );
+
+			$error = 
+			[
+				"Tables already exist!",
+				" ",
+				"Change eFiction 5.x prefix in the config or",
+				"flush tables before continuing.",
+			];
+			if (isset($probe[0]['value']) ) $error[] = "\nFound tables from version ".$probe[0]['value'];
+			$fw->set('error', implode("\n", $error) );
+			$fw->set('link', [
+				'step'		=> 2,
+				'sub'		=> 'flush',
+				'message'	=> 'flush tables.'
+			]);
+			return Template::instance()->render('steps.htm');
 		}
-		catch (PDOException $e) {
+		catch (PDOException $e)
+		{
 			$errors=0;
+			$reports=[];
 			$fw->set('currently', "Creating tables");
-			foreach ( $init['steps'] as $create )
+			foreach ( array_merge($jobs, $tables) as $create => $label )
 			{
-				if(isset($sql['init'][$create[0]]))
+				if(isset($core[$create]))
 				{
-					$sql_steps = explode("--SPLIT--", $sql['init'][$create[0]]);
+					$sql_steps = explode("--SPLIT--", $core[$create]);
 					foreach ( $sql_steps as $sql_step )
 					{
-						$r['step'] = $create[2];
+						$sql_step = explode("--NOTE--", $sql_step);
+						$r['step'] = isset($sql_step[1]) ? $sql_step[1] : $label;
 						try {
-							$fw->db3->exec ( $sql_step );
+							$fw->db3->exec ( $sql_step[0] );
 							$r['class'] = 'success';
 							$r['message'] = 'OK';
 						}
 						catch (PDOException $e) {
 							$error = print_r($fw->db3->errorInfo(),TRUE);
 							$r['class'] = 'error';
-							$r['message'] = "ERROR (".$error.")".$sql_step ;
+							$r['message'] = "ERROR (".$error.")".$sql_step[0] ;
 							$errors++;
 						}
 						$reports[]=$r;
@@ -201,6 +210,23 @@ class upgradetools {
 			$fw->set('reports',$reports);
 			if(!$errors)
 			{
+				// Init step counter
+				$i=1;
+				foreach ( $jobs as $create => $label )
+				{
+					$fw->db5->exec
+					(
+						"INSERT INTO `{$new}convert` 
+						(`job`, 	`joborder`, 	`step`, 	`job_description` ) VALUES 
+						(:job, 		:order,			0,			:desc_job		  );",
+						[
+							':job'			=>	$create,
+							':order'		=>	$i++, 
+							':desc_job'		=>	$label, 
+						]
+					);
+
+				}
 				$fw->set('continue', 
 					[
 						"step" 			=> $fw->get('PARAMS.step')+1,
@@ -209,711 +235,51 @@ class upgradetools {
 				);
 			}
 			else $fw->set('error', "Errors");
-			
 			return Template::instance()->render('steps.htm');
 		}
 	}
 	
-	public static function installJobs ()	// Step  #3
+	public static function processJobs ()	// Step  #3 v2
 	{
-		// create create job list
+		$time_start = microtime(TRUE);
 		$fw = \Base::instance();
+		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
 		$step = $fw->get('PARAMS.step');
 		
-		include('inc/sql/sql_upgrade_3_5.php');
-		include('inc/sql/sql_upgrade_3_5_optional.php');
-
-		foreach ($fw['installerCFG.optional'] as $module => $setting )
-		{
-			if( $setting[0]=="*" AND $setting[1]=="+" )
-			{
-				// New core module, add sql data
-				$sql['data'][$module] = $optional[$module]['data'];
-			}
-			elseif( $setting[0]=="+" )
-			{
-				// optional module, add init and data
-				foreach($optional[$module]['steps'] as $step)
-				{
-					$sql['data'][$step[0]] = $optional[$step[0]]['data'];
-					$init["steps"][] = $step;
-				}
-			}
-		}
-
-		// Check jobs table
-		$fw->db3->exec ( "SELECT 1 FROM `{$new}convert` LIMIT 0,1");
-		if($fw->db3->count()>0)
+		$job = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step = 0 AND success < 2 ORDER BY joborder, step ASC LIMIT 0,1");
+		if($fw->db5->count()==0)
 		{
 			$fw->set('continue',
 				[
-					'message'	=> 'Jobs already created',
+					'message'	=> 'All jobs processed',
 					'step'		=> $fw->get('PARAMS.step')+1
 				]
 			);
 			return Template::instance()->render('steps.htm');
 		}
-		
-		$fw->set('currently', "Creating tables");
-		// ugly !!!!
-		$errors=0;
-		$joborder=0;
-		foreach ( $init['steps'] as $create )
-		{
-			if(isset($sql['data'][$create[0]]))
-			{
-				$joborder++;
-				$sql_steps = explode("--SPLIT--", $sql['data'][$create[0]]);
-				foreach($sql_steps as $stepid => $sql_step)
-				{
-					$sql_step = explode("--NOTE", $sql_step);
-					$r['step'] = $create[2];
-					try {
-						$fw->db3->exec
-							(
-								"INSERT INTO `{$new}convert` 
-								(`job`, 	`joborder`, 	`step`, 	`job_description`, 	`step_description`,		`code`) VALUES 
-								(:job, 		:order,				:step, 		:desc_job,					:desc_step,						:code	);",
-								[
-									':job'				=>	$create[0],
-									':order'			=>	$joborder, 
-									':step'			=>	$stepid,
-									':desc_job'	=>	$create[2], 
-									':desc_step'	=>	isset($sql_step[1]) ? $sql_step[1] : "",
-									':code'			=>	$sql_step[0],
-								]
-							);
-						$r['class'] = 'success';
-						$r['message'] = 'OK';
-					}
-					catch (PDOException $e)
-					{
-						$r['class'] = 'error';
-						$r['message'] = "ERROR (".print_r($fw->db3->errorInfo(),TRUE).")" ;
-						$errors++;
-					}
-				}
-				$reports[]=$r;
-			}
-		}
-		$fw->set('reports',$reports);
-
-		if(!$errors)
-		{
-			$fw->set('continue', 
-				[
-					"step" 			=> $fw->get('PARAMS.step')+1,
-					"message"		=> 'Jobs installed',
-				]
-			);
-		}
-		else $fw->set('error', "Errors");
-			
-		return Template::instance()->render('steps.htm');
-	}
-	
-	public static function workJobs ()	// Step  #4
-	{
-		// create create job list
-		$fw = \Base::instance();
-		$step = $fw->get('PARAMS.step');
-
-		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-		$sql = "SELECT C.*, IF(LOCATE('--LOOP',C.code),SUBSTRING_INDEX(C.code, '--LOOP', -1),'NULL') as `loop`
-						FROM (SELECT `joborder` as selection FROM `{$new}convert` WHERE success = 0 ORDER BY joborder ASC LIMIT 0,1) as C2
-						LEFT JOIN `{$new}convert`C ON ( C.joborder=C2.selection )
-					ORDER BY step ASC";
-
-		$data = $fw->db3->exec ( $sql );
-		
-		if($fw->db3->count()>0)
-		{
-			$errors = 0;
-			$fw->set('currently', $data[0]['job_description']);
-			foreach ( $data as $job )
-			{
-				$r['step'] = $job['step_description'];
-				if ( strpos( $job['code'], "DROP") && $errors )
-				{
-					$r['class'] = 'error';
-					$r['message'] = "previous errors, not performing drop command in id #{$job['id']}";
-				}
-				elseif ( $job['success'] )
-				{
-					$r['class'] = 'success';
-					$r['message'] = "OK (skipping {$job['items']} elements already done)";
-				}
-				else
-				{
-					if ( $job['loop'] == 'NULL' )
-					{	
-						try
-						{
-							$res = $fw->db3->exec ( $job['code'] );
-							$affected = $fw->db3->count();
-							$r['class'] = 'success';
-							$r['message'] = "OK ({$affected} items)";
-							$fw->db3->exec( "UPDATE `{$new}convert` SET `success` = 1, `items` = '".$affected."' WHERE `id` = {$job['id']} " );
-						}
-						catch (PDOException $e)
-						{
-							$error = $fw->db3->errorInfo();
-							$errors++;
-							$r['class'] = 'error';
-							$r['message'] = "ERROR (".print_r($error,TRUE).") in id #".$job['id'];
-							$fw->db3->exec( 
-								"UPDATE `{$new}convert` SET `error` = :error WHERE `id` = {$job['id']} ",
-								[ ":error" => print_r($error,TRUE) ]
-							);
-						}
-					}
-					else
-					{
-						try
-						{
-							$res = $fw->db3->exec ( $job['loop'] );
-							if($fw->db3->count()==0)
-							{
-								$r['class'] = 'success';
-								$r['message'] = "OK ({$job['items']} items)";
-								$fw->db3->exec( "UPDATE `{$new}convert` SET `success` = 1 WHERE `id` = {$job['id']} " );
-							}
-							else
-							{
-								$items = $job['items'] + $fw->db3->count();
-								$r['class'] = 'warning';
-								$r['message'] = "processing ({$items} items so far)";
-								$fw->db3->exec( "UPDATE `{$new}convert` SET `items` = '{$items}' WHERE `id` = {$job['id']} " );
-							}
-						}
-						catch (PDOException $e)
-						{
-							$error = $fw->db3->errorInfo();
-							$errors++;
-							$r['class'] = 'error';
-							$r['message'] = "ERROR (".print_r($error,TRUE).") in id #".$job['id'];
-							$fw->db3->exec( 
-								"UPDATE `{$new}convert` SET `error` = :error WHERE `id` = {$job['id']} ",
-								[ ":error" => print_r($error,TRUE) ]
-							);
-						}
-					}
-
-				}
-				$reports[]=$r;
-			}
-			$fw->set('reports',$reports);
-
-			if ( $errors == 0 )
-			{
-				/* set redirect directives via javascript, using header can mess up the browser */
-				$fw->set('redirect', $step );
-				$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
-				$fw->set('continue', 
-					[
-						"step" 			=> $step,
-						"message"		=> 'This page will automatically re-load until all records have been compiled',
-						"message2"	=> " manually",
-					]
-				);
-			}
-		}
 		else
 		{
-			$fw->set('continue', 
-				[
-					"step" 			=> $step+1,
-					"sub"			=> "init",
-					"message"		=> 'Jobs processed',
-					"message2"	=> " building the cache",
-				]
-			);
+			$fw->set('currently', $job[0]['job_description']);
+			$path = realpath ( "./inc/sql/" );
+			$file = "job_{$job[0]['job']}.php";
+
+			if ( file_exists( $path."/upgrade_3_5_x/".$file ) )
+				require_once( $path."/upgrade_3_5_x/".$file );
+
+			elseif ( file_exists( $path."/install/".$file ) )
+				require_once( $path."/install/".$file );
+
+			else echo "Fehler!";
+
+			jobStart($job[0]);
+
 		}
+		$fw->set('time_end', microtime(TRUE) - $time_start);
 		return Template::instance()->render('steps.htm');
 	}
 
-	public static function buildCache()	// Step  #5
-	{
-		$fw = \Base::instance();
-		
-		if(null!==$fw->get('PARAMS.sub') AND $fw->get('PARAMS.sub')=="init")
-		{
-			$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-			// Count total chapters and take note
-			$fw->db5->exec("SELECT 1 FROM `{$new}stories`");
-			$fw['installerCFG.storycount'] = $fw->db5->count();
-			$fw->dbCFG->write('config.json',$fw['installerCFG']);
-		}
 
-		include('inc/sql/sql_upgrade_3_5.php');
-		include('inc/sql/sql_upgrade_3_5_optional.php');
-		
-		$step = $fw->get('PARAMS.step');
-
-		$data = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
-		$data->load(['job=?','stories_blockcache']);
-		$stories_cached = $data->items - 1;
-
-		$fw->set('currently', "Creating cache data");
-
-		if($fw->db5->exec($sql['probe']['stories_blockcache']) AND $fw->db5->count()>0)
-		{
-			// Stories to cache!
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'warning',
-				'message'	=> "processing (".($data->items - 1)." of {$fw['installerCFG.storycount']} items so far)",
-			];
-			$items = $fw->db5->exec( $sql['proc']['stories_blockcache'] );
-			$data->items = $data->items+$fw->db5->count();
-			$data->save();
-
-			foreach ( $items as $item)
-			{
-				$fw->db5->exec
-				(
-					"UPDATE `{$new}stories` SET 
-						`reviews`			= ".(int)$item['reviews'].",
-						`chapters`			= ".(int)$item['chapters'].",
-						`cache_authors`		= :authorblock,
-						`cache_tags`		= :tagblock,
-						`cache_characters`	= :characterblock,
-						`cache_categories`	= :categoryblock,
-						`cache_rating`		= :rating
-					WHERE sid = {$item['sid']} ;",
-					[
-						':authorblock'		=> json_encode(upgradetools::cleanResult($item['authorblock'])),
-						':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
-						':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
-						':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
-						':rating'			=> json_encode(explode(",",$item['rating'])),
-					]
-				);
-			}
-
-			$fw->set('redirect', $step );
-			$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
-			$fw->set('continue', 
-				[
-					"step" 			=> $step,
-					"message"		=> 'This page will automatically re-load until all records have been compiled',
-					"message2"	=> " manually",
-				]
-			);
-
-			$fw->set('reports',$reports);
-		}
-		elseif($fw->db5->exec($sql['probe']['series_blockcache']) AND $fw->db5->count()>0)
-		{
-			// Tell that stories have been completed
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'success',
-				'message'	=> "finished (".($data->items - 1)." items)",
-			];
-			// Prepare series job for access
-			$data->load(['job=?','series_blockcache']);
-
-			// Report current status
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'warning',
-				'message'	=> "processing (".($data->items - 1)." items so far)",
-			];
-
-			$items = $fw->db5->exec( $sql['proc']['series_blockcache'] );
-			$data->items = $data->items+$fw->db5->count();
-			$data->save();
-			
-			foreach ( $items as $item)
-			{
-				$fw->db5->exec
-				(
-//					"INSERT INTO `{$new}series_blockcache` VALUES
-//					({$item['seriesid']}, :tagblock, :characterblock, :authorblock, :categoryblock, :max_rating, '{$item['chapter_count']}', '{$item['word_count']}');",
-					"UPDATE `{$new}series` SET 
-						`chapters`			= ".(int)$item['chapter_count'].",
-						`words`				= ".(int)$item['word_count'].",
-						`cache_authors`		= :authorblock,
-						`cache_tags`		= :tagblock,
-						`cache_characters`	= :characterblock,
-						`cache_categories`	= :categoryblock,
-						`max_rating`		= :max_rating
-					WHERE seriesid = {$item['seriesid']} ;",
-					[
-						':authorblock'		=> json_encode(upgradetools::cleanResult($item['authorblock'])),
-						':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
-						':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
-						':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
-						':max_rating'		=> json_encode(explode(",",$item['max_rating'])),
-					]
-				);
-			}
-			$fw->set('redirect', $step );
-			$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
-			$fw->set('continue', 
-				[
-					"step" 			=> $step,
-					"message"		=> 'This page will automatically re-load until all records have been compiled',
-					"message2"	=> " manually",
-				]
-			);
-			//return "Story cache";
-			$fw->set('reports',$reports);
-		}
-		elseif($fw->db5->exec($sql['probe']['categories']) AND $fw->db5->count()>0)
-		{
-			// Tell that stories have been completed
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'success',
-				'message'	=> "finished (".($data->items - 1)." items)",
-			];
-
-			// Series also ...
-			$data->load(['job=?','series_blockcache']);
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'success',
-				'message'	=> "finished (".($data->items - 1)." items)",
-			];
-			
-			// Prepare categories job for access
-			$data->load(['job=?','categories_statcache']);
-
-			// Report current status
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'warning',
-				'message'	=> "processing (".($data->items - 1)." items so far)",
-			];
-			
-			$items = $fw->db5->exec( $sql['proc']['categories'] );// echo $sql['proc']['categories'];
-			foreach ( $items as $item)
-			{
-				if ( $item['sub_categories']==NULL ) $sub = NULL;
-				else
-				{
-					$sub_categories = explode("||", $item['sub_categories']);
-					$sub_stats = explode("||", $item['sub_stats']);
-					$sub_stats = array_map("json_decode", $sub_stats);
-
-					foreach( $sub_categories as $key => $value )
-					{
-						$item['counted'] += $sub_stats[$key]->count;
-						$sub[$value] = $sub_stats[$key]->count;
-					}
-				}
-				$stats = json_encode([ "count" => (int)$item['counted'], "cid" => $item['cid'], "sub" => $sub ]);
-				unset($sub);
-				$data->items = $data->items+1;
-				$data->save();
-
-				$fw->db5->exec
-				(
-					"UPDATE `{$new}categories`C SET C.stats = :stats WHERE C.cid = :cid",
-					[ ":stats" => $stats, ":cid" => $item['cid'] ]
-				);
-			}
-			
-			$fw->set('redirect', $step );
-			$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
-			$fw->set('continue', 
-				[
-					"step" 			=> $step,
-					"message"		=> 'This page will automatically re-load until all records have been compiled',
-					"message2"	=> " manually",
-				]
-			);
-
-			$fw->set('reports',$reports);
-		}
-		elseif($fw['installerCFG.optional.recommendations']=="+" AND $fw->db5->exec($sql['probe']['recommend_cache']) AND $fw->db5->count()>0)
-		{
-			// Tell that stories have been completed
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'success',
-				'message'	=> "finished (".($data->items - 1)." items)",
-			];
-
-			// Series also ...
-			$data->load(['job=?','series_blockcache']);
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'success',
-				'message'	=> "finished (".($data->items - 1)." items)",
-			];
-			
-			// ... and categories (this is not a good solution, but it works)
-			$data->load(['job=?','categories_statcache']);
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'success',
-				'message'	=> "finished (".($data->items - 1)." items)",
-			];
-			
-			// Prepare categories job for access
-			$data->load(['job=?','recommend_cache']);
-
-			// Report current status
-			$reports[] = [
-				'step'		=> $data->step_description,
-				'class'		=> 'warning',
-				'message'	=> "processing (".($data->items - 1)." items so far)",
-			];
-			
-			$items = $fw->db5->exec( $sql['proc']['recommend_cache'] );// echo $sql['proc']['recommend_cache'];
-			foreach ( $items as $item)
-			{
-				$fw->db5->exec
-				(
-					"UPDATE `{$new}recommendations` SET 
-						`reviews`			= ".(int)$item['reviews'].",
-						`cache_tags`		= :tagblock,
-						`cache_characters`	= :characterblock,
-						`cache_categories`	= :categoryblock,
-						`cache_rating`		= :rating
-					WHERE recid = {$item['recid']} ;",
-					[
-						':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
-						':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
-						':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
-						':rating'			=> json_encode(explode(",",$item['rating'])),
-					]
-				);
-			}
-
-			$fw->set('redirect', $step );
-			$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
-			$fw->set('continue', 
-				[
-					"step" 			=> $step,
-					"message"		=> 'This page will automatically re-load until all records have been compiled',
-					"message2"	=> " manually",
-				]
-			);
-
-			$fw->set('reports',$reports);
-		}
-		else
-		{
-			$fw->set('continue', 
-				[
-					"step" 			=> $step+1,
-					"sub"			=> "init",
-					"message"		=> 'All database jobs completed',
-					"message2"	=> " with chapter processing",
-				]
-			);
-		}
-
-		return Template::instance()->render('steps.htm');
-	}
-
-	public static function processChapters() 	// Step  #6
-	{
-		$fw = \Base::instance();
-		
-		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-		$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
-
-		if(null!==$fw->get('PARAMS.sub') AND $fw->get('PARAMS.sub')=="init")
-		{
-			// Count total chapters and take note
-			$fw->db5->exec("SELECT 1 FROM `{$new}chapters`");
-			$fw['installerCFG.chaptercount'] = $fw->db5->count();
-			$fw->dbCFG->write('config.json',$fw['installerCFG']);
-			
-			// Init part, called when jumping from step #5
-			if ( !is_dir('../data') ) mkdir ('../data');
-			
-			if ( file_exists(realpath('..').'/data/chapters.sq3')) unlink ( realpath('..').'/data/chapters.sq3' ) ;
-
-			$fw->dbsqlite = new DB\SQL('sqlite:'.realpath('..').'/data/chapters.sq3');
-			
-			$fw->dbsqlite->begin();
-			$fw->dbsqlite->exec ( "DROP TABLE IF EXISTS 'chapters'" );
-			$fw->dbsqlite->exec ( "CREATE TABLE IF NOT EXISTS 'chapters' ('chapid' INTEGER PRIMARY KEY NOT NULL, 'sid' INTEGER, 'inorder' INTEGER,'chaptertext' BLOB);" );
-			$fw->dbsqlite->commit();
-
-			$ht = fopen( realpath('..').'/data/.htaccess', "w" );
-			fwrite($ht, 'deny from all');
-			fclose($ht);
-			$fw->reroute('@steps(@step=6)');
-		}
-		
-		$step = $fw->get('PARAMS.step');
-		$source = $fw->get('installerCFG.data.store'); // "files" or "mysql"
-		$target = $fw->get('installerCFG.chapters');	// "filebase" or "database"
-		
-		// SQL query to get chapter information - and content, depending on source
-/*		$sql_get_chap = "SELECT A.aid as folder, Ch.chapid as chapter";
-		if($target == "filebase") $sql_get_chap .= ", Ch.sid, Ch.inorder";
-		if($source== "mysql") $sql_get_chap .= ", Ch.chaptertext";
-		$sql_get_chap .= " FROM `{$new}chapters`Ch 
-					INNER JOIN `{$new}stories_authors`A ON ( Ch.sid = A.sid AND A.ca = 0 )
-					WHERE Ch.chapid > :lastid
-					ORDER BY Ch.chapid ASC
-				LIMIT 0,25";	*/
-		$sql_get_chap = "SELECT Ch.uid as folder, Ch.chapid as chapter";
-		if($target == "filebase") $sql_get_chap .= ", Ch.sid, Ch.inorder";
-		if($source== "mysql") $sql_get_chap .= ", Ch.storytext as chaptertext";
-		$sql_get_chap .= " FROM `{$old}chapters`Ch 
-					WHERE Ch.chapid > :lastid
-					ORDER BY Ch.chapid ASC
-				LIMIT 0,25";
-
-/*
-		if ( $source=="mysql" AND $target=="database" )
-		{
-			// refuse to do stupid things
-			// chapter text was copied during table setup
-		}
-*/
-		if ( $target=="filebase" )
-		{
-			$fw->set('currently', "Relocating chapter data");
-
-			// open filebase database
-			$fw->dbsqlite = new DB\SQL('sqlite:'.realpath('..').'/data/chapters.sq3');
-			$newchapter = new DB\SQL\Mapper($fw->dbsqlite,'chapters');
-			
-			// Probe for last finished ID
-			try {
-				$probe = $fw->dbsqlite->exec("SELECT `chapid`, COUNT(`chapid`) as current FROM 'chapters' ORDER BY `chapid`DESC LIMIT 0,1");
-				$lastid = ( isset($probe[0]['chapid']) ) ? $probe[0]['chapid'] : 0;
-			}
-			catch (PDOException $e) {
-				// Error
-			}
-			
-			$chapters = $fw->db5->exec($sql_get_chap, [ ":lastid" => $lastid ] );
-			
-			if($fw->db5->count()>0)
-			{
-				foreach($chapters as $chapter)
-				{
-					$chaptertext = NULL;
-					if ( $source=="files")
-					{
-						$s = upgradetools::getChapterFile($chapter);
-						if ($s[0]) $chaptertext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
-						else{
-							// report error
-						}
-					}
-					elseif( $source=="mysql")
-					{
-						$chaptertext = $chapter['chaptertext'];
-					}
-					else
-					{
-						// Error
-					}
-					
-					$newchapter->chapid		= $chapter['chapter'];
-					$newchapter->sid			= $chapter['sid'];
-					$newchapter->inorder	= $chapter['inorder'];
-					$newchapter->chaptertext	= $chaptertext;
-					$newchapter->save();
-					$newchapter->reset();
-				}
-				$reports[] = [
-						'step'		=> 'Chapter id '.$chapter['chapter'],
-						'class'		=> 'warning',
-						'message'	=> "processed ".($probe[0]['current']+$fw->db5->count())." of {$fw->get('installerCFG.chaptercount')} items so far.",
-				];
-				$fw->set('reports', $reports );
-
-				$fw->set('redirect', $step );
-				$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
-				$fw->set('continue', 
-					[
-						"step" 			=> $step,
-						"message"		=> 'This page will automatically re-load until all records have been compiled',
-						"message2"	=> " manually",
-					]
-				);
-			}
-			else
-			{
-				$fw->set('continue', 
-					[
-						"step" 			=> $step+1,
-						//"sub"			=> "init",
-						"message"		=> 'All chapters have been relocated',
-						"message2"	=> " with backing up old data and installing new files",
-					]
-				);
-			}
-		}
-		elseif ( $target=="database" )
-		{
-			$fw->set('currently', "Relocating chapter data");
-			// Target database implies source files
-			// Probe for last finished ID
-			try {
-				$probe = $fw->db5->exec("SELECT `chapid`, COUNT(`chapid`) as current FROM `{$new}chapters` WHERE `chaptertext` IS NULL ORDER BY `chapid` ASC LIMIT 0,1");
-				$lastid = ( isset($probe[0]['chapid']) ) ? ($probe[0]['chapid']-1) : FALSE;
-			}
-			catch (PDOException $e) {
-				// Error
-			}
-			
-			// Load chapters to be processed
-			$chapters = $fw->db5->exec($sql_get_chap, [ ":lastid" => $lastid ] );
-			
-			if($lastid!==FALSE)
-			{
-				// Map handler
-				$updatechapter = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'chapters');
-
-				foreach($chapters as $chapter)
-				{
-					$s = upgradetools::getChapterFile($chapter);
-					if ($s[0]) $chaptertext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
-					else{
-						// report error
-					}
-					
-					$updatechapter->load(array('chapid=?',$chapter['chapter']));
-					$updatechapter->chaptertext = $chaptertext;
-					$updatechapter->save();
-				}
-				$reports[] = [
-						'step'		=> 'Chapter id '.$chapter['chapter'],
-						'class'		=> 'warning',
-						'message'	=> "processed ".($fw->get('installerCFG.chaptercount')-$probe[0]['current'])." of {$fw->get('installerCFG.chaptercount')} items so far.",
-				];
-				$fw->set('reports', $reports );
-
-				$fw->set('redirect', $step );
-				$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
-				$fw->set('continue', 
-					[
-						"step" 			=> $step,
-						"message"		=> 'This page will automatically re-load until all records have been compiled',
-						"message2"	=> " manually",
-					]
-				);
-			}
-			else
-			{
-				$fw->set('continue', 
-					[
-						"step" 			=> $step+1,
-						//"sub"			=> "init",
-						"message"		=> 'All chapters have been relocated',
-						"message2"	=> " with backing up old data and installing new files",
-					]
-				);
-			}
-		}
-		return Template::instance()->render('steps.htm');
-	}
-	
-	public static function moveFiles() 	// Step  #7
+	public static function buildConfig() 	// Step  #4
 	{
 		$fw = \Base::instance();
 		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
@@ -930,6 +296,7 @@ class upgradetools {
 			);
 		$mapper->prefix = $fw->get('installerCFG.pre_new');
 		
+		// Get entries from configuration table
 		$cfgData = $fw->db5->exec("SELECT `name`, `value` FROM `{$new}config` WHERE `to_config_file` = 1  ORDER BY `name` ASC ");
 		foreach ( $cfgData as $cfgItem)
 		{
@@ -953,13 +320,50 @@ class upgradetools {
 					$mapper->{$cfgItem['name'][0]} = $c;
 			}
 		}
+
+		// Get optional modules, that were enabled
 		$modules = [];
 		foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )
 		{
 			if ( $moduleOpt[0]!="-" ) $modules[$moduleName] = 1;
 		}
 		if ( sizeof($modules)>0 ) $mapper->modules_enabled = $modules;
+
+		// Build page stat cache
+		$statSQL = [
+				"SET @users = (SELECT COUNT(*) FROM `{$new}users`U WHERE U.groups > 0);",
+				"SET @authors = (SELECT COUNT(*) FROM `{$new}users`U WHERE ( U.groups & 4 ) );",
+				"SET @reviews = (SELECT COUNT(*) FROM `{$new}feedback`F WHERE F.type='ST');",
+				"SET @stories = (SELECT COUNT(DISTINCT sid) FROM `{$new}stories`S WHERE S.validated > 0 );",
+				"SET @chapters = (SELECT COUNT(DISTINCT chapid) FROM `{$new}chapters`C INNER JOIN `{$new}stories`S ON ( C.sid=S.sid AND S.validated > 0 AND C.validated > 0) );",
+				"SET @words = (SELECT SUM(C.wordcount) FROM `{$new}chapters`C INNER JOIN `{$new}stories`S ON ( C.sid=S.sid AND S.validated > 0 AND C.validated > 0) );",
+				"SET @newmember = (SELECT CONCAT_WS(',', U.uid, U.nickname) FROM `{$new}users`U WHERE U.groups>0 ORDER BY U.registered DESC LIMIT 1);",
+				"SELECT @users as users, @authors as authors, @reviews as reviews, @stories as stories, @chapters as chapters, @words as words, @newmember as newmember;",
+			];
+		$statsData = $fw->db5->exec($statSQL)[0];
+		
+		foreach($statsData as $statKey => $statValue)
+		{
+			$stats[$statKey] = ($statKey=="newmember") ? explode(",",$statValue) : $statValue;
+			//->{$statKey} = ($statKey=="newmember") ? json_encode(explode(",",$statValue)) : $statValue;
+		}
+		$mapper->stats = $stats;
 		$mapper->save();
+		
+		$fw->set('continue',
+			[
+				'message'	=> 'Configuration file built',
+				'step'		=> $fw->get('PARAMS.step')+1
+			]
+		);
+
+		return Template::instance()->render('steps.htm');
+	}
+
+	public static function moveFiles() 	// Step  #5
+	{
+		$fw = \Base::instance();
+		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
 		
 		if ( 1 )
 		{
@@ -1036,7 +440,7 @@ class upgradetools {
 		return Template::instance()->render('upgraded.htm');
 	}
 
-	private static function getChapterFile($item)
+	public static function getChapterFile($item)
 	{
 		$filename = realpath("../stories/{$item['folder']}/{$item['chapter']}.txt");
 		if ( file_exists($filename) )
@@ -1049,7 +453,7 @@ class upgradetools {
 
 	}
 	
-	private static function cleanResult($messy)
+	public static function cleanResult($messy)
 	{
 		$mess = explode("||",$messy);
 		$mess = (array_unique($mess));
@@ -1059,7 +463,126 @@ class upgradetools {
 		}
 		return($elements);
 	}
-
-
 }
+
+function jobInit($data)
+{
+	$fw = \Base::instance();
+	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$i = 1;
+	
+	if (empty($fw->jobSteps)) return FALSE;
+	
+	foreach ( $fw->jobSteps as $func => $desc )
+	{
+		
+		$fw->db5->exec
+		(
+			"INSERT INTO `{$new}convert` 
+			(`job`, 	`joborder`, 	`step`, 	`job_description`, `step_function` ) VALUES 
+			(:job, 		:order,			:step,		:desc_job		 , :func_step );",
+			[
+				':job'			=>	$data['job'],
+				':order'		=>	$data['joborder'],
+				':step'			=>	$i++,
+				':desc_job'		=>	$desc, 
+				':func_step'	=>	$func, 
+			]
+		);
+	}
+	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1 WHERE `id` = :id ", [ ':id' => $data['id'] ] );
+	return TRUE;
+}
+
+
+function jobStart($job)
+{
+	$fw = \Base::instance();
+	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	
+	if ( $job['success'] == 0 )
+	{
+		if ( FALSE === jobInit($job) )
+		{
+			// error
+		}
+		else
+		{
+			// gut
+		}
+	}
+	
+	// Find the first open step and process it
+	$step = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step > 0 AND success < 2 AND joborder = :joborder ORDER BY step ASC LIMIT 0,1", [ ':joborder' => $job['joborder'] ]);
+	if ( sizeof($step)>0 )
+	{
+		($job['job'].'_'.$step[0]['step_function'])($job, $step[0]);
+	}
+	
+	$stepReports = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step > 0 AND joborder = :joborder ORDER BY step ASC", [ ':joborder' => $job['joborder'] ]);
+	foreach ( $stepReports as $stepReport )
+	{
+		if ( $stepReport['success']==0 )
+		{
+			// This step has not even started doing anything
+			$reports[] = [
+				'step'		=> $stepReport['job_description'],
+				'class'		=> 'warning',
+				'message'	=> "open",
+			];
+			$toDo = TRUE;
+		}
+		elseif ( $stepReport['success']==1 )
+		{
+			if ( $stepReport['total']>0 ) $total = " of {$stepReport['total']}";
+			else $total ="";
+			// This step is currently doing something
+			$reports[] = [
+				'step'		=> $stepReport['job_description'],
+				'class'		=> 'warning',
+				'message'	=> "processed ".($stepReport['items'])."$total items so far.",
+			];
+			$toDo = TRUE;
+		}
+		elseif ( $stepReport['success']==2 )
+		{
+			// This one is done
+			$reports[] = [
+					'step'		=> $stepReport['job_description'],
+					'class'		=> 'success',
+					'message'	=> "OK ({$stepReport['items']} items)",
+			];
+		}
+	}
+	
+	if ( isset($reports) ) $fw->set('reports', $reports );
+
+	// setup redirect
+	$fw->set('redirect', 3 );
+	$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
+
+	if ( isset($toDo) )
+	{
+		$fw->set('continue', 
+			[
+				"step" 		=> 3,
+				"message"	=> 'This page will automatically re-load until all steps have been completed',
+				"message2"	=> " manually",
+			]
+		);
+	}
+	else
+	{
+		// mark this job as completed
+		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2 WHERE `id` = :id ", [ ':id' => $job['id'] ] );
+		$fw->set('continue', 
+			[
+				"step" 		=> 3,
+				"message"	=> 'All steps have been processed',
+				"message2"	=> " with the next job",
+			]
+		);
+	}
+}
+
 ?>
