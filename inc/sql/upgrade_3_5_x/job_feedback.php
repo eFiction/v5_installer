@@ -13,14 +13,14 @@ $fw->jobSteps = array(
 function feedback_reviews($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 500;
 	$i = 0;
 	
 	$review_split = "<br><br><i>";
 	
-	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.pre_new']."stories" );
+	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories" );
 
 	if ( $step['success'] == 0 )
 	{
@@ -40,7 +40,7 @@ function feedback_reviews($job, $step)
 									type 
 								FROM `{$old}reviews` Rv ORDER BY Rv.reviewid LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -79,14 +79,14 @@ function feedback_reviews($job, $step)
 function feedback_comments($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 500;
 	$i = 0;
 	
 	$review_split = "<br><br><i>";
 	
-	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.pre_new']."stories" );
+	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories" );
 
 	if ( $step['success'] == 0 )
 	{
@@ -102,7 +102,7 @@ function feedback_comments($job, $step)
 									LEFT JOIN `{$old}coauthors`CA ON ( CA.sid = Rv.item )
 								WHERE LOCATE('{$review_split}', Rv.review) > 0 GROUP BY Rv.reviewid ORDER BY Rv.date LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -144,12 +144,12 @@ function feedback_comments($job, $step)
 function feedback_news($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 500;
 	$i = 0;
 		
-	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.pre_new']."stories" );
+	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories" );
 
 	if ( $step['success'] == 0 )
 	{
@@ -159,7 +159,7 @@ function feedback_news($job, $step)
 
 	$dataIn = $fw->db3->exec("SELECT C.nid, C.uid, C.comment, C.time FROM `{$old}comments`C LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )

@@ -14,7 +14,7 @@ $fw->jobSteps = array(
 		"featured"				=> "List of featured stories",
 		"authors"				=> "Story <-> (co)Author relations",
 		"categories"			=> "Story <-> Category relations",
-		"tags"					=> "Story <-> Tag relations (from classes and characters)",
+		"tags"					=> "Story <-> Tag relations",
 		"recount_tags"			=> "Recount tags",
 		"recount_characters"	=> "Recount characters",
 		"recount_categories"	=> "Recount categories",
@@ -24,8 +24,8 @@ $fw->jobSteps = array(
 function stories_data($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 100;
 	$i = 0;
 	
@@ -44,7 +44,7 @@ function stories_data($job, $step)
 				GROUP BY S.sid
 				ORDER BY S.sid ASC LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -85,11 +85,11 @@ function stories_data($job, $step)
 function stories_featured($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$i = 0;
 	
-	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.pre_new']."featured" );
+	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."featured" );
 	
 	$dataIn = $fw->db3->exec("SELECT S.sid as id, S.featured as status FROM `{$old}stories`S WHERE S.featured > 0;");
 	
@@ -112,8 +112,8 @@ function stories_featured($job, $step)
 function stories_authors($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
 	$dataIn = $fw->db3->exec("SELECT S.sid, S.uid, '0' as ca FROM `{$old}stories`S ORDER BY S.sid ASC;");
 	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT Ca.sid, Ca.uid, 1 as 'ca' FROM `{$old}coauthors`Ca ORDER BY Ca.sid ASC;") );
@@ -142,8 +142,8 @@ function stories_authors($job, $step)
 function stories_categories($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	$dataIn = $fw->db3->exec("SELECT S.sid,C.catid
 		FROM `{$old}stories`S
@@ -167,8 +167,8 @@ function stories_categories($job, $step)
 function stories_tags($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	// get tags (formerly classes)
 	$dataIn = $fw->db3->exec("SELECT S.sid,C.class_id as tid,'0' as `character`
@@ -197,7 +197,7 @@ function stories_tags($job, $step)
 function stories_recount_tags($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 	$items = 0;
 	do {
@@ -227,7 +227,7 @@ function stories_recount_tags($job, $step)
 function stories_recount_characters($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 	$items = 0;
 	do {
@@ -257,11 +257,11 @@ function stories_recount_characters($job, $step)
 function stories_recount_categories($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 	$items = 0;
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	$dataIn = $fw->db5->exec("SELECT C.cid, C.category, COUNT(DISTINCT S.sid) as counted, GROUP_CONCAT(DISTINCT C1.category SEPARATOR '||' ) as sub_categories, GROUP_CONCAT(DISTINCT C1.stats SEPARATOR '||' ) as sub_stats
@@ -297,8 +297,9 @@ function stories_recount_categories($job, $step)
 				"UPDATE `{$new}categories`C SET C.stats = :stats WHERE C.cid = :cid",
 				[ ":stats" => $stats, ":cid" => $item['cid'] ]
 			);
+			$items++;
 		}
-		$tracking->items = $tracking->items+$count;
+		$tracking->items = $tracking->items + $items;
 		$tracking->save();
 	}
 
@@ -313,10 +314,10 @@ function stories_recount_categories($job, $step)
 function stories_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 50;
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( $step['success'] == 0 )

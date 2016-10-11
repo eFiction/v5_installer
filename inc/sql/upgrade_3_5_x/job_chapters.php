@@ -13,8 +13,8 @@ function chapters_copy($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
 	$limit = 100;
 	$report = [];
@@ -58,14 +58,14 @@ function chapters_copy($job, $step)
 	
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		$newchapter = new DB\SQL\Mapper($fw->db5,$fw->get('installerCFG.pre_new').'chapters');
+		$newchapter = new DB\SQL\Mapper($fw->db5,$fw->get('installerCFG.db5.prefix').'chapters');
 		if ( $target = "filebase" )
 		{
 			$fw->dbsqlite = new DB\SQL('sqlite:'.realpath('..').'/data/chapters.sq3');
 			$newchapterText = new DB\SQL\Mapper($fw->dbsqlite,'chapters');
 		}
 
-		$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+		$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 		$tracking->load(['id = ?', $step['id'] ]);
 		foreach ( $dataIn as $chapterIn )
 		{

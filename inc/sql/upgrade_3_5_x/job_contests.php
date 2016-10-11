@@ -18,12 +18,12 @@ $fw->jobSteps = array(
 function contests_data($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 100;
 	$i = 0;
 	
-	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.pre_new']."stories" );
+	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories" );
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$old}challenges`;")[0]['found'];
@@ -35,7 +35,7 @@ function contests_data($job, $step)
 								FROM `{$old}challenges`
 								ORDER BY `chalid` ASC LIMIT {$step['items']},{$limit};");
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -65,8 +65,8 @@ function contests_data($job, $step)
 function contests_relations($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	// recid, relid, type
 	// get characters
@@ -102,10 +102,10 @@ function contests_relations($job, $step)
 function contests_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 50;
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( $step['success'] == 0 )

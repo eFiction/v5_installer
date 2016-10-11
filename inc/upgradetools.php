@@ -42,9 +42,9 @@ class upgradetools {
 
 		$probe = $fw->db3->exec
 		(
-			'SELECT `sitename` , `slogan`, `siteemail`, `storiespath`, `store`, `itemsperpage` FROM `'.$fw['installerCFG.dbname'].'`.`'.$fw['installerCFG.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
+			'SELECT `sitename` , `slogan`, `siteemail`, `storiespath`, `store`, `itemsperpage` FROM `'.$fw['installerCFG.db3.dbname'].'`.`'.$fw['installerCFG.db3.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
 			[
-				':sitekey'	=> $fw['installerCFG.sitekey']
+				':sitekey'	=> $fw['installerCFG.db3.sitekey']
 			]
 		);
 		
@@ -160,7 +160,7 @@ class upgradetools {
 		try
 		{
 			// abusing the try/catch to check if the config table exists
-			$probe = $fw->db5->exec ( ($fw->get('PARAMS.sub')=="flush") ? 'SELECT error' : 'SELECT `value` FROM `'.$fw['installerCFG.db_new'].'`.`'.$fw['installerCFG.pre_new'].'config` WHERE `name` LIKE \'version\'' );
+			$probe = $fw->db5->exec ( ($fw->get('PARAMS.sub')=="flush") ? 'SELECT error' : 'SELECT `value` FROM `'.$fw['installerCFG.db5.dbname'].'`.`'.$fw['installerCFG.db5.prefix'].'config` WHERE `name` LIKE \'version\'' );
 
 			$error = 
 			[
@@ -193,12 +193,12 @@ class upgradetools {
 						$sql_step = explode("--NOTE--", $sql_step);
 						$r['step'] = isset($sql_step[1]) ? $sql_step[1] : $label;
 						try {
-							$fw->db3->exec ( $sql_step[0] );
+							$fw->db5->exec ( $sql_step[0] );
 							$r['class'] = 'success';
 							$r['message'] = 'OK';
 						}
 						catch (PDOException $e) {
-							$error = print_r($fw->db3->errorInfo(),TRUE);
+							$error = print_r($fw->db5->errorInfo(),TRUE);
 							$r['class'] = 'error';
 							$r['message'] = "ERROR (".$error.")".$sql_step[0] ;
 							$errors++;
@@ -243,7 +243,7 @@ class upgradetools {
 	{
 		$time_start = microtime(TRUE);
 		$fw = \Base::instance();
-		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		$step = $fw->get('PARAMS.step');
 		
 		$job = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step = 0 AND success < 2 ORDER BY joborder, step ASC LIMIT 0,1");
@@ -282,7 +282,7 @@ class upgradetools {
 	public static function buildConfig() 	// Step  #4
 	{
 		$fw = \Base::instance();
-		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		
 		// create instance of the final config file
 		$fw->newCFG = new \DB\Jig ( "../data" , \DB\Jig::FORMAT_JSON );
@@ -294,7 +294,7 @@ class upgradetools {
 				"user" 			=> $fw->get('installerCFG.dbuser'),
 				"password"	=> $fw->get('installerCFG.dbpass'),
 			);
-		$mapper->prefix = $fw->get('installerCFG.pre_new');
+		$mapper->prefix = $fw->get('installerCFG.db5.prefix');
 		
 		// Get entries from configuration table
 		$cfgData = $fw->db5->exec("SELECT `name`, `value` FROM `{$new}config` WHERE `to_config_file` = 1  ORDER BY `name` ASC ");
@@ -363,7 +363,7 @@ class upgradetools {
 	public static function moveFiles() 	// Step  #5
 	{
 		$fw = \Base::instance();
-		$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		
 		if ( 1 )
 		{
@@ -468,7 +468,7 @@ class upgradetools {
 function jobInit($data)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$i = 1;
 	
 	if (empty($fw->jobSteps)) return FALSE;
@@ -498,7 +498,7 @@ function jobInit($data)
 function jobStart($job)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	
 	if ( $job['success'] == 0 )
 	{
@@ -516,7 +516,12 @@ function jobStart($job)
 	$step = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step > 0 AND success < 2 AND joborder = :joborder ORDER BY step ASC LIMIT 0,1", [ ':joborder' => $job['joborder'] ]);
 	if ( sizeof($step)>0 )
 	{
+		/*
+		PHP 7 style:
 		($job['job'].'_'.$step[0]['step_function'])($job, $step[0]);
+		*/
+		$func = $job['job'].'_'.$step[0]['step_function'];
+		$func($job, $step[0]);
 	}
 	
 	$stepReports = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step > 0 AND joborder = :joborder ORDER BY step ASC", [ ':joborder' => $job['joborder'] ]);

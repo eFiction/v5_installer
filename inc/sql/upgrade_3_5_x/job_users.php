@@ -15,7 +15,7 @@ $fw->jobSteps = array(
 function users_guest($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	
 	$fw->db5->exec ( "INSERT INTO `{$new}users`
 							(`login`, `nickname`, `realname`, `password`, `email`, `registered` )
@@ -34,8 +34,8 @@ function users_guest($job, $step)
 function users_copy($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 100;
 	$i = 0;
 	
@@ -66,7 +66,7 @@ function users_copy($job, $step)
 							GROUP BY A.uid
 							ORDER BY A.date ASC LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -139,12 +139,12 @@ function users_fields($job, $step)
 		6 = text
 	*/
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 50;
 	$i = 0;
 	
-	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.pre_new']."user_fields" );
+	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."user_fields" );
 	
 	$dataIn = $fw->db3->exec("SELECT `field_id`, `field_type`, `field_name`, `field_title`, `field_options`, `field_code_out`, `field_on`
 							FROM `{$old}authorfields`
@@ -181,8 +181,8 @@ function users_fields($job, $step)
 function users_info($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 500;
 	$i = 0;
 
@@ -197,7 +197,7 @@ function users_info($job, $step)
 									INNER JOIN `{$old}authorfields`Uf ON (Ai.field=Uf.field_id)
 								ORDER BY Ai.uid, Ai.field ASC LIMIT {$step['items']},{$limit};");
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -226,8 +226,8 @@ function users_info($job, $step)
 function users_favourites($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 500;
 	$i = 0;
 
@@ -241,7 +241,7 @@ function users_favourites($job, $step)
 								FROM `{$old}favorites`
 								ORDER BY uid, item, type ASC LIMIT {$step['items']},{$limit};");
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )

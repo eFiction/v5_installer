@@ -19,8 +19,8 @@ $fw->jobSteps = array(
 function series_data($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 100;
 	$i = 0;
 	
@@ -40,7 +40,7 @@ function series_data($job, $step)
 				GROUP BY Ser.seriesid
 				ORDER BY Ser.seriesid ASC LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -74,8 +74,8 @@ function series_data($job, $step)
 function series_stories($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
 	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$old}inseries`;");
 
@@ -97,10 +97,10 @@ function series_stories($job, $step)
 function series_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 20;
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.pre_new').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( $step['success'] == 0 )

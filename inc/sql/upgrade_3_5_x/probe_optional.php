@@ -21,8 +21,8 @@ Probe for optional modules
 $optional['recommendations'] = array
 (
 	"probe"			=> "SELECT 1 FROM information_schema.tables 
-							WHERE table_schema = '{$fw['installerCFG.dbname']}' 
-							AND table_name = '{$fw['installerCFG.pre_old']}fanfiction_recommendations'",
+							WHERE table_schema = '{$fw['installerCFG.db3.dbname']}' 
+							AND table_name = '{$fw['installerCFG.db3.prefix']}fanfiction_recommendations'",
 	"description"	=>	"Recommendations module",
 	"type"			=>	2,
 /*	"steps"			=>	array (
@@ -40,8 +40,8 @@ $optional['recommendations'] = array
 $optional['contests'] = array
 (
 	"probe"			=>	"SELECT 1 FROM information_schema.tables 
-							WHERE table_schema = '{$fw['installerCFG.dbname']}' 
-							AND table_name = '{$fw['installerCFG.pre_old']}fanfiction_challenges'",
+							WHERE table_schema = '{$fw['installerCFG.db3.dbname']}' 
+							AND table_name = '{$fw['installerCFG.db3.prefix']}fanfiction_challenges'",
 	"description"	=>	"Contest module (previously named challenge)",
 	"type"			=>	2,
 /*	"steps"			=>	array (
@@ -58,8 +58,8 @@ $optional['contests'] = array
 $optional['shoutbox'] = array
 (
 	"probe"			=> "SELECT 1 FROM information_schema.tables 
-							WHERE table_schema = '{$fw['installerCFG.dbname']}' 
-							AND table_name = '{$fw['installerCFG.pre_old']}fanfiction_shoutbox'",
+							WHERE table_schema = '{$fw['installerCFG.db3.dbname']}' 
+							AND table_name = '{$fw['installerCFG.db3.prefix']}fanfiction_shoutbox'",
 	"description"	=>	"Shoutbox",
 	"type"			=>	1,
 );
@@ -72,8 +72,8 @@ $optional['shoutbox'] = array
 $optional['poll'] = array
 (
 	"probe"			=>	"SELECT 1 FROM information_schema.tables 
-							WHERE table_schema = '{$fw['installerCFG.dbname']}' 
-							AND table_name = '{$fw['installerCFG.pre_old']}fanfiction_poll'",
+							WHERE table_schema = '{$fw['installerCFG.db3.dbname']}' 
+							AND table_name = '{$fw['installerCFG.db3.prefix']}fanfiction_poll'",
 	"description"	=>	"Poll module",
 	"type"			=>	1,
 );
@@ -86,8 +86,8 @@ $optional['poll'] = array
 $optional['tracker'] = array
 (
 	"probe"			=>	"SELECT 1 FROM information_schema.tables 
-							WHERE table_schema = '{$fw['installerCFG.dbname']}' 
-							AND table_name = '{$fw['installerCFG.pre_old']}fanfiction_tracker'",
+							WHERE table_schema = '{$fw['installerCFG.db3.dbname']}' 
+							AND table_name = '{$fw['installerCFG.db3.prefix']}fanfiction_tracker'",
 	"description"	=>	"Track last read stories and chapters",
 	"type"			=>	1,
 );

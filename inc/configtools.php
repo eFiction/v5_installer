@@ -5,168 +5,183 @@ class configtools {
 	public static function sanitize($fresh=FALSE)
 	{
 		$fw = \Base::instance();
-		
-		if($fresh)
-			$fields = [ "db_new", "pre_new" ];
-		else
-			$fields = [ "dbname", "settings", "db_new", "pre_new" ];
 
-		foreach ( $fields as $field )
-		{
-			$fw['POST.new.'.$field] = preg_replace("/[^0-9a-zA-Z_]/", "", $fw['POST.new.'.$field]);
-		}
+		if ( !$fresh )
+			$fw['POST.new.db3'] = preg_replace("/[^0-9a-zA-Z_]/", "", $fw['POST.new.db3']);
+
+		$fw['POST.new.db5'] = preg_replace("/[^0-9a-zA-Z_]/", "", $fw['POST.new.db5']);
+		//print_r($fw['POST.new']);exit;
 	}
 
 	public static function buildDSN ($fresh=FALSE)
 	{
 		$fw = \Base::instance();
 		
-		if ( $fw['POST.new.dbname']=="" AND !$fresh ) return FALSE;
-		
-		if($fw['POST.new.dbdriver']=="mysql")
+		foreach ( $fw['POST.new'] as $server => $settings)
 		{
-//			$dsn = "mysql:dbname=".$fw['POST.new.dbname'];
-
-			// no hostname and non-numeric port shows a unix socket path.
-			if($fw['POST.new.dbhost']=="" AND !is_numeric($fw['POST.new.dbport']) )
-				$dsn . ";unix_socket=".$fw['POST.new.dbport']."";
-
-			// {localhost or no host} and no port in dsn will trigger automatic socket connection attempt
-			elseif
-			(
-				($fw['POST.new.dbhost']=="localhost" OR $fw['POST.new.dbhost']=="")
-				AND $fw['POST.new.dbport']==""
-			)
-				$d = ";host=localhost";
-
+			if ( $fw["POST.new.{$server}.dbname"]=="" )
+				$dsn[$server] = NULL;
+			
+			/*
+			if ( $server == 'db3' AND $fw['POST.new.db3.dbname']=="" AND !$fresh )
+			{
+				$dsn['db3'] = NULL;
+			}
+			elseif ( $server == 'db5' AND $fw['POST.new.db5.dbname']=="" )
+			{
+				$dsn['db5'] = NULL;
+			}
+			*/
 			else
 			{
-				$d = ";host=".$fw['POST.new.dbhost'];
-				// Add port if numeric
-				if ( is_numeric($fw['POST.new.dbport']) )
-					$d .= ";port=".$fw['POST.new.dbport'];
+				if($fw["POST.new.{$server}.driver"]=="mysql")
+				{
+					$dsn[$server] = "mysql:dbname=".$fw["POST.new.{$server}.dbname"];
+
+					// no hostname and non-numeric port shows a unix socket path.
+					if($fw["POST.new.{$server}.host"]=="" AND !is_numeric($fw["POST.new.{$server}.port"]) )
+						$dsn[$server] .= ";unix_socket=".$fw["POST.new.{$server}.port"]."";
+
+					// {localhost or no host} and no port in dsn will trigger automatic socket connection attempt
+					elseif
+					(
+						($fw["POST.new.{$server}.host"]=="localhost" OR $fw["POST.new.{$server}.host"]=="")
+						AND $fw["POST.new.{$server}.port"]==""
+					)
+						$dsn[$server] .= ";host=localhost";
+
+					else
+					{
+						$dsn[$server] .= ";host=".$fw["POST.new.{$server}.host"];
+						// Add port if numeric
+						if ( is_numeric($fw["POST.new.{$server}.port"]) )
+							$dsn[$server] .= ";port=".$fw["POST.new.{$server}.port"];
+					}
+				}
+				elseif($fw['POST.new.dbdriver']=="pgsql")
+				{
+					
+				}
+				elseif($fw['POST.new.dbdriver']=="mssql")
+				{
+					
+				}
 			}
-			if(!$fresh) $dsn[3] = "mysql:dbname=".$fw['POST.new.dbname'].$d;
-			$dsn[5] = "mysql:dbname=".$fw['POST.new.db_new'].$d;
 		}
-		elseif($fw['POST.new.dbdriver']=="pgsql")
-		{
-			
-		}
-		elseif($fw['POST.new.dbdriver']=="mssql")
-		{
-			
-		}
+//		print_r($dsn);exit;
 		return $dsn;
 	}
 	
-	public static function testConfig ($dsn)
+	public static function testConfig ($dsnTest)
 	{
 		$fw = \Base::instance();
-
-		$fw['POST.new.error'] = "";
-		$fw['POST.new.data.sitename'] = "";
-		$test=(string) "100";
-		
-		if ( $dsn===FALSE ) return $test;
 
 		// Options
 		$options = array(
 			\PDO::ATTR_ERRMODE 			=> \PDO::ERRMODE_EXCEPTION, // generic attribute
 			\PDO::ATTR_PERSISTENT 		=> TRUE,  // we want to use persistent connections
 		);
-		if($fw['POST.new.dbdriver']=="mysql")
-			$options[\PDO::MYSQL_ATTR_COMPRESS] 	= TRUE; // MySQL-specific attribute
+		
+		if($fw['POST.new.db5.driver']=="mysql")
+			$options5 = $options + [ \PDO::MYSQL_ATTR_COMPRESS => TRUE ];
+		else $options5 = $options;
+		
+		if($fw['POST.new.db3.driver']=="mysql")
+			$options += [ \PDO::MYSQL_ATTR_COMPRESS => TRUE ]; // MySQL-specific attribute
 
-		// Default charset
-		$fw['POST.new.charset'] = "UTF8";
-		
-		// Test db connection
-		try {
-			$dbTest = new \DB\SQL ( $dsn[3], $fw['POST.new.dbuser'], $fw['POST.new.dbpass'], $options );
-			$test[0] = 2;
-		} catch (PDOException $e) {
-			$test[0] = 0;
-			$fw['POST.new.error'] = $e->getMessage();
-		}
-		
-		if($test[0])
+		foreach ( $dsnTest  as $server => $dsn )
 		{
-			// Probe with given sitekey
-			if ($fw['POST.new.sitekey']>"")
+			if ( $dsn==NULL )
 			{
-				try {
-					$probe = $dbTest->exec(
-												'SELECT `tableprefix`, `sitename` FROM `'.$fw['POST.new.dbname'].'`.`'.$fw['POST.new.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
-												[
-													':sitekey'	=> $fw['POST.new.sitekey']
-												]
-											);
-					$test[1] = 2;
-					if ( $dbTest->count() !== 1 ) $test[1] = 1;
-				} catch (PDOException $e) {
-					$test[1] = 0;
-				}
+				$test[$server] = 1;
 			}
-			// Probe without given sitekey
 			else
 			{
-				try {
-					$probe = $dbTest->exec(
-												'SELECT `tableprefix`, `sitekey`, `sitename` FROM `'.$fw['POST.new.dbname'].'`.`'.$fw['POST.new.settings'].'fanfiction_settings`'
-											);
-					if ( $dbTest->count() === 1 )
-					{
-						$test[1] = 2;
-						$fw['POST.new.sitekey'] = $probe[0]['sitekey'];
-					}
-					else $test[1] = 1;
-				} catch (PDOException $e) {
-					$test[1] = 0;
-				}
-			}
-			if ( $test[1] == 2 )
-			{
-				$fw['POST.new.pre_old'] = $probe[0]['tableprefix'];
-				$fw['POST.new.data.sitename'] = $probe[0]['sitename'];
-			}
-			
-			// Check access to the new database
-			try {
-				$dbTest5 = new \DB\SQL ( $dsn[5], $fw['POST.new.dbuser'], $fw['POST.new.dbpass'], $options );
-				$test[2] = 2;
-			} catch (PDOException $e) {
-					$test[2] = 0;
-				$fw['POST.new.error'] = $e->getMessage();
-			}
-			
-			// Check if tables with selected prefix already exist in target database
-			if ( $test[2] == 2 )
-			{
-				try {
-					$dbTest->exec( 'SELECT 1 FROM `'.$fw['POST.new.db_new'].'`.`'.$fw['POST.new.pre_new'].'config`' );
-					$test[2] = 1;
-				} catch (PDOException $e) {
-						$test[2] = 2;
-						$fw['POST.new.error'] = $e->getMessage();
-				}
-			}
+				// reset connection
+				unset($dbTest);
 
-			// probe for supported charset (MySQL only)
-			if($fw['POST.new.dbdriver']=="mysql")
-			{
+				// Test db connection
 				try {
-		   		$dbTest->query("SET NAMES 'UTF8MB4'");
-		   		$fw['POST.new.charset'] = "UTF8MB4";
-				} catch (PDOException $e) {
-		   		$fw['POST.new.charset'] = "UTF8";
+					$dbTest = new \DB\SQL ( $dsn, $fw["POST.new.{$server}.user"], $fw["POST.new.{$server}.pass"], $options );
+					$test[$server] = 2;
+
+					if ( $server == "db5" )
+					{
+						try {
+							$dbTest->exec( 'SELECT 1 FROM `'.$fw['POST.new.db5.dbname'].'`.`'.$fw['POST.new.db5.prefix'].'config`' );
+							echo $dbTest->count()."xxxx";
+							$test[$server] = 3;
+						} catch (PDOException $e) {
+								echo "nichts";
+								$test[$server] = 2;
+								$fw['POST.new.db5.error'] = $e->getMessage();
+						}
+					}
+					elseif ( $server == "db3" )
+					{
+						$probeSQL = "SELECT `tableprefix`, `sitekey`, `sitename` 
+										FROM `{$fw['POST.new.db3.dbname']}`.`{$fw['POST.new.db3.settings']}fanfiction_settings`";
+
+						if ($fw['POST.new.db3.sitekey']>"")
+						{
+							try {
+								$probe = $dbTest->exec(
+										$probeSQL ." WHERE `sitekey` LIKE :sitekey",
+										[ ':sitekey'	=> $fw['POST.new.db3.sitekey'] 	]
+								);
+								$test['data'] = 2;
+								if ( $dbTest->count() !== 1 ) $test[1] = 1;
+							} catch (PDOException $e) {
+								$test['data'] = 0;
+							}
+						}
+						// Probe without given sitekey
+						else
+						{
+							try {
+								$probe = $dbTest->exec(  $probeSQL 	);
+								if ( $dbTest->count() === 1 )
+								{
+									$test['data'] = 2;
+									$fw['POST.new.db3.sitekey'] = $probe[0]['sitekey'];
+								}
+								else $test['data'] = 1;
+							} catch (PDOException $e) {
+								$test['data'] = 0;
+							}
+						}
+						
+						if ( $test['data']==2 )
+						{
+							$fw['POST.new.db3_prefix'] = $probe[0]['tableprefix'];
+							$fw['POST.new.data.sitename'] = $probe[0]['sitename'];
+						}
+					}
+
+					// probe for supported charset (MySQL only)
+					if($fw["POST.new.{$server}.driver"]=="mysql")
+					{
+						try {
+						$dbTest->query("SET NAMES 'UTF8MB4'");
+						$fw["POST.new.{$server}.charset"] = "UTF8MB4";
+						} catch (PDOException $e) {
+						$fw["POST.new.{$server}.charset"] = "UTF8";
+						}
+					}
+				}
+				catch (PDOException $e)
+				{
+					echo $server;
+
+					$test[$server] = 0;
+					$fw["POST.new.error.{$server}"] = $e->getMessage();
+					$fw["POST.new.{$server}.charset"] = "";
 				}
 			}
 		}
-		
 		return $test;
 	}
-
+	
 	public static function testFresh ($dsn)
 	{
 		

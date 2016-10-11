@@ -1,60 +1,89 @@
 <check if="{{ extension_loaded('pdo') }}"><true>
 <form method="post" action="">
 	<fieldset>
-		<legend>Database server settings (See <a href="http://efiction.org/wiki/Installer_Config">the Wiki entry</a> for help.)</legend>
+		<legend>Source database settings (See <a href="http://efiction.org/wiki/Installer_Config">the Wiki entry</a> for help.)</legend>
 		<div class="grid-wrapper">
 			<div class="gb-20">DB driver:</div>
 			<div class="gb-80">
-				<select name="new[dbdriver]">
+				<select name="new[db3][driver]">
 					<check if="{{ extension_loaded('pdo_mysql') }}"><option value="mysql">MySQL</option></check>
-					<check if="{{ extension_loaded('pdo_pgsql') }}"><option value="pgsql">PostgreSQL *</option></check>
-					<check if="{{ extension_loaded('pdo_mssql') }}"><option value="mssql">MS SQL/Sybase *</option></check>
+{*					<check if="{{ extension_loaded('pdo_pgsql') }}"><option value="pgsql">PostgreSQL *</option></check> *}
+{*					<check if="{{ extension_loaded('pdo_mssql') }}"><option value="mssql">MS SQL/Sybase *</option></check> *}
 				</select> <small>(Drivers marked with * are experimental, at best)</small>
 			</div>
 			<div class="gb-full"><small>Available drivers are auto-detected.</small></div>
-			<div class="gb-20">Server:</div><div class="gb-80"><input type="text" name="new[dbhost]" value="{{ @@installerCFG.dbhost }}"> <small>(localhost when using socket, otherwise use hostname or IP)</small></div>
-			<div class="gb-20">Socket/port:</div><div class="gb-80"><input type="text" name="new[dbport]" value="{{ @@installerCFG.dbport }}"> <small>(Empty for default)</small></div>
-			<div class="gb-20">Username:</div><div class="gb-80"><input type="text" name="new[dbuser]" value="{{ @@installerCFG.dbuser }}">&nbsp;</div>
-			<div class="gb-20">Password:</div><div class="gb-80"><input type="password" name="new[dbpass]" value="{{ @@installerCFG.dbpass }}"> </div>
+			<div class="gb-20">Server:</div><div class="gb-80"><input type="text" name="new[db3][host]" value="{{ @@installerCFG.db3.host }}"> <small>(localhost when using socket, otherwise use hostname or IP)</small></div>
+			<div class="gb-20">Socket/port:</div><div class="gb-80"><input type="text" name="new[db3][port]" value="{{ @@installerCFG.db3.port }}"> <small>(Empty for default)</small></div>
+			<div class="gb-full">&nbsp;</div>
+			<div class="gb-20">Username:</div><div class="gb-80"><input type="text" name="new[db3][user]" value="{{ @@installerCFG.db3.user }}">&nbsp;</div>
+			<div class="gb-20">Password:</div><div class="gb-80"><input type="password" name="new[db3][pass]" value="{{ @@installerCFG.db3.pass }}">&nbsp;</div>
+			<div class="gb-full">&nbsp;</div>
+			<div class="gb-20">Database:</div><div class="gb-80"><input type="text" name="new[db3][dbname]" value="{{ @@installerCFG.db3.dbname }}"> &nbsp;</div>
+			<div class="gb-20">Settings prefix:</div><div class="gb-80"><input type="text" name="new[db3][settings]" value="{{ @@installerCFG.db3.settings }}"> <small>(if your settings table is "fanfiction_settings", then this field should be empty)</small></div>
+			<div class="gb-20">Sitekey:</div><div class="gb-80"><input type="text" name="new[db3][sitekey]" value="{{ @@installerCFG.db3.sitekey }}"><check if="{{ isset(@installerCFG.data.sitename ) }}"><small> Found sitename: <b>{{ @installerCFG.data.sitename }}</b></small></check></div>
 			<div class="gb-full"><small>Below is just some technical information, mainly for troubleshooting:</small></div>
-			<div class="gb-20">Character set:</div><div class="gb-10"><small>(auto detect)&nbsp;</small></div><div class="gb-70">{{ @@installerCFG.charset }}&nbsp;</div>
-			<div class="gb-20">DSN string:</div><div class="gb-10"><small>(auto built)&nbsp;</small></div><div class="gb-70">{{ @@installerCFG.dsn.3 }}&nbsp;</div>
+			<div class="gb-20">Character set:</div><div class="gb-10"><small>(auto detect)&nbsp;</small></div><div class="gb-70">{{ @@installerCFG.db3.charset }}&nbsp;</div>
+			<div class="gb-20">DSN string:</div><div class="gb-10"><small>(auto built)&nbsp;</small></div><div class="gb-70">{{ @@installerCFG.db3.dsn }}&nbsp;</div>
 		</div>
 	</fieldset>
 	<div class="grid-wrapper">
-		<check if="{{ @@installerCFG.test.0 == 2 }}"><div class="gb-50 alert-box success">Server OK</div></check>
-		<check if="{{ @@installerCFG.test.0 == 1 }}"><div class="gb-50 alert-box warning">Cannot probe server without an eFiction 3.5.x database name</div></check>
-		<check if="{{ @@installerCFG.test.0 == 0 AND @@installerCFG.dsn!='' }}"><div class="gb-50 alert-box error">Failed to connect to database Server.<br />Last error was: {{ @installerCFG.error }}</div></check>
-	</div>
-	<br />
-	<fieldset>
-		<legend>eFiction 3.5.x specific</legend>
-		<div class="grid-wrapper">
-			<div class="gb-20">Database:</div><div class="gb-80"><input type="text" name="new[dbname]" value="{{ @@installerCFG.dbname }}"> &nbsp;</div>
-			<div class="gb-20">Settings prefix:</div><div class="gb-80"><input type="text" name="new[settings]" value="{{ @@installerCFG.settings }}"> <small>(if your settings table is "fanfiction_settings", then this field should be empty)</small></div>
-			<div class="gb-20">Sitekey:</div><div class="gb-80"><input type="text" name="new[sitekey]" value="{{ @@installerCFG.sitekey }}"><check if="{{ isset(@installerCFG.data.sitename ) }}"><small> Found sitename: <b>{{ @installerCFG.data.sitename }}</b></small></check></div>
-		</div>
-	</fieldset>
-	<div class="grid-wrapper">
-		<check if="{{ isset(@installerCFG.test) AND @installerCFG.test.0 == 2 }}">
-			<check if="{{ @installerCFG.test.1 == 2 }}"><div class="gb-50 alert-box success">eFiction 3.5.x settings validated</div></check>
-			<check if="{{ @installerCFG.test.1 == 1 }}"><div class="gb-50 alert-box warning">eFiction 3.5.x database found, please check sitekey</div></check>
-			<check if="{{ @installerCFG.test.1 == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 3.5.x database.<br />Last error was: {{ @installerCFG.error }}</div></check>
+		<check if="{{ @@installerCFG.test.db3 == 2 }}"><div class="gb-50 alert-box success">Server OK</div></check>
+		<check if="{{ @@installerCFG.test.db3 == 1 }}"><div class="gb-50 alert-box warning">Cannot probe server without an eFiction 3.5.x database name</div></check>
+		<check if="{{ @@installerCFG.test.db3 == 0 AND isset(@installerCFG.db3.dsn) }}"><div class="gb-50 alert-box error">Failed to connect to database Server.<check if="{{ isset(@installerCFG.error.db3) }}"><br />Last error was: {{ @installerCFG.error.db3 }}</div></check></check>
+		<check if="{{ isset(@installerCFG.test.data ) AND @@installerCFG.test.db3 == 2 }}">
+			<check if="{{ @installerCFG.test.data == 2 }}"><div class="gb-50 alert-box success">eFiction 3.5.x settings validated</div></check>
+			<check if="{{ @installerCFG.test.data == 1 }}"><div class="gb-50 alert-box warning">eFiction 3.5.x database found, please check sitekey</div></check>
+			<check if="{{ @installerCFG.test.data == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 3.5.x database.<br />Last error was: {{ @installerCFG.error.data }}</div></check>
 		</check>
 	</div>
 	<br />
 	<fieldset>
-		<legend>eFiction 5.x specific</legend>
+		<legend>Destination (eFiction 5.x) database settings</legend>
 		<div class="grid-wrapper">
-			<div class="gb-20">Database:</div><div class="gb-80"><input type="text" name="new[db_new]" value="{{ @@installerCFG.db_new }}"> &nbsp;</div>
-			<div class="gb-20">Prefix:</div><div class="gb-80"><input type="text" name="new[pre_new]" value="{{ @@installerCFG.pre_new }}"> &nbsp;</div>
+			<div class="gb-20">DB driver:</div>
+			<div class="gb-80">
+				<select name="new[db5][driver]">
+					<check if="{{ extension_loaded('pdo_mysql') }}"><option value="mysql">MySQL</option></check>
+{*					<check if="{{ extension_loaded('pdo_pgsql') }}"><option value="pgsql">PostgreSQL *</option></check> *}
+{*					<check if="{{ extension_loaded('pdo_mssql') }}"><option value="mssql">MS SQL/Sybase *</option></check> *}
+				</select> <small>(Drivers marked with * are experimental, at best)</small>
+			</div>
+			<div class="gb-full"><small>Available drivers are auto-detected.</small></div>
+		<check if="{{ empty(@installerCFG.db5.same_server) }}">
+		<true>
+			<div class="gb-20">Server:</div><div class="gb-80"><input type="text" name="new[db5][host]" value="{{ @@installerCFG.db5.host }}"> <small>(localhost when using socket, otherwise use hostname or IP)</small></div>
+			<div class="gb-20">Socket/port:</div><div class="gb-80"><input type="text" name="new[db5][port]" value="{{ @@installerCFG.db5.port }}"> <small>(Empty for default)</small></div>
+		</true>
+		<false>
+			<input type="hidden" name="new[db5][host]" value="{{ @@installerCFG.db5.host }}">
+			<input type="hidden" name="new[db5][port]" value="{{ @@installerCFG.db5.port }}">
+		</false>
+		</check>
+			<div class="gb-full"><input type="checkbox" name="new[db5][same_server]" <check if="{{ isset(@installerCFG.db5.same_server) }}">checked="checked" </check>/>&nbsp;Use same server</div>
+		<check if="{{ empty(@installerCFG.db5.same_user) }}">
+		<true>
+			<div class="gb-20">Username:</div><div class="gb-80"><input type="text" name="new[db5][user]" value="{{ @@installerCFG.db5.user }}">&nbsp;</div>
+			<div class="gb-20">Password:</div><div class="gb-80"><input type="password" name="new[db5][pass]" value="{{ @@installerCFG.db5.pass }}">&nbsp;</div>
+		</true>
+		<false>
+			<input type="hidden" name="new[db5][user]" value="{{ @@installerCFG.db5.user }}">
+			<input type="hidden" name="new[db5][pass]" value="{{ @@installerCFG.db5.pass }}">
+		</false>
+		</check>
+			<div class="gb-full"><input type="checkbox" name="new[db5][same_user]" <check if="{{ isset(@installerCFG.db5.same_user) }}">checked="checked" </check>/>&nbsp;Use same user</div>
+			<div class="gb-20">Database:</div><div class="gb-80"><input type="text" name="new[db5][dbname]" value="{{ @@installerCFG.db5.dbname }}"> &nbsp;</div>
+			<div class="gb-20">Prefix:</div><div class="gb-80"><input type="text" name="new[db5][prefix]" value="{{ @@installerCFG.db5.prefix }}"> &nbsp;</div>
+			<div class="gb-full"><small>Below is just some technical information, mainly for troubleshooting:</small></div>
+			<div class="gb-20">Character set:</div><div class="gb-10"><small>(auto detect)&nbsp;</small></div><div class="gb-70">{{ @@installerCFG.db5.charset }}&nbsp;</div>
+			<div class="gb-20">DSN string:</div><div class="gb-10"><small>(auto built)&nbsp;</small></div><div class="gb-70">{{ @@installerCFG.db5.dsn }}&nbsp;</div>
 		</div>
 	</fieldset>
 	<div class="grid-wrapper">
-		<check if="{{ isset(@installerCFG.test) AND @installerCFG.test.0 == 2 }}">
-			<check if="{{ @installerCFG.test.2 == 2 AND @installerCFG.db_new!='' }}"><div class="gb-50 alert-box success">eFiction 5.x database available</div></check>
-			<check if="{{ @installerCFG.test.2 == 1 }}"><div class="gb-50 alert-box warning">eFiction 5.x database available, but tables with this prefix already exist.</div></check>
-			<check if="{{ @installerCFG.test.2 == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 5.x database.<br />Last error was: {{ @installerCFG.error }}</div></check>
+		<check if="{{ isset(@installerCFG.test.db5) }}">
+			<check if="{{ @installerCFG.test.db5 == 3 }}"><div class="gb-50 alert-box info">eFiction 5.x database available, but tables with this prefix already exist.</div></check>
+			<check if="{{ @installerCFG.test.db5 == 2 }}"><div class="gb-50 alert-box success">eFiction 5.x database available</div></check>
+			<check if="{{ @installerCFG.test.db5 == 1 }}"><div class="gb-50 alert-box warning">Cannot probe server without an destination database name.</div></check>
+			<check if="{{ @installerCFG.test.db5 == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 5.x database.<br />Last error was: {{ @installerCFG.error.db5 }}</div></check>
 		</check>
 	</div>
 	<br />

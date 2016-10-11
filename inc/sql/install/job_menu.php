@@ -15,7 +15,7 @@ function menu_page($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 $sql = <<<EOF
 INSERT INTO `{$new}menu` (`label`, `order`, `link`) VALUES
@@ -44,7 +44,7 @@ function menu_admin($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 $sql = <<<EOF
 INSERT INTO `{$new}menu_adminpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `requires`, `evaluate`) VALUES
@@ -102,7 +102,7 @@ function menu_user($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 $sql = <<<EOF
 INSERT INTO `{$new}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `evaluate`) VALUES

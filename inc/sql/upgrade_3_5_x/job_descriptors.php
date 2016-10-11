@@ -22,8 +22,8 @@ $fw->jobSteps = array(
 function descriptors_characters($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	$dataIn = $fw->db3->exec("SELECT
 						`charid`, `catid`, `charname`, `bio`, `image`
@@ -49,8 +49,8 @@ function descriptors_characters($job, $step)
 function descriptors_categories($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	$dataIn = $fw->db3->exec("SELECT
 						`catid`, IF(`parentcatid`='-1',0,`parentcatid`) as parentcatid, `category`, `description`, `image`, `locked`, `leveldown`, `displayorder`
@@ -79,8 +79,8 @@ function descriptors_categories($job, $step)
 function descriptors_ratings($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
 	$dataIn = $fw->db3->exec("SELECT
 						`rid`, `rating`, `ratingwarning`, `warningtext`
@@ -105,8 +105,8 @@ function descriptors_ratings($job, $step)
 function descriptors_tag_groups($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
 	$dataIn = $fw->db3->exec("SELECT
 						`classtype_id`, `classtype_name`, `classtype_title`
@@ -130,8 +130,8 @@ function descriptors_tag_groups($job, $step)
 function descriptors_tags($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-	$old = "{$fw['installerCFG.dbname']}`.`{$fw['installerCFG.pre_old']}fanfiction_";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
 	$dataIn = $fw->db3->exec("SELECT
 						`class_id`, `class_type`, `class_name`

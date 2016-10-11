@@ -79,16 +79,17 @@ class upgrade {
 		);
 		try
 		{
-			$this->fw->db3 = new \DB\SQL ( $this->fw['installerCFG.dsn.3'], $this->fw['installerCFG.dbuser'], $this->fw['installerCFG.dbpass'], $options );
-			try
-			{
-				$this->fw->db5 = new \DB\SQL ( $this->fw['installerCFG.dsn.5'], $this->fw['installerCFG.dbuser'], $this->fw['installerCFG.dbpass'], $options );
-			}
-			catch (PDOException $e)
-			{
-				$this->error ( $e->getMessage() );
-				return FALSE;
-			}
+			$this->fw->db3 = new \DB\SQL ( $this->fw['installerCFG.db3.dsn'], $this->fw['installerCFG.db3.user'], $this->fw['installerCFG.db3.pass'], $options );
+		}
+		catch (PDOException $e)
+		{
+			$this->error ( $e->getMessage() );
+			return FALSE;
+		}
+
+		try
+		{
+			$this->fw->db5 = new \DB\SQL ( $this->fw['installerCFG.db5.dsn'], $this->fw['installerCFG.db5.user'], $this->fw['installerCFG.db5.pass'], $options );
 		}
 		catch (PDOException $e)
 		{
@@ -144,15 +145,27 @@ class upgrade {
 	{
 		// sanitize submitted data
 		configtools::sanitize();
+		
+		if ( isset($this->fw['POST.new.db5.same_user']) )
+		{
+			$this->fw['POST.new.db5.user'] = $this->fw['POST.new.db3.user'];
+			$this->fw['POST.new.db5.pass'] = $this->fw['POST.new.db3.pass'];
+		}
+		if ( isset($this->fw['POST.new.db5.same_server']) )
+		{
+			$this->fw['POST.new.db5.host'] = $this->fw['POST.new.db3.host'];
+			$this->fw['POST.new.db5.port'] = $this->fw['POST.new.db3.port'];
+		}
+
 		// build the driver-specific DSN string
 		$dsn = configtools::buildDSN();
 
 		// test
 		$this->fw['POST.new.test'] = configtools::testConfig($dsn);
-		
+
 		// build final DSN strings
-		$this->fw['POST.new.dsn.3'] = $dsn[3].";charset=".$this->fw['POST.new.charset'];
-		$this->fw['POST.new.dsn.5'] = $dsn[5].";charset=".$this->fw['POST.new.charset'];
+		$this->fw['POST.new.db3.dsn'] = $dsn['db3'].";charset=".$this->fw['POST.new.db3.charset'];
+		$this->fw['POST.new.db5.dsn'] = $dsn['db5'].";charset=".$this->fw['POST.new.db5.charset'];
 		
 		//save data and return to form
 		$this->fw->dbCFG->write('config.json',$this->fw['POST.new']);

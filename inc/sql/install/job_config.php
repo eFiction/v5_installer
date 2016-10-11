@@ -13,7 +13,7 @@ function config_create($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
+	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 	$chapterLocation =   ( $fw['installerCFG.chapters']=="filebase" ) ? "local" : "db";
 

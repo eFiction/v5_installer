@@ -4,8 +4,8 @@ SQL create tables
 Used for new installs and upgrades from eFiction 3.5.x to 5.x (current)
 */
 
-$new = "{$fw['installerCFG.db_new']}`.`{$fw['installerCFG.pre_new']}";
-$characterset = $fw['installerCFG.charset'];
+$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+$characterset = $fw['installerCFG.db5.charset'];
 
 $jobs = array
 (
