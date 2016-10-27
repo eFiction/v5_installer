@@ -132,7 +132,7 @@ class upgrade {
 	function saveConfig ()
 	{
 		// sanitize submitted data
-		configtools::sanitize();
+		//configtools::sanitize();
 		
 		if ( isset($this->fw['POST.new.db5.same_user']) )
 		{
