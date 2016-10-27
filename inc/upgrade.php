@@ -9,7 +9,6 @@ class upgrade {
 	}
 	
 	function beforeRoute()
-	
 	{
 		$step_requested = $this->fw->get('PARAMS.step');
 		$step_remembered = isset($this->fw['installerCFG.step']) ? $this->fw['installerCFG.step'] : 0;
@@ -51,7 +50,7 @@ class upgrade {
 	
 	function config ()
 	{
-		$this->fw->set('content', Template::instance()->render('config.htm'));
+		$this->fw->set('content', Template::instance()->render('config_upgrade.htm'));
 	}
 	
 	function error ($error="")
@@ -111,17 +110,6 @@ class upgrade {
 			case 3:
 				$this->fw->set('content', upgradetools::processJobs() );
 				break;
-				/*
-			case 4:
-				$this->fw->set('content', upgradetools::workJobs() );
-				break;
-			case 5:
-				$this->fw->set('content', upgradetools::buildCache() );
-				break;
-			case 6:
-				$this->fw->set('content', upgradetools::processChapters() );
-				break;
-				*/
 			case 4:
 				$this->fw->set('content', upgradetools::buildConfig() );
 				break;

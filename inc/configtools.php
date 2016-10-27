@@ -15,40 +15,47 @@ class configtools {
 
 	public static function buildDSN ($fresh=FALSE)
 	{
+		/* DSN examples
+		MySQL:
+		mysql:host=localhost;dbname=testdb
+		mysql:host=db.server.tld;port=3307;dbname=testdb
+		mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
+
+		PGSQL:
+		pgsql:host=localhost;port=5432;dbname=testdb;user=bruce;password=mypass
+
+		MS SQL / Sybase:
+		mssql:host=localhost;dbname=testdb
+		sybase:host=localhost;dbname=testdb
+		dblib:host=localhost;dbname=testdb
+
+		SQLite:
+		sqlite:/path/to/database/folder/file.sq3
+		*/
 		$fw = \Base::instance();
 		
 		foreach ( $fw['POST.new'] as $server => $settings)
 		{
 			if ( $fw["POST.new.{$server}.dbname"]=="" )
 				$dsn[$server] = NULL;
-			
-			/*
-			if ( $server == 'db3' AND $fw['POST.new.db3.dbname']=="" AND !$fresh )
-			{
-				$dsn['db3'] = NULL;
-			}
-			elseif ( $server == 'db5' AND $fw['POST.new.db5.dbname']=="" )
-			{
-				$dsn['db5'] = NULL;
-			}
-			*/
+
 			else
 			{
 				if($fw["POST.new.{$server}.driver"]=="mysql")
 				{
 					$dsn[$server] = "mysql:dbname=".$fw["POST.new.{$server}.dbname"];
 
+					// {localhost or no host} and no port in dsn will trigger automatic socket connection attempt
+					if(
+							($fw["POST.new.{$server}.host"]=="localhost" OR $fw["POST.new.{$server}.host"]=="")
+							AND $fw["POST.new.{$server}.port"]==""
+							)
+						$dsn[$server] .= ";host=localhost";
+
 					// no hostname and non-numeric port shows a unix socket path.
-					if($fw["POST.new.{$server}.host"]=="" AND !is_numeric($fw["POST.new.{$server}.port"]) )
+					elseif($fw["POST.new.{$server}.host"]=="" AND !is_numeric($fw["POST.new.{$server}.port"]) )
 						$dsn[$server] .= ";unix_socket=".$fw["POST.new.{$server}.port"]."";
 
-					// {localhost or no host} and no port in dsn will trigger automatic socket connection attempt
-					elseif
-					(
-						($fw["POST.new.{$server}.host"]=="localhost" OR $fw["POST.new.{$server}.host"]=="")
-						AND $fw["POST.new.{$server}.port"]==""
-					)
-						$dsn[$server] .= ";host=localhost";
 
 					else
 					{
@@ -68,7 +75,6 @@ class configtools {
 				}
 			}
 		}
-//		print_r($dsn);exit;
 		return $dsn;
 	}
 	

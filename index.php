@@ -32,7 +32,12 @@ $f3->route('GET /debug',
 	function($f3) {
 		$view = new View;
 		ksort($f3['installerCFG']);
-		$f3->set('content', print_r($f3['installerCFG'],TRUE));
+		$config = $f3['installerCFG'];
+		foreach($config as &$cfg)
+		{
+			if(isset($cfg['pass'])) $cfg['pass'] = "*** removed ***";
+		}
+		$f3->set('content', "<pre>".print_r($config,TRUE)."</pre>");
 	}
 );
 

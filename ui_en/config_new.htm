@@ -1,0 +1,41 @@
+<check if="{{ extension_loaded('pdo') }}"><true>
+<form method="post" action="">
+	<fieldset>
+		<legend>eFiction 5.x database settings</legend>
+		<div class="grid-wrapper">
+			<div class="gb-20">DB driver:</div>
+			<div class="gb-80">
+				<select name="new[db5][driver]">
+					<check if="{{ extension_loaded('pdo_mysql') }}"><option value="mysql">MySQL</option></check>
+{*					<check if="{{ extension_loaded('pdo_pgsql') }}"><option value="pgsql">PostgreSQL *</option></check> *}
+{*					<check if="{{ extension_loaded('pdo_mssql') }}"><option value="mssql">MS SQL/Sybase *</option></check> *}
+				</select> <small>(Drivers marked with * are experimental, at best)</small>
+			</div>
+			<div class="gb-full"><small>Available drivers are auto-detected.</small></div>
+			<div class="gb-20">Server:</div><div class="gb-80"><input type="text" name="new[db5][host]" value="{{ @@installerCFG.db5.host }}"> <small>(localhost when using socket, otherwise use hostname or IP)</small></div>
+			<div class="gb-20">Socket/port:</div><div class="gb-80"><input type="text" name="new[db5][port]" value="{{ @@installerCFG.db5.port }}"> <small>(Empty for default)</small></div>
+			<div class="gb-full">&nbsp;</div>
+			<div class="gb-20">Username:</div><div class="gb-80"><input type="text" name="new[db5][user]" value="{{ @@installerCFG.db5.user }}">&nbsp;</div>
+			<div class="gb-20">Password:</div><div class="gb-80"><input type="password" name="new[db5][pass]" value="{{ @@installerCFG.db5.pass }}">&nbsp;</div>
+			<div class="gb-full">&nbsp;</div>
+			<div class="gb-20">Database:</div><div class="gb-80"><input type="text" name="new[db5][dbname]" value="{{ @@installerCFG.db5.dbname }}"> &nbsp;</div>
+			<div class="gb-20">Prefix:</div><div class="gb-80"><input type="text" name="new[db5][prefix]" value="{{ @@installerCFG.db5.prefix }}"> &nbsp;</div>
+			<div class="gb-full"><small>Below is just some technical information, mainly for troubleshooting:</small></div>
+			<div class="gb-20">Character set:</div><div class="gb-10"><small>(auto detect)&nbsp;</small></div><div class="gb-70">{{ @@installerCFG.db5.charset }}&nbsp;</div>
+			<div class="gb-20">DSN string:</div><div class="gb-10"><small>(auto built)&nbsp;</small></div><div class="gb-70">{{ @@installerCFG.db5.dsn }}&nbsp;</div>
+		</div>
+	</fieldset>
+	<div class="grid-wrapper">
+		<check if="{{ isset(@installerCFG.test.db5) }}">
+			<check if="{{ @installerCFG.test.db5 == 3 }}"><div class="gb-50 alert-box info">eFiction 5.x database available, but tables with this prefix already exist.</div></check>
+			<check if="{{ @installerCFG.test.db5 == 2 }}"><div class="gb-50 alert-box success">eFiction 5.x database available</div></check>
+			<check if="{{ @installerCFG.test.db5 == 1 }}"><div class="gb-50 alert-box warning">Cannot probe server without an destination database name.</div></check>
+			<check if="{{ @installerCFG.test.db5 == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 5.x database.<br />Last error was: {{ @installerCFG.error.db5 }}</div></check>
+		</check>
+	</div>
+	<br />
+	<input type="submit"><input type="reset">
+</form>
+</true>
+<false>No PDO driver in place, cannot continue.</false>
+</check>
