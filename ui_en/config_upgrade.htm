@@ -33,7 +33,7 @@
 		<check if="{{ isset(@installerCFG.test.data ) AND @@installerCFG.test.db3 == 2 }}">
 			<check if="{{ @installerCFG.test.data == 2 }}"><div class="gb-50 alert-box success">eFiction 3.5.x settings validated</div></check>
 			<check if="{{ @installerCFG.test.data == 1 }}"><div class="gb-50 alert-box warning">eFiction 3.5.x database found, please check sitekey</div></check>
-			<check if="{{ @installerCFG.test.data == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 3.5.x database.<br />Last error was: {{ @installerCFG.error.data }}</div></check>
+			<check if="{{ @installerCFG.test.data == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 3.5.x database.<br />Last error was: {{ @installerCFG.error.db3 }}</div></check>
 		</check>
 	</div>
 	<br />
