@@ -40,7 +40,6 @@ $f3->route('GET /debug',
 		$f3->set('content', "<pre>".print_r($config,TRUE)."</pre>");
 	}
 );
-
 $f3->run();
 echo View::instance()->render('layout.htm');
 

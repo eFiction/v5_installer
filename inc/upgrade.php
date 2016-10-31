@@ -10,6 +10,11 @@ class upgrade {
 	
 	function beforeRoute()
 	{
+		// alias routes
+		$this->fw->route('GET @storage:	/upgrade/chapters/@where',	'upgrade->storage');
+		$this->fw->route('GET @steps:	/upgrade/steps/@step',		'upgrade->steps');
+		$this->fw->route('GET @stepsub:	/upgrade/steps/@step/@sub',	'upgrade->steps');
+		
 		$step_requested = $this->fw->get('PARAMS.step');
 		$step_remembered = isset($this->fw['installerCFG.step']) ? $this->fw['installerCFG.step'] : 0;
 
@@ -44,7 +49,7 @@ class upgrade {
 		// See if the DB connection has been set up and checked, if not force to config
 		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@config');
 		// Say Hi and show, which storage for chapter data is available and offer advise
-		$this->fw->set('scenario', upgradetools::storageSelect() );
+		$this->fw->set('scenario', commontools::storageSelect() );
 		$this->fw->set('content', Template::instance()->render('storage.htm'));
 	}
 	

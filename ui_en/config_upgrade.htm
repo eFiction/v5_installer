@@ -1,4 +1,7 @@
 <check if="{{ extension_loaded('pdo') }}"><true>
+<check if="{{ @@installerCFG.test.db3 == 2 AND @@installerCFG.test.data == 2 AND @@installerCFG.test.db5 > 1 }}">
+<div class="alert-box success">Everything looks good!<br/>You can now <a href="upgrade">perform the upgrade!</a></div>
+</check>
 <form method="post" action="">
 	<fieldset>
 		<legend>Source database settings (See <a href="http://efiction.org/wiki/Installer_Config">the Wiki entry</a> for help.)</legend>
