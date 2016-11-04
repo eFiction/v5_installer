@@ -5,7 +5,7 @@ class installer {
 	{
 		// reference to $f3
 		$this->fw = Base::instance();
-
+		$this->fw->set('module', 'Installer');
 	}
 	
 	function beforeRoute()

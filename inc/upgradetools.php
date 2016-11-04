@@ -60,18 +60,36 @@ class upgradetools {
 			$fw->db3->exec($optional[$module]['probe']);
 			// Log result
 			$check[$module] = $fw->db3->count();
+
 			if(empty($fw['installerCFG.optional'][$module]))
 			{
 				if($optional[$module]['type']==1)
 						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "*+" : "*?";
 				if($optional[$module]['type']>1)
-						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "+" : "?";
+						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "++" : "+-";
 				$fw->dbCFG->write('config.json',$fw['installerCFG']);
 			}
-			if(@$sub[1]==$module AND $check[$module]>0)
+			if(@$sub[1]==$module)// AND $check[$module]>0)
 			{
-				if($sub[0]=="add")	$fw['installerCFG.optional'][$module]=($optional[$module]['type']==1)?"*+":"+";
+				/*
+				if($sub[0]=="add")$fw['installerCFG.optional'][$module]=($optional[$module]['type']==1)?"*+":"+";
 				if($sub[0]=="drop")	$fw['installerCFG.optional'][$module]=($optional[$module]['type']==1)?"*-":"-";
+				*/
+				if($sub[0]=="add")
+				{
+					if($optional[$module]['type']==1)
+						$fw['installerCFG.optional'][$module]="*+";
+					else
+						$fw['installerCFG.optional'][$module]=($check[$module]>0)?"++":"+-";
+					
+				}
+				if($sub[0]=="drop")
+				{
+					if($optional[$module]['type']==1)
+						$fw['installerCFG.optional'][$module]="*-";
+					else
+						$fw['installerCFG.optional'][$module]="--";
+				}
 				$fw->dbCFG->write('config.json',$fw['installerCFG']);
 				$fw->reroute('@steps(@step=1)');
 			}
@@ -105,7 +123,18 @@ class upgradetools {
 			// optional module, add init sql and steps
 			{
 				$core[$module] = $optional[$module]['sql'];
-				$jobs = array_merge($jobs, $optional[$module]['steps']);
+				//$jobs = array_merge($jobs, $optional[$module]['steps']);
+
+				if( $setting[1]=="-" )
+				{
+					// Just create tables
+					$tables = array_merge($tables, $optional[$module]['steps']);
+				}
+				else
+				{
+					// Copy data, add job
+					$jobs = array_merge($jobs, $optional[$module]['steps']);
+				}
 			}
 			/*
 			elseif ( $setting[0]=="*" )

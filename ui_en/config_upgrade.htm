@@ -1,5 +1,5 @@
 <check if="{{ extension_loaded('pdo') }}"><true>
-<check if="{{ @@installerCFG.test.db3 == 2 AND @@installerCFG.test.data == 2 AND @@installerCFG.test.db5 > 1 }}">
+<check if="{{ @@installerCFG.test.db3 == 2 AND @@installerCFG.test.data == 2 AND @@installerCFG.test.db5 > 1 AND @@installerCFG.test.db5 < 4 }}">
 <div class="alert-box success">Everything looks good!<br/>You can now <a href="upgrade">perform the upgrade!</a></div>
 </check>
 <form method="post" action="">
@@ -83,6 +83,7 @@
 	</fieldset>
 	<div class="grid-wrapper">
 		<check if="{{ isset(@installerCFG.test.db5) }}">
+			<check if="{{ @installerCFG.test.db5 == 4 }}"><div class="gb-50 alert-box error">eFiction 5.x database available, but prefix possibly conflicts with existing eFiction 3.x tables. Please choose a different prefix above.</div></check>
 			<check if="{{ @installerCFG.test.db5 == 3 }}"><div class="gb-50 alert-box info">eFiction 5.x database available, but tables with this prefix already exist.</div></check>
 			<check if="{{ @installerCFG.test.db5 == 2 }}"><div class="gb-50 alert-box success">eFiction 5.x database available</div></check>
 			<check if="{{ @installerCFG.test.db5 == 1 }}"><div class="gb-50 alert-box warning">Cannot probe server without an destination database name.</div></check>

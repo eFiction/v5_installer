@@ -115,15 +115,26 @@ class configtools {
 
 					if ( $server == "db5" )
 					{
+						// probe for existing eFi5 tables
+						$probe = $dbTest->exec(
+										"SELECT table_name FROM INFORMATION_SCHEMA.TABLES
+											WHERE table_schema = :dbname
+											AND table_name LIKE :tablename",
+												[ ':dbname'	=> $fw['POST.new.db5.dbname'], ':tablename' => $fw['POST.new.db5.prefix'].'menu_adminpanel'	]
+										);
+						if ( sizeof($probe)>0 )
+							$test[$server] = 3;
+						/*
 						try {
 							$dbTest->exec( 'SELECT 1 FROM `'.$fw['POST.new.db5.dbname'].'`.`'.$fw['POST.new.db5.prefix'].'config`' );
-							echo $dbTest->count()."xxxx";
+							//echo $dbTest->count()."xxxx";
 							$test[$server] = 3;
 						} catch (PDOException $e) {
-								echo "nichts";
-								$test[$server] = 2;
+								//echo "nichts";
+								//$test[$server] = 2;
 								$fw['POST.new.db5.error'] = $e->getMessage();
 						}
+						*/
 					}
 					elseif ( $server == "db3" )
 					{
@@ -161,7 +172,7 @@ class configtools {
 						
 						if ( $test['data']==2 )
 						{
-							$fw['POST.new.db3_prefix'] = $probe[0]['tableprefix'];
+							$fw['POST.new.db3.prefix'] = $probe[0]['tableprefix'];
 							$fw['POST.new.data.sitename'] = $probe[0]['sitename'];
 						}
 					}
@@ -179,7 +190,7 @@ class configtools {
 				}
 				catch (PDOException $e)
 				{
-					echo $server;
+					//echo $server;
 
 					$test[$server] = 0;
 					$fw["POST.new.error.{$server}"] = $e->getMessage();
@@ -187,13 +198,21 @@ class configtools {
 				}
 			}
 		}
+		
+		if ( NULL!==strpos($fw['POST.new.db5.prefix'],'fanfiction') )
+		{
+			$probe = $dbTest->exec(
+							"SELECT table_name FROM INFORMATION_SCHEMA.TABLES
+								WHERE table_schema = :dbname
+								AND table_name LIKE :tablename",
+									[ ':dbname'	=> $fw['POST.new.db5.dbname'], ':tablename' => $fw['POST.new.db5.prefix'].'classes'	]
+							);
+			if(sizeof($probe)>0) $test['db5'] = 4;
+		}
+		echo $fw->get('module');
 		return $test;
 	}
 	
-	public static function testFresh ($dsn)
-	{
-		
-	}
 }
 
 ?>

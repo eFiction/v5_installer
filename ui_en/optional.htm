@@ -20,6 +20,7 @@
 			<div class="gb-20">
 				<check if="{{ @select.1=='-' }}"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=add.'.@module | alias }}">import data</a></div><div class="gb-20"><span class='error'>dropping old data</span></check>
 				<check if="{{ @select.1=='+' }}"><span class='success'>importing old data</span></div><div class="gb-20"><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=drop.'.@module | alias }}">drop old data</a></check>
+				<check if="{{ @select.1=='?' }}">&nbsp;</check>
 			</div>
 		</check>
 	</repeat>

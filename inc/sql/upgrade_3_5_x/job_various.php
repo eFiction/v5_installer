@@ -208,12 +208,25 @@ function various_shoutbox($job, $step)
 	if ( 0 < $count = sizeof($dataIn) )
 	{
 		foreach($dataIn as $data)
+		{
+			if(is_numeric($data['shout_name']))
+			{
+				$shout_uid = $data['shout_name'];
+				$shout_guest = "NULL";
+			}
+			else
+			{
+				$shout_uid = 0;
+				$shout_guest = "'{$data['shout_name']}'";
+			}
 			$values[] = "( {$data['shout_id']}, 
-							{$data['shout_name']},
+							{$shout_uid},
+							{$shout_guest},
 							{$fw->db5->quote($data['shout_message'])},
 							'{$data['shout_datestamp']}' )";
+		}
 
-		$fw->db5->exec ( "INSERT INTO `{$new}shoutbox` (`id`, `uid`, `message`, `date`) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$new}shoutbox` (`id`, `uid`, `guest_name`, `message`, `date`) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();
 		
 		$tracking->items = $tracking->items+$count;
