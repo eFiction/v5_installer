@@ -286,9 +286,9 @@ class upgradetools {
 		
 		$mapper->ACTIVE_DB = "MYSQL";
 		$mapper->DB_MYSQL = array (
-				"dsn" 			=> $fw->get('installerCFG.dsn.5'),
-				"user" 			=> $fw->get('installerCFG.dbuser'),
-				"password"	=> $fw->get('installerCFG.dbpass'),
+				"dsn" 			=> $fw->get('installerCFG.db5.dsn'),
+				"user" 			=> $fw->get('installerCFG.db5.user'),
+				"password"	=> $fw->get('installerCFG.db5.pass'),
 			);
 		$mapper->prefix = $fw->get('installerCFG.db5.prefix');
 		
