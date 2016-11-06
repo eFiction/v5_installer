@@ -156,7 +156,7 @@ class configtools {
 							}
 						}
 						
-						// Probe without given sitekey
+						// Probe without given sitekey or when given sitekey did not work
 						if ($fw['POST.new.db3.sitekey']=="" OR $test['data']==1)
 						{
 							try {
