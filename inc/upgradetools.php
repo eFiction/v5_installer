@@ -9,14 +9,20 @@ class upgradetools {
 
 		$probe = $fw->db3->exec
 		(
-			'SELECT `sitename` , `slogan`, `siteemail`, `storiespath`, `store`, `itemsperpage` FROM `'.$fw['installerCFG.db3.dbname'].'`.`'.$fw['installerCFG.db3.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
+//			'SELECT `sitename` , `slogan`, `siteemail`, `storiespath`, `store`, `itemsperpage`, `dateformat`, `timeformat`, `anonreviews` FROM `'.$fw['installerCFG.db3.dbname'].'`.`'.$fw['installerCFG.db3.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
+			'SELECT * FROM `'.$fw['installerCFG.db3.dbname'].'`.`'.$fw['installerCFG.db3.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
 			[
 				':sitekey'	=> $fw['installerCFG.db3.sitekey']
 			]
-		);
+		)[0];
+		
+		$probe['anonreviews']	= ($probe['anonreviews']==1) ? 'TRUE' : 'FALSE';
+		$probe['author_self']	= ($probe['submissionsoff']==0) ? 'TRUE' : 'FALSE';
+		$probe['defaultsort']	= ($probe['defaultsort']==0) ? 'title' : 'date';
+		$probe['displayindex']	= ($probe['displayindex']==0) ? 'FALSE' : 'TRUE';
 		
 		$fw['installerCFG.optional'] = [];
-		$fw['installerCFG.data'] = $probe[0];
+		$fw['installerCFG.data'] = $probe;
 		$fw->dbCFG->write('config.json',$fw['installerCFG']);
 
 		if( file_exists("../version.php") )
@@ -136,15 +142,7 @@ class upgradetools {
 					$jobs = array_merge($jobs, $optional[$module]['steps']);
 				}
 			}
-			/*
-			elseif ( $setting[0]=="*" )
-			{
-				if ( $setting[1]=="+" )
-					$jobs = array_merge($jobs, $core_new[$module]);
-				elseif ( $setting[1]=="-" )
-					$tables = array_merge($tables, $core_new[$module]);
-			}
-			*/
+
 			if ( $setting[0]!="-" ) $modulesDB[$module] = 1;
 		}
 		if ( sizeof($modulesDB)>0 )
@@ -438,7 +436,8 @@ class upgradetools {
 
 	public static function getChapterFile($item)
 	{
-		$filename = realpath("../stories/{$item['folder']}/{$item['chapter']}.txt");
+		$fw = \Base::instance();
+		$filename = realpath("../".$fw['installerCFG.data.storiespath']."/{$item['folder']}/{$item['chapter']}.txt");
 		if ( file_exists($filename) )
 		{
 			return [ TRUE, file_get_contents ( $filename ) ];

@@ -138,6 +138,7 @@ class configtools {
 					}
 					elseif ( $server == "db3" )
 					{
+						$test['data'] = -1;
 						$probeSQL = "SELECT `tableprefix`, `sitekey`, `sitename` 
 										FROM `{$fw['POST.new.db3.dbname']}`.`{$fw['POST.new.db3.settings']}fanfiction_settings`";
 
@@ -149,13 +150,14 @@ class configtools {
 										[ ':sitekey'	=> $fw['POST.new.db3.sitekey'] 	]
 								);
 								$test['data'] = 2;
-								if ( $dbTest->count() !== 1 ) $test[1] = 1;
+								if ( $dbTest->count() !== 1 ) $test['data'] = 1;
 							} catch (PDOException $e) {
 								$test['data'] = 0;
 							}
 						}
+						
 						// Probe without given sitekey
-						else
+						if ($fw['POST.new.db3.sitekey']=="" OR $test['data']==1)
 						{
 							try {
 								$probe = $dbTest->exec(  $probeSQL 	);
@@ -167,6 +169,7 @@ class configtools {
 								else $test['data'] = 1;
 							} catch (PDOException $e) {
 								$test['data'] = 0;
+								$fw["POST.new.error.data"] = $e->getMessage();
 							}
 						}
 						
