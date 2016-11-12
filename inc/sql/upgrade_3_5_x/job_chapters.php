@@ -35,9 +35,7 @@ function chapters_copy($job, $step)
 
 			$fw->dbsqlite->begin();
 			$fw->dbsqlite->exec ( "DROP TABLE IF EXISTS 'chapters'" );
-			$fw->dbsqlite->exec ( "CREATE TABLE IF NOT EXISTS 'chapters' ('chapid' INTEGER PRIMARY KEY NOT NULL, 'sid' INTEGER, 'chaptertext' BLOB);" );
-			// inorder might be obsolete
-			//$fw->dbsqlite->exec ( "CREATE TABLE IF NOT EXISTS 'chapters' ('chapid' INTEGER PRIMARY KEY NOT NULL, 'sid' INTEGER, 'inorder' INTEGER,'chaptertext' BLOB);" );
+			$fw->dbsqlite->exec ( "CREATE TABLE IF NOT EXISTS 'chapters' ('chapid' INTEGER PRIMARY KEY NOT NULL, 'sid' INTEGER, 'inorder' INTEGER,'chaptertext' BLOB);" );
 			$fw->dbsqlite->commit();
 			unset($fw->dbsqlite);
 		}
@@ -91,7 +89,7 @@ function chapters_copy($job, $step)
 				// Store data in the filebase storage
 				$newchapterText->chapid		 = $chapterIn['chapter'];
 				$newchapterText->sid		 = $chapterIn['sid'];
-				//$newchapterText->inorder	= $chapterIn['inorder'];
+				$newchapterText->inorder	= $chapterIn['inorder'];
 				$newchapterText->chaptertext = $chaptertext;
 				$newchapterText->save();
 				$newchapterText->reset();

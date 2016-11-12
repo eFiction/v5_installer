@@ -16,10 +16,21 @@ class upgradetools {
 			]
 		)[0];
 		
-		$probe['anonreviews']	= ($probe['anonreviews']==1) ? 'TRUE' : 'FALSE';
-		$probe['author_self']	= ($probe['submissionsoff']==0) ? 'TRUE' : 'FALSE';
-		$probe['defaultsort']	= ($probe['defaultsort']==0) ? 'title' : 'date';
-		$probe['displayindex']	= ($probe['displayindex']==0) ? 'FALSE' : 'TRUE';
+		$probe['anonreviews']		= ($probe['anonreviews']==1) ? 'TRUE' : 'FALSE';
+		$probe['coauthallowed']		= ($probe['coauthallowed']==1) ? 'TRUE' : 'FALSE';
+		$probe['roundrobins']		= ($probe['roundrobins']==1) ? 'TRUE' : 'FALSE';
+		$probe['rateonly']			= ($probe['rateonly']==1) ? 'TRUE' : 'FALSE';
+		$probe['reviewsallowed']	= ($probe['reviewsallowed']==1) ? 'TRUE' : 'FALSE';
+		$probe['alertson']			= ($probe['alertson']==1) ? 'TRUE' : 'FALSE';
+
+		$probe['story_validation']	= ($probe['autovalidate']==0) ? 'TRUE' : 'FALSE';
+		$probe['author_self']		= ($probe['submissionsoff']==0) ? 'TRUE' : 'FALSE';
+
+		$probe['displayindex']		= ($probe['displayindex']==0) ? 'FALSE' : 'TRUE';
+		$probe['allowseries']		= ($probe['allowseries']==0) ? 'FALSE' : 'TRUE';
+		$probe['newscomments']		= ($probe['newscomments']==0) ? 'FALSE' : 'TRUE';
+
+		$probe['defaultsort']		= ($probe['defaultsort']==0) ? 'title' : 'date';
 		
 		$fw['installerCFG.optional'] = [];
 		$fw['installerCFG.data'] = $probe;

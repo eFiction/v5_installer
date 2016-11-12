@@ -107,7 +107,7 @@ CREATE TABLE `{$new}categories` (
   `locked` tinyint(1) NOT NULL DEFAULT '0',
   `leveldown` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `inorder` int(11) NOT NULL DEFAULT '0',
-  `counter` int(11) NOT NULL DEFAULT '0', -- can drop this ?
+  `counter` int(11) NOT NULL DEFAULT '0' COMMENT 'might be obsolete',
   `stats` text NOT NULL,
   PRIMARY KEY (`cid`), KEY `byparent` (`parent_cid`,`inorder`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset} COMMENT='(eFI5): derived from _categories';
@@ -166,10 +166,10 @@ $core['config'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}config`;
 CREATE TABLE `{$new}config` (
   `name` varchar(32) NOT NULL,
-  `value` varchar(256) NOT NULL,
-  `comment` tinytext,
   `admin_module` varchar(64) NOT NULL,
   `section_order` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `value` varchar(256) NOT NULL,
+  `comment` tinytext,
   `form_type` text NOT NULL,
   `to_config_file` tinyint(1) NOT NULL DEFAULT '1',
   `can_edit` tinyint(1) DEFAULT '1',
@@ -628,7 +628,6 @@ CREATE TABLE `{$new}users` (
   `registered` datetime NOT NULL,
   `groups` int(10) unsigned DEFAULT NULL,
   `curator` mediumint(8) unsigned DEFAULT NULL,
-  `resettoken` varchar(128) CHARACTER SET utf8 DEFAULT NULL,
   `about` mediumtext CHARACTER SET utf8 NULL,
   `moderation` int(11) DEFAULT NULL,
   `alert_feedback` tinyint(1) NOT NULL DEFAULT '0',
