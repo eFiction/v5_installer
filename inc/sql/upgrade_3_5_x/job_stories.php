@@ -119,11 +119,15 @@ function stories_authors($job, $step)
 	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT Ca.sid, Ca.uid, 1 as 'ca' FROM `{$old}coauthors`Ca ORDER BY Ca.sid ASC;") );
 
 	// build the insert values
-	foreach($dataIn as $data)
-		$values[] = "( '{$data['sid']}', '{$data['uid']}', '{$data['ca']}' )";
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "( '{$data['sid']}', '{$data['uid']}', '{$data['ca']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}stories_authors` (`sid`, `aid`, `ca`) VALUES ".implode(", ",$values)."; " );
-	$count = $fw->db5->count();
+		$fw->db5->exec ( "INSERT INTO `{$new}stories_authors` (`sid`, `aid`, `ca`) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 	
 	// Cleanup, there are cases when an author also is set as co_author
 	$fw->db5->exec("DELETE S1 
@@ -150,11 +154,15 @@ function stories_categories($job, $step)
 			INNER JOIN `{$old}categories`C ON (FIND_IN_SET(C.catid,S.catid)>0);");
 
 	// build the insert values
-	foreach($dataIn as $data)
-		$values[] = "( '{$data['sid']}', '{$data['catid']}' )";
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "( '{$data['sid']}', '{$data['catid']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}stories_categories` (`sid`, `cid`) VALUES ".implode(", ",$values)."; " );
-	$count = $fw->db5->count();
+		$fw->db5->exec ( "INSERT INTO `{$new}stories_categories` (`sid`, `cid`) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 	
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
@@ -180,11 +188,15 @@ function stories_tags($job, $step)
 					INNER JOIN `{$old}characters`Ch ON (FIND_IN_SET(Ch.charid,S.charid)>0);") );
 
 	// build the insert values
-	foreach($dataIn as $data)
-		$values[] = "( '{$data['sid']}', '{$data['tid']}', '{$data['character']}' )";
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "( '{$data['sid']}', '{$data['tid']}', '{$data['character']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}stories_tags` (`sid`, `tid`, `character`) VALUES ".implode(", ",$values)."; " );
-	$count = $fw->db5->count();
+		$fw->db5->exec ( "INSERT INTO `{$new}stories_tags` (`sid`, `tid`, `character`) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 	
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
