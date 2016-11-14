@@ -120,11 +120,13 @@ function descriptors_tag_groups($job, $step)
 						{$fw->db5->quote($data['classtype_title'])} )";
 
 		$fw->db5->exec ( "INSERT INTO `{$new}tag_groups` ( `tgid`, `label`, `description` ) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
 	}
+	else $count = 0;
 
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
-							':items' => $fw->db5->count(),
+							':items' => $count,
 							':id' 	 => $step['id']
 						]
 					);
@@ -148,11 +150,13 @@ function descriptors_tags($job, $step)
 							{$fw->db5->quote($data['class_name'])} )";
 
 		$fw->db5->exec ( "INSERT INTO `{$new}tags` ( `tid`, `tgid`, `label` ) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
 	}
+	else $count = 0;
 
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
-							':items' => $fw->db5->count(),
+							':items' => $count,
 							':id' 	 => $step['id']
 						]
 					);
