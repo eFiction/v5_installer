@@ -29,18 +29,23 @@ function descriptors_characters($job, $step)
 						`charid`, `catid`, `charname`, `bio`, `image`
 						FROM `{$old}characters`;");
 	
-	foreach($dataIn as $data)
-		$values[] = "( '{$data['charid']}',
-						'{$data['catid']}',
-						{$fw->db5->quote($data['charname'])},
-						{$fw->db5->quote($data['bio'])},
-						{$fw->db5->quote($data['image'])} )";
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "( '{$data['charid']}',
+							'{$data['catid']}',
+							{$fw->db5->quote($data['charname'])},
+							{$fw->db5->quote($data['bio'])},
+							{$fw->db5->quote($data['image'])} )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}characters` (`charid`, `catid`, `charname`, `biography`, `image`) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$new}characters` (`charid`, `catid`, `charname`, `biography`, `image`) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
-							':items' => $fw->db5->count(),
+							':items' => $count,
 							':id' 	 => $step['id']
 						]
 					);
@@ -56,21 +61,26 @@ function descriptors_categories($job, $step)
 						`catid`, IF(`parentcatid`='-1',0,`parentcatid`) as parentcatid, `category`, `description`, `image`, `locked`, `leveldown`, `displayorder`
 						FROM `{$old}categories`;");
 
-	foreach($dataIn as $data)
-		$values[] = "(  '{$data['catid']}',
-						'{$data['parentcatid']}',
-						{$fw->db5->quote($data['category'])},
-						{$fw->db5->quote($data['description'])},
-						{$fw->db5->quote($data['image'])},
-						'{$data['locked']}',
-						'{$data['leveldown']}',
-						'{$data['displayorder']}' )";
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "(  '{$data['catid']}',
+							'{$data['parentcatid']}',
+							{$fw->db5->quote($data['category'])},
+							{$fw->db5->quote($data['description'])},
+							{$fw->db5->quote($data['image'])},
+							'{$data['locked']}',
+							'{$data['leveldown']}',
+							'{$data['displayorder']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}categories` ( `cid`, `parent_cid`, `category`, `description`, `image`, `locked`, `leveldown`, `inorder` ) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$new}categories` ( `cid`, `parent_cid`, `category`, `description`, `image`, `locked`, `leveldown`, `inorder` ) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
-							':items' => $fw->db5->count(),
+							':items' => $count,
 							':id' 	 => $step['id']
 						]
 					);
@@ -86,17 +96,22 @@ function descriptors_ratings($job, $step)
 						`rid`, `rating`, `ratingwarning`, `warningtext`
 						FROM `{$old}ratings`;");
 
-	foreach($dataIn as $data)
-		$values[] = "(  '{$data['rid']}',
-						{$fw->db5->quote($data['rating'])},
-						'{$data['ratingwarning']}',
-						{$fw->db5->quote($data['warningtext'])} )";
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "(  '{$data['rid']}',
+							{$fw->db5->quote($data['rating'])},
+							'{$data['ratingwarning']}',
+							{$fw->db5->quote($data['warningtext'])} )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}ratings` ( `rid`, `rating`, `ratingwarning`, `warningtext` ) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$new}ratings` ( `rid`, `rating`, `ratingwarning`, `warningtext` ) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
-							':items' => $fw->db5->count(),
+							':items' => $count,
 							':id' 	 => $step['id']
 						]
 					);

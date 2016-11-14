@@ -80,11 +80,15 @@ function series_stories($job, $step)
 	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$old}inseries`;");
 
 	// build the insert values
-	foreach($dataIn as $data)
-		$values[] = "( '{$data['seriesid']}', '{$data['sid']}', '{$data['confirmed']}', '{$data['inorder']}' )";
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "( '{$data['seriesid']}', '{$data['sid']}', '{$data['confirmed']}', '{$data['inorder']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}series_stories` ( `seriesid`, `sid`, `confirmed`, `inorder` ) VALUES ".implode(", ",$values)."; " );
-	$count = $fw->db5->count();
+		$fw->db5->exec ( "INSERT INTO `{$new}series_stories` ( `seriesid`, `sid`, `confirmed`, `inorder` ) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 	
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
