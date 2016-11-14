@@ -112,12 +112,15 @@ function descriptors_tag_groups($job, $step)
 						`classtype_id`, `classtype_name`, `classtype_title`
 						FROM `{$old}classtypes`;");
 
-	foreach($dataIn as $data)
-		$values[] = "(  '{$data['classtype_id']}',
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "(  '{$data['classtype_id']}',
 						{$fw->db5->quote($data['classtype_name'])},
 						{$fw->db5->quote($data['classtype_title'])} )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}tag_groups` ( `tgid`, `label`, `description` ) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$new}tag_groups` ( `tgid`, `label`, `description` ) VALUES ".implode(", ",$values)."; " );
+	}
 
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
@@ -137,12 +140,15 @@ function descriptors_tags($job, $step)
 						`class_id`, `class_type`, `class_name`
 						FROM `{$old}classes`;");
 
-	foreach($dataIn as $data)
-		$values[] = "(  '{$data['class_id']}',
-						'{$data['class_type']}',
-						{$fw->db5->quote($data['class_name'])} )";
+	if ( sizeof($dataIn)>0 )
+	{
+		foreach($dataIn as $data)
+			$values[] = "(  '{$data['class_id']}',
+							'{$data['class_type']}',
+							{$fw->db5->quote($data['class_name'])} )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}tags` ( `tid`, `tgid`, `label` ) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$new}tags` ( `tid`, `tgid`, `label` ) VALUES ".implode(", ",$values)."; " );
+	}
 
 	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
