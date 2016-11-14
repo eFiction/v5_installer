@@ -54,6 +54,9 @@ function chapters_copy($job, $step)
 								GROUP BY Ch.chapid
 								ORDER BY chapid ASC LIMIT {$step['items']},{$limit};");
 	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
+
 	if ( 0 < $count = sizeof($dataIn) )
 	{
 		$newchapter = new DB\SQL\Mapper($fw->db5,$fw->get('installerCFG.db5.prefix').'chapters');
@@ -63,8 +66,6 @@ function chapters_copy($job, $step)
 			$newchapterText = new DB\SQL\Mapper($fw->dbsqlite,'chapters');
 		}
 
-		$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-		$tracking->load(['id = ?', $step['id'] ]);
 		foreach ( $dataIn as $chapterIn )
 		{
 			// Get chapter text, from file or DB
