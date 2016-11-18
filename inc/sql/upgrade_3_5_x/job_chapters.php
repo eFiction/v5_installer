@@ -75,9 +75,11 @@ function chapters_copy($job, $step)
 				if ($s[0]) $chaptertext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
 				else{
 					//
+					$chaptertext = "not found";
 				}
 			}
-			elseif( $source=="mysql")
+			else
+			//elseif( $source=="mysql")
 			{
 				$chaptertext = $chapterIn['storytext'];
 			}
