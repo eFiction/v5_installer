@@ -287,7 +287,7 @@ class upgradetools {
 	public static function buildConfig() 	// Step  #4
 	{
 		$fw = \Base::instance();
-		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+		// $new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		
 		// create instance of the final config file
 		//$fw->newCFG = new \DB\Jig ( "../data" , \DB\Jig::FORMAT_JSON );

@@ -121,9 +121,9 @@ function chapters_copy($job, $step)
 		//
 	}
 	
-	if ( $count == 0 OR $count <= $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
-		// There was either nothing to be done, or there are no elements left for the next run
+		// There was either nothing to be done or we processed the total amount of items
 		$tracking->success = 2;
 		$tracking->save();
 	}

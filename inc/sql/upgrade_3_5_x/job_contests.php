@@ -54,7 +54,7 @@ function contests_data($job, $step)
 		$tracking->save();
 	}
 
-	if ( $count == 0 OR $count < $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
 		// There was either nothing to be done, or there are no elements left for the next run
 		$tracking->success = 2;
@@ -161,7 +161,7 @@ function contests_cache($job, $step)
 		$tracking->save();
 	}
 
-	if ( $count == 0 OR $count < $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
 		// There was either nothing to be done, or there are no elements left for the next run
 		$tracking->success = 2;

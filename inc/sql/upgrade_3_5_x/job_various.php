@@ -65,7 +65,7 @@ function various_logs($job, $step)
 		$tracking->save();
 	}
 
-	if ( $count == 0 OR $count < $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
 		// There was either nothing to be done, or there are no elements left for the next run
 		$tracking->success = 2;
@@ -113,7 +113,7 @@ function various_news($job, $step)
 		$tracking->save();
 	}
 
-	if ( $count == 0 OR $count < $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
 		// There was either nothing to be done, or there are no elements left for the next run
 		$tracking->success = 2;
@@ -166,7 +166,7 @@ function various_tracker($job, $step)
 		$tracking->save();
 	}
 
-	if ( $count == 0 OR $count < $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
 		// There was either nothing to be done, or there are no elements left for the next run
 		$tracking->success = 2;
@@ -233,7 +233,7 @@ function various_shoutbox($job, $step)
 		$tracking->save();
 	}
 
-	if ( $count == 0 OR $count <= $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
 		// There was either nothing to be done, or there are no elements left for the next run
 		$tracking->success = 2;
@@ -290,7 +290,7 @@ function various_poll($job, $step)
 		}
 	}
 
-	if ( $count == 0 OR $count <= $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
 		// There was either nothing to be done, or there are no elements left for the next run
 		$tracking->success = 2;
@@ -344,7 +344,7 @@ function various_poll_votes($job, $step)
 		$tracking->save();
 	}
 
-	if ( $count == 0 OR $count < $limit )
+	if ( $count == 0 OR $tracking->items>=$tracking->total )
 	{
 		// There was either nothing to be done, or there are no elements left for the next run
 		$tracking->success = 2;
