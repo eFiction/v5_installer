@@ -179,7 +179,7 @@ function feedback_news($job, $step)
 		// build the insert values
 
 		foreach($dataIn as $data)
-			$values[] = "( '{$data['nid']}', '{$data['uid']}', {$fw->db5->quote($data['comment'])}, '{$data['time']}', 'C' )";
+			$values[] = "( '{$data['nid']}', '{$data['uid']}', {$fw->db5->quote($data['comment'])}, '{$data['time']}', 'N' )";
 		
 		$fw->db5->exec ( "INSERT INTO `{$new}feedback` ( `reference`, `writer_uid`, `text`, `datetime`, `type` ) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();

@@ -16,6 +16,16 @@ function config_create($job, $step)
 	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 	$chapterLocation =   ( $fw['installerCFG.chapters']=="filebase" ) ? "local" : "db";
+	/*
+	$modules = [];
+	foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )
+	{
+		if ( $moduleOpt[0]!="-" ) $modules[$moduleName] = 1;
+	}
+	$modules_enabled = json_encode($modules);
+	*/
+//	if ( sizeof($modules)>0 ) $mapper->modules_enabled = $modules;
+
 /*
   `imageupload` tinyint(1) NOT NULL DEFAULT '0',
   `imageheight` int(11) NOT NULL DEFAULT '200',
@@ -42,6 +52,8 @@ function config_create($job, $step)
 --------  `linkrange` tinyint(2) NOT NULL DEFAULT '5', -> Paginations
 --------  `multiplecats` tinyint(1) NOT NULL DEFAULT '0', Anzahl Kategorien ????? Auto-detect
 --------  `displayprofile` tinyint(1) NOT NULL DEFAULT '0', Profil anzeigen, anders gelöst in eFi5
+
+---- ('modules_enabled',				'', 0, 							'{$modules_enabled}', NULL, '', 0, 0),
 
 */
 $sql = <<<EOF
@@ -108,7 +120,7 @@ INSERT INTO `{$new}config` (`name`, `admin_module`, `section_order`, `value`, `c
 ('reg_min_username',			'settings_registration', 2, 	'0', 'Minimum characters for usernames', 'text//numeric', 0, 1),
 ('reg_min_password',			'settings_registration', 3, 	'6', 'Minimum characters for passwords', 'text//numeric', 0, 1),
 ('reg_password_complexity',		'settings_registration', 4, 	'2', 'Password complexity:@SMALL@see wiki', 'select//__none=1//__light=2//__medium=3//__heavy=4', 0, 1),
-('reg_use_captcha',				'settings_registration', 5,		'0', 'Select CAPTCHA to be used@SMALL@Configure under <a href=''{{@BASE}}/adminCP/settings/security''>Settings - Security</a>', '', 0, 1),
+('reg_use_captcha',				'settings_registration', 5,		'1', 'Select CAPTCHA to be used@SMALL@Configure under <a href=''{{@BASE}}/adminCP/settings/security''>Settings - Security</a>', '', 0, 1),
 ('reg_sfs_usage',				'settings_registration_sfs', 1, 'TRUE', 'Use the "Stop Forumspam" Service.@SMALL@<a href="http://www.stopforumspam.com/faq" target="_blank">FAQ @ http://www.stopforumspam.com</a>', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 0, 1),
 ('reg_sfs_check_ip',			'settings_registration_sfs', 2, 'TRUE', 'Check IP', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 0, 1),
 ('reg_sfs_check_mail',			'settings_registration_sfs', 3, 'TRUE', 'Check mail address', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 0, 1),

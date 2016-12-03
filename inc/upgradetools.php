@@ -290,22 +290,30 @@ class upgradetools {
 		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		
 		// create instance of the final config file
-		$fw->newCFG = new \DB\Jig ( "../data" , \DB\Jig::FORMAT_JSON );
-		$mapper = new \DB\Jig\Mapper($fw->newCFG, 'config.json');
+		//$fw->newCFG = new \DB\Jig ( "../data" , \DB\Jig::FORMAT_JSON );
+		//$mapper = new \DB\Jig\Mapper($fw->newCFG, 'config.json');
 		
-		$mapper->ACTIVE_DB = "MYSQL";
-		$mapper->DB_MYSQL = array (
-				"dsn" 			=> $fw->get('installerCFG.db5.dsn'),
-				"user" 			=> $fw->get('installerCFG.db5.user'),
-				"password"	=> $fw->get('installerCFG.db5.pass'),
-			);
-		$mapper->prefix = $fw->get('installerCFG.db5.prefix');
+		$newCFG = 
+		[
+			"ACTIVE_DB" => "MYSQL",
+			"DB_MYSQL"	=> array (
+					"dsn" 			=> $fw->get('installerCFG.db5.dsn'),
+					"user" 			=> $fw->get('installerCFG.db5.user'),
+					"password"	=> $fw->get('installerCFG.db5.pass'),
+				),
+			"prefix" => $fw->get('installerCFG.db5.prefix')
+		];
+		
+		$cfgFile = fopen("../data/config.php", "w");
+		fwrite($cfgFile, "<?php\n\n");
+		fwrite($cfgFile, '$config = '.var_export($newCFG,TRUE).';');
+		fwrite($cfgFile, "\n\n?>");
 		
 		// Get entries from configuration table
+		/*
 		$cfgData = $fw->db5->exec("SELECT `name`, `value` FROM `{$new}config` WHERE `to_config_file` = 1  ORDER BY `name` ASC ");
 		foreach ( $cfgData as $cfgItem)
 		{
-			/* experimental */
 			if ( $cfgItem['value'] == "TRUE") $cfgItem['value'] = TRUE;
 			elseif ( $cfgItem['value'] == "FALSE") $cfgItem['value'] = FALSE;
 
@@ -325,16 +333,19 @@ class upgradetools {
 					$mapper->{$cfgItem['name'][0]} = $c;
 			}
 		}
+		*/
 
 		// Get optional modules, that were enabled
+		/*
 		$modules = [];
 		foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )
 		{
 			if ( $moduleOpt[0]!="-" ) $modules[$moduleName] = 1;
 		}
 		if ( sizeof($modules)>0 ) $mapper->modules_enabled = $modules;
-
+*/
 		// Build page stat cache
+		/*
 		$statSQL = [
 				"SET @users = (SELECT COUNT(*) FROM `{$new}users`U WHERE U.groups > 0);",
 				"SET @authors = (SELECT COUNT(*) FROM `{$new}users`U WHERE ( U.groups & 4 ) );",
@@ -354,7 +365,7 @@ class upgradetools {
 		}
 		$mapper->stats = $stats;
 		$mapper->save();
-		
+		*/
 		$fw->set('continue',
 			[
 				'message'	=> 'Configuration file built',
