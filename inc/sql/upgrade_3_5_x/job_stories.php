@@ -36,13 +36,57 @@ function stories_data($job, $step)
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
-					S.sid, S.title, S.summary, S.storynotes, S.rid, S.date, S.updated, S.validated, S.completed, S.rr as roundrobin, SUM(C.wordcount) as wordcount, (10*SUM(R1.rating)/COUNT(R1.reviewid)) as ranking, COUNT(R.reviewid) as reviews, COUNT(C.chapid) as chapters, S.count
+								S1.*,
+								(10*SUM(R1.rating)/COUNT(R1.reviewid)) as ranking, 
+								COUNT(DISTINCT R.reviewid) as reviews
+								FROM
+								(
+									SELECT
+										S.sid, 
+										S.title, 
+										S.summary, 
+										S.storynotes, 
+										S.rid, 
+										S.date, 
+										S.updated, 
+										S.validated, 
+										S.completed, 
+										S.rr as roundrobin, 
+										SUM(C.wordcount) as wordcount, 
+										COUNT(DISTINCT C.chapid) as chapters, 
+										S.count
+									FROM `{$old}stories`S
+										LEFT JOIN `{$old}chapters`C ON ( C.sid = S.sid )
+									GROUP BY S.sid
+									ORDER BY S.sid ASC LIMIT {$step['items']},{$limit}
+								) AS S1
+								LEFT JOIN `{$old}reviews`R ON ( S1.sid = R.item AND R.type = 'ST' )
+								LEFT JOIN `{$old}reviews`R1 ON ( S1.sid = R1.item AND R1.rating > 0 AND R1.type = 'ST' )
+							GROUP BY S1.sid
+							ORDER BY S1.sid ASC;");
+				
+/*	$dataIn = $fw->db3->exec("SELECT
+					S.sid, 
+					S.title, 
+					S.summary, 
+					S.storynotes, 
+					S.rid, 
+					S.date, 
+					S.updated, 
+					S.validated, 
+					S.completed, 
+					S.rr as roundrobin, 
+					SUM(C.wordcount) as wordcount, 
+					(10*SUM(R1.rating)/COUNT(R1.reviewid)) as ranking, 
+					COUNT(DISTINCT R.reviewid) as reviews, 
+					COUNT(DISTINCT C.chapid) as chapters, 
+					S.count
 				FROM `{$old}stories`S
 					LEFT JOIN `{$old}reviews`R ON ( S.sid = R.item AND R.type = 'ST' )
 					LEFT JOIN `{$old}reviews`R1 ON ( S.sid = R1.item AND R1.rating > 0 AND R1.type = 'ST' )
 					LEFT JOIN `{$old}chapters`C ON ( C.sid = S.sid )
 				GROUP BY S.sid
-				ORDER BY S.sid ASC LIMIT {$step['items']},{$limit};");
+				ORDER BY S.sid ASC LIMIT {$step['items']},{$limit};");*/
 				
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
