@@ -104,9 +104,6 @@ function series_cache($job, $step)
 	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 20;
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$new}series`;")[0]['found'];
@@ -150,6 +147,9 @@ function series_cache($job, $step)
 									GROUP BY Ser.seriesid
 							) AS SERIES
 							LEFT JOIN `{$new}ratings`R ON (R.rid = max_rating_id);");
+
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{

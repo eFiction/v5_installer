@@ -105,9 +105,6 @@ function contests_cache($job, $step)
 	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 50;
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$new}contests`;")[0]['found'];
@@ -136,6 +133,9 @@ function contests_cache($job, $step)
 											LEFT JOIN `{$new}characters`Chara ON ( Chara.charid = rC.relid AND rC.type = 'CH' )
 											LEFT JOIN `{$new}categories`C ON ( C.cid = rC.relid AND rC.type = 'CA' )
 									GROUP BY Con.conid;");
+
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{

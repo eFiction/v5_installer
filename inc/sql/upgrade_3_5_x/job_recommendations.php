@@ -157,9 +157,6 @@ function recommendations_cache($job, $step)
 	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 50;
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$new}recommendations`;")[0]['found'];
@@ -194,6 +191,9 @@ function recommendations_cache($job, $step)
 								)AS SELECT_OUTER
 								GROUP BY recid ORDER BY recid ASC;");
 	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
+
 	if ( 0 < $count = sizeof($dataIn) )
 	{
 		foreach ( $dataIn as $item)

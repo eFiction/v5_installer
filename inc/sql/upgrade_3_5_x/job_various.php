@@ -128,9 +128,6 @@ function various_tracker($job, $step)
 	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 500;
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-
 	if ( $step['success'] == 0 )
 	{
 		try
@@ -152,6 +149,9 @@ function various_tracker($job, $step)
 								FROM `{$old}tracker` 
 								ORDER BY sid, uid ASC LIMIT {$step['items']},{$limit};");
 	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
+
 	if ( 0 < $count = sizeof($dataIn) )
 	{
 		foreach($dataIn as $data)
@@ -181,9 +181,6 @@ function various_shoutbox($job, $step)
 	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 500;
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-
 	if ( $step['success'] == 0 )
 	{
 		try
@@ -205,6 +202,9 @@ function various_shoutbox($job, $step)
 								FROM `{$old}shoutbox` 
 								ORDER BY shout_datestamp ASC LIMIT {$step['items']},{$limit};");
 	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
+
 	if ( 0 < $count = sizeof($dataIn) )
 	{
 		foreach($dataIn as $data)
@@ -248,9 +248,6 @@ function various_poll($job, $step)
 	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 20;
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-	
 	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."poll" );
 
 	if ( $step['success'] == 0 )
@@ -273,6 +270,9 @@ function various_poll($job, $step)
 	$dataIn = $fw->db3->exec("SELECT `poll_id`, `poll_question` as question, `poll_opts` as options, `poll_start` as start_date, `poll_end` as end_date, `poll_results` as results
 								FROM `{$old}poll` 
 								ORDER BY `poll_id` ASC LIMIT {$step['items']},{$limit};");
+	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
 	
 	if ( 0 < $count = sizeof($dataIn) )
 	{
@@ -305,9 +305,6 @@ function various_poll_votes($job, $step)
 	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 50;
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-
 	if ( $step['success'] == 0 )
 	{
 		try
@@ -329,6 +326,9 @@ function various_poll_votes($job, $step)
 								FROM `{$old}poll_votes` 
 								ORDER BY `vote_id` ASC LIMIT {$step['items']},{$limit};");
 	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
+
 	if ( 0 < $count = sizeof($dataIn) )
 	{
 		foreach($dataIn as $data)

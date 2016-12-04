@@ -273,9 +273,6 @@ function stories_recount_categories($job, $step)
 
 	$items = 0;
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-
 	$dataIn = $fw->db5->exec("SELECT C.cid, C.category, COUNT(DISTINCT S.sid) as counted, GROUP_CONCAT(DISTINCT C1.category SEPARATOR '||' ) as sub_categories, GROUP_CONCAT(DISTINCT C1.stats SEPARATOR '||' ) as sub_stats
 								FROM `{$new}categories`C 
 									INNER JOIN (SELECT leveldown FROM `{$new}categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )
@@ -283,6 +280,9 @@ function stories_recount_categories($job, $step)
 									LEFT JOIN `{$new}stories`S ON ( S.sid = SC.sid )
 								LEFT JOIN `{$new}categories`C1 ON ( C.cid = C1.parent_cid )
 							GROUP BY C.cid;");
+
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
@@ -329,9 +329,6 @@ function stories_cache($job, $step)
 	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 50;
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
-	$tracking->load(['id = ?', $step['id'] ]);
-
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$new}stories`;")[0]['found'];
@@ -370,6 +367,9 @@ function stories_cache($job, $step)
 									LEFT JOIN `{$new}categories` Cat ON ( rSC.cid = Cat.cid )
 						)AS SELECT_OUTER
 						GROUP BY sid ORDER BY sid ASC;");
+
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
