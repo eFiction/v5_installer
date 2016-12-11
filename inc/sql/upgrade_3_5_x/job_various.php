@@ -56,7 +56,8 @@ function various_logs($job, $step)
 							'{$data['log_ip']}',
 							'{$data['log_timestamp']}',
 							'{$data['log_type']}',
-							1 )";
+							1,
+							0 )";
 
 		$fw->db5->exec ( "INSERT INTO `{$new}log` VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();

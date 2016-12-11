@@ -228,6 +228,7 @@ CREATE TABLE `{$new}log` (
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `type` varchar(2) NOT NULL,
   `version` tinyint(1) NOT NULL,
+  `new` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`), KEY `type` (`type`), KEY `uid` (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
