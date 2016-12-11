@@ -171,7 +171,6 @@ CREATE TABLE `{$new}config` (
   `value` varchar(256) NOT NULL,
   `comment` tinytext,
   `form_type` text NOT NULL,
-  `to_config_file` tinyint(1) NOT NULL DEFAULT '1',
   `can_edit` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
