@@ -142,7 +142,7 @@ INSERT INTO `{$new}config` (`name`, `admin_module`, `section_order`, `value`, `c
 ('maintenance',					'settings_maintenance', 3,		'TRUE', 'Archive closed for maintenance', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('admin_list_elements', 		'', 0, '20', NULL, 'text//numeric', 1),
 ('iconset_default',				'', 0, '1', NULL, '', 0),
-('version',						'', '0', '5.0.0', NULL, '', '0', NULL);
+('version',						'', '0', '5.0.0', NULL, '', '0');
 EOF;
 
 	$fw->db5->exec($sql);
