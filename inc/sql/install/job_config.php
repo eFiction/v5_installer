@@ -112,7 +112,7 @@ INSERT INTO `{$new}config` (`name`, `admin_module`, `section_order`, `value`, `c
 ('page_title_separator',		'settings_general', 6, 			' | ', 'Separator for page title elements', 'text//small', 1),
 ('adjacent_paginations', 		'settings_general',	7,			'2', 'Contiguous page links to display@SMALL@"1" to display: 1 ... 4 [5] 6 ... 9<br>\n"2" to display: 1 ... 3 4 [5] 6 7 ... 9<br>"0" to display all links', 'text//numeric', 1),
 ('shoutbox_entries',			'settings_general', 8,			'5', 'Number of shoutbox items to display', 'text//numeric', 1),
-('shoutbox_guest',				'settings_general', 9,			'TRUE', 'Allow guest posts in shoutbox', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('shoutbox_guest',				'settings_general', 9,			'FALSE', 'Allow guest posts in shoutbox', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_comment_news',			'settings_general', 10,			"{$fw['installerCFG.data.newscomments']}", 'Allow news comments', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_guest_comment_news',	'settings_general', 11,			'FALSE', 'Allow guest news comments', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_registration', 			'settings_registration', 0,		'FALSE', 'Allow registration?', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
