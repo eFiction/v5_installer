@@ -68,6 +68,17 @@ function chapters_copy($job, $step)
 
 		foreach ( $dataIn as $chapterIn )
 		{
+			switch($chapterIn['validated']) {
+				case 0:
+					$chapterIn['validated'] = '01';
+					break;
+				case 1:
+					$chapterIn['validated'] = '21';
+					break;
+				case 2:
+					$chapterIn['validated'] = '23';
+			}
+				
 			// Get chapter text, from file or DB
 			if ( $source=="files")
 			{

@@ -2,19 +2,6 @@
 
 class configtools {
 	
-	/*
-	public static function sanitize($fresh=FALSE)
-	{
-		$fw = \Base::instance();
-
-		if ( !$fresh )
-			$fw['POST.new.db3'] = preg_replace("/[^0-9a-zA-Z_]/", "", $fw['POST.new.db3']);
-
-		$fw['POST.new.db5'] = preg_replace("/[^0-9a-zA-Z_]/", "", $fw['POST.new.db5']);
-		//print_r($fw['POST.new']);exit;
-	}
-	*/
-
 	public static function buildDSN ($fresh=FALSE)
 	{
 		/* DSN examples

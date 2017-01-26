@@ -131,7 +131,7 @@ INSERT INTO `{$new}config` (`name`, `admin_module`, `section_order`, `value`, `c
 ('reg_sfs_explain_api',			'settings_registration_sfs', 7, '', '__AdminRegExplainSFSApi', 'note', 1),
 ('reg_sfs_api_key',				'settings_registration_sfs', 8,	'', 'Your API key (optional)', 'text//small', 1),
 ('mail_notifications',			'settings_mail', 1,				"{$fw['installerCFG.data.alertson']}", 'Members can opt-in to receive mail notifications.', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
-('smtp_advice',					'settings_mail', 2,				'', 'Leave SMTP server fields empty to send through PHP and sendmail.@SMALL@<a href="http://efiction.org/wiki/Server#Working_settings_for_common_mail_providers">Documentation in the wiki. {ICON:external-link}</a>', 'note', 1),
+('smtp_advice',					'settings_mail', 2,				'', 'Leave SMTP server fields empty to send through PHP and sendmail.@SMALL@<a href="http://efiction.org/wiki/Server#Working_settings_for_common_mail_providers" target="_blank">Documentation in the wiki. {ICON:external-link}</a>', 'note', 1),
 ('smtp_server',					'settings_mail', 3,				"{$fw['installerCFG.data.smtp_host']}", 'SMTP server@SMALL@See WIKI for GMail!', 'text//small', 1),
 ('smtp_scheme', 				'settings_mail', 4,				'tls', 'SMTP security scheme', 'select//(START)TLS=tls//SMTPS=ssl//none=', 1),
 ('smtp_port',					'settings_mail', 5,				'', 'Port number (if not using default)', 'text//numeric', 1),

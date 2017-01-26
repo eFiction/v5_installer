@@ -95,6 +95,18 @@ function stories_data($job, $step)
 	{
 		// build the insert values
 		foreach($dataIn as $data)
+		{
+			switch($data['validated']) {
+				case 0:
+					$data['validated'] = '01';
+					break;
+				case 1:
+					$data['validated'] = '21';
+					break;
+				case 2:
+					$data['validated'] = '23';
+			}
+
 			$values[] = "( '{$data['sid']}', 
 							{$fw->db5->quote($data['title'])},
 							{$fw->db5->quote($data['summary'])},
@@ -110,6 +122,7 @@ function stories_data($job, $step)
 							'{$data['reviews']}',
 							'{$data['chapters']}',
 							'{$data['count']}' )";
+		}
 
 		$fw->db5->exec ( "INSERT INTO `{$new}stories` (`sid`, `title`, `summary`, `storynotes`, `ratingid`, `date`, `updated`, `validated`, `completed`, `roundrobin`, `wordcount`, `ranking`, `reviews`, `chapters`, `count`) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();

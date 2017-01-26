@@ -2,7 +2,7 @@
 
 /*
 
-	Copyright (c) 2009-2015 F3::Factory/Bong Cosca, All rights reserved.
+	Copyright (c) 2009-2016 F3::Factory/Bong Cosca, All rights reserved.
 
 	This file is part of the Fat-Free Framework (http://fatfreeframework.com).
 
@@ -32,11 +32,11 @@ abstract class Cursor extends \Magic implements \IteratorAggregate {
 
 	protected
 		//! Query results
-		$query=array(),
+		$query=[],
 		//! Current position
 		$ptr=0,
 		//! Event listeners
-		$trigger=array();
+		$trigger=[];
 
 	/**
 	*	Return database type
@@ -103,7 +103,7 @@ abstract class Cursor extends \Magic implements \IteratorAggregate {
 
 	/**
 	*	Get cursor's equivalent external iterator
-	*	Causes a fatal error in PHP 5.3.5if uncommented
+	*	Causes a fatal error in PHP 5.3.5 if uncommented
 	*	return ArrayIterator
 	**/
 	abstract function getiterator();
@@ -119,14 +119,14 @@ abstract class Cursor extends \Magic implements \IteratorAggregate {
 
 	/**
 	*	Return first record (mapper object) that matches criteria
-	*	@return \DB\Cursor|FALSE
+	*	@return static|FALSE
 	*	@param $filter string|array
 	*	@param $options array
 	*	@param $ttl int
 	**/
 	function findone($filter=NULL,array $options=NULL,$ttl=0) {
 		if (!$options)
-			$options=array();
+			$options=[];
 		// Override limit
 		$options['limit']=1;
 		return ($data=$this->find($filter,$options,$ttl))?$data[0]:FALSE;
@@ -148,11 +148,11 @@ abstract class Cursor extends \Magic implements \IteratorAggregate {
 		$total=$this->count($filter,$ttl);
 		$count=ceil($total/$size);
 		$pos=max(0,min($pos,$count-1));
-		return array(
+		return [
 			'subset'=>$this->find($filter,
 				array_merge(
-					$options?:array(),
-					array('limit'=>$size,'offset'=>$pos*$size)
+					$options?:[],
+					['limit'=>$size,'offset'=>$pos*$size]
 				),
 				$ttl
 			),
@@ -160,7 +160,7 @@ abstract class Cursor extends \Magic implements \IteratorAggregate {
 			'limit'=>$size,
 			'count'=>$count,
 			'pos'=>$pos<$count?$pos:0
-		);
+		];
 	}
 
 	/**
@@ -171,8 +171,9 @@ abstract class Cursor extends \Magic implements \IteratorAggregate {
 	*	@param $ttl int
 	**/
 	function load($filter=NULL,array $options=NULL,$ttl=0) {
+		$this->reset();
 		return ($this->query=$this->find($filter,$options,$ttl)) &&
-			$this->skip(0)?$this->query[$this->ptr=0]:FALSE;
+			$this->skip(0)?$this->query[$this->ptr]:FALSE;
 	}
 
 	/**
@@ -377,7 +378,7 @@ abstract class Cursor extends \Magic implements \IteratorAggregate {
 	*	@return NULL
 	**/
 	function reset() {
-		$this->query=array();
+		$this->query=[];
 		$this->ptr=0;
 	}
 
