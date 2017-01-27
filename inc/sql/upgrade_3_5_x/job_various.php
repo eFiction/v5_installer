@@ -2,6 +2,8 @@
 /*
 	Job definition for 'various'
 	eFiction upgrade from version 3.5.x
+	
+	2017-01-27: Update DB queries to be safer
 */
 
 $fw->jobSteps = array(
@@ -33,7 +35,7 @@ function various_logs($job, $step)
 	$fw = \Base::instance();
 	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
-	$limit = 500;
+	$limit = 250;
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
@@ -42,27 +44,26 @@ function various_logs($job, $step)
 		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
-	$dataIn = $fw->db3->exec("SELECT L.log_id, L.log_action, L.log_uid, L.log_ip, L.log_timestamp, L.log_type FROM `{$old}log`L LIMIT {$step['items']},{$limit};");
+	$dataIn = $fw->db3->exec("SELECT L.log_id as id, L.log_action as action, L.log_uid as uid, L.log_ip as ip, L.log_timestamp as timestamp, L.log_type as type FROM `{$old}log`L LIMIT {$step['items']},{$limit};");
 				
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		foreach($dataIn as $data)
-			$values[] = "( '{$data['log_id']}', 
-							{$fw->db5->quote($data['log_action'])},
-							'{$data['log_uid']}',
-							'{$data['log_ip']}',
-							'{$data['log_timestamp']}',
-							'{$data['log_type']}',
-							0,
-							0 )";
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."log" );
 
-		$fw->db5->exec ( "INSERT INTO `{$new}log` VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->version = 0;
+			$newdata->new = 0;
+			$newdata->save();
+			$newdata->reset();
+			
+			$tracking->items++;
+		}
 		
-		$tracking->items = $tracking->items+$count;
 		$tracking->save();
 	}
 
@@ -89,7 +90,7 @@ function various_news($job, $step)
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
-								N.nid, A.uid, N.title, N.story, N.time, N.comments
+								N.nid, A.uid, N.title as headline, N.story as newstext, N.time as datetime, N.comments
 								FROM `{$old}news`N
 									LEFT JOIN `{$old}authors`A ON ( N.author = A.penname )
 								ORDER BY N.time ASC LIMIT {$step['items']},{$limit};");
@@ -99,18 +100,17 @@ function various_news($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		foreach($dataIn as $data)
-			$values[] = "( '{$data['nid']}', 
-							'{$data['uid']}',
-							{$fw->db5->quote($data['title'])},
-							{$fw->db5->quote($data['story'])},
-							'{$data['time']}',
-							'{$data['comments']}' )";
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."news" );
 
-		$fw->db5->exec ( "INSERT INTO `{$new}news` VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
-		
-		$tracking->items = $tracking->items+$count;
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+			
+			$tracking->items++;
+		}
+
 		$tracking->save();
 	}
 
@@ -160,6 +160,7 @@ function various_tracker($job, $step)
 							'{$data['uid']}',
 							'{$data['last_read']}' )";
 
+		// only numeric values
 		$fw->db5->exec ( "INSERT INTO `{$new}tracker` (`sid`, `uid`, `last_read`) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();
 		
@@ -198,8 +199,13 @@ function various_shoutbox($job, $step)
 			return TRUE; // escape plan
 		}
 	}
-	
-	$dataIn = $fw->db3->exec("SELECT `shout_id`, `shout_name`, `shout_message`, FROM_UNIXTIME(`shout_datestamp`) as shout_datestamp
+
+	$dataIn = $fw->db3->exec("SELECT 
+									`shout_id` as id, 
+									IF(shout_name REGEXP '[0-9]+',shout_name,0) as uid, 
+									IF(shout_name REGEXP '[0-9]+',NULL,shout_name) as guest_name, 
+									`shout_message` as message, 
+									FROM_UNIXTIME(`shout_datestamp`) as date
 								FROM `{$old}shoutbox` 
 								ORDER BY shout_datestamp ASC LIMIT {$step['items']},{$limit};");
 	
@@ -208,29 +214,17 @@ function various_shoutbox($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."shoutbox" );
+
 		foreach($dataIn as $data)
 		{
-			if(is_numeric($data['shout_name']))
-			{
-				$shout_uid = $data['shout_name'];
-				$shout_guest = "NULL";
-			}
-			else
-			{
-				$shout_uid = 0;
-				$shout_guest = "'{$data['shout_name']}'";
-			}
-			$values[] = "( {$data['shout_id']}, 
-							{$shout_uid},
-							{$shout_guest},
-							{$fw->db5->quote($data['shout_message'])},
-							'{$data['shout_datestamp']}' )";
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+			
+			$tracking->items++;
 		}
 
-		$fw->db5->exec ( "INSERT INTO `{$new}shoutbox` (`id`, `uid`, `guest_name`, `message`, `date`) VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
-		
-		$tracking->items = $tracking->items+$count;
 		$tracking->save();
 	}
 
@@ -338,6 +332,7 @@ function various_poll_votes($job, $step)
 							'{$data['vote_opt']}',
 							'{$data['vote_poll']}' )";
 
+		// only numeric values
 		$fw->db5->exec ( "INSERT INTO `{$new}poll_votes` (`vote_id`, `poll_id`, `uid`, `option`) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();
 		

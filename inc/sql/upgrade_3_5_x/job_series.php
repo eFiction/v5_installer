@@ -32,11 +32,13 @@ function series_data($job, $step)
 
 	$dataIn = $fw->db3->exec("SELECT
 					Ser.seriesid, Ser.title, Ser.summary, Ser.uid, Ser.isopen, Ser.challenges,
-					COUNT(DISTINCT Ch.chapid) as chapter_count, SUM(Ch.wordcount) as word_count, COUNT(DISTINCT R.reviewid) as reviews
+					COUNT(DISTINCT Ch.chapid) as chapter_count, SUM(Ch.wordcount) as word_count, COUNT(DISTINCT R.reviewid) as reviews,
+					inS2.seriesid as parent_series
 					FROM `{$old}series`Ser
-					LEFT JOIN `{$old}inseries`inS ON ( Ser.seriesid = inS.seriesid )
+					LEFT JOIN `{$old}inseries`inS ON ( Ser.seriesid = inS.seriesid AND inS.subseriesid = 0 )
 						LEFT JOIN `{$old}chapters`Ch ON ( Ch.sid = inS.sid )
 						LEFT JOIN `{$old}reviews`R ON ( R.item = Ser.seriesid AND R.type='SE' )
+					LEFT JOIN `{$old}inseries`inS2 ON ( Ser.seriesid = inS2.subseriesid )
 				GROUP BY Ser.seriesid
 				ORDER BY Ser.seriesid ASC LIMIT {$step['items']},{$limit};");
 				
@@ -47,6 +49,7 @@ function series_data($job, $step)
 	{
 		foreach($dataIn as $data)
 			$values[] = "( '{$data['seriesid']}', 
+							'{$data['parent_series']}',
 							{$fw->db5->quote($data['title'])},
 							{$fw->db5->quote($data['summary'])},
 							'{$data['uid']}',
@@ -56,7 +59,7 @@ function series_data($job, $step)
 							'{$data['chapter_count']}',
 							'{$data['word_count']}' )";
 
-		$fw->db5->exec ( "INSERT INTO `{$new}series` (`seriesid`, `title`, `summary`, `uid`, `open`, `reviews`, `contests`, `chapters`, `words` ) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$new}series` (`seriesid`, `parent_series`, `title`, `summary`, `uid`, `open`, `reviews`, `contests`, `chapters`, `words` ) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();
 		
 		$tracking->items = $tracking->items+$count;
@@ -77,7 +80,7 @@ function series_stories($job, $step)
 	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
-	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$old}inseries`;");
+	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$old}inseries` WHERE `subseriesid` = 0;");
 
 	// build the insert values
 	if ( sizeof($dataIn)>0 )

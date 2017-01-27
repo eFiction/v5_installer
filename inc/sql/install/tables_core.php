@@ -400,6 +400,7 @@ $core['series'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}series`;
 CREATE TABLE `{$new}series` (
   `seriesid` int(11) NOT NULL AUTO_INCREMENT,
+  `parent_series` int(11) unsigned DEFAULT NULL,
   `title` varchar(200) NOT NULL DEFAULT '',
   `summary` text NOT NULL,
   `uid` int(11) NOT NULL DEFAULT '0',
