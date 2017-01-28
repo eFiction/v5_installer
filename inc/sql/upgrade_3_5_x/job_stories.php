@@ -137,29 +137,35 @@ function stories_authors($job, $step)
 {
 	$fw = \Base::instance();
 
-	$dataIn = $fw->db3->exec("SELECT S.sid, S.uid, '0' as ca FROM `{$fw->dbOld}stories`S ORDER BY S.sid ASC;");
-	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT Ca.sid, Ca.uid, 1 as 'ca' FROM `{$fw->dbOld}coauthors`Ca ORDER BY Ca.sid ASC;") );
+	$dataIn = $fw->db3->exec("SELECT S.sid, S.uid, 'M' as type FROM `{$fw->dbOld}stories`S ORDER BY S.sid ASC;");
+	// currently setting co_authors as supporting authors
+	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT Ca.sid, Ca.uid, 'S' as 'type' FROM `{$fw->dbOld}coauthors`Ca ORDER BY Ca.sid ASC;") );
 
 	// build the insert values
 	if ( sizeof($dataIn)>0 )
 	{
 		foreach($dataIn as $data)
-			$values[] = "( '{$data['sid']}', '{$data['uid']}', '{$data['ca']}' )";
+			$values[] = "( '{$data['sid']}', '{$data['uid']}', '{$data['type']}' )";
 
-		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}stories_authors` (`sid`, `aid`, `ca`) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}stories_authors` (`sid`, `aid`, `type`) VALUES ".implode(", ",$values)."
+							ON DUPLICATE KEY UPDATE type=type; " );
+		// the ON DUPLICATE may look useless, but it makes sure that when an author is both author and co-author, the later is dropped
 		$count = $fw->db5->count();
 	}
 	else $count = 0;
 	
-	// Cleanup, there are cases when an author also is set as co_author
+	// Cleanup, there are cases when an author was also set as co_author
+	// Should be obsolete with unique key restraints
+	/*
 	$fw->db5->exec("DELETE S1 
 			FROM `{$fw->dbNew}stories_authors`S1 
 				INNER JOIN `{$fw->dbNew}stories_authors`S2 ON ( S1.sid=S2.sid AND S1.aid = S2.aid AND S1.lid > S2.lid );");
 	$deleted = $fw->db5->count();
+	*/
 
 	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
-							':items' => $count-$deleted,
+							':items' => $count,
 							':id' => $step['id']
 						]
 					);

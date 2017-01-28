@@ -508,8 +508,8 @@ CREATE TABLE `{$new}stories_authors` (
   `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `sid` int(10) NOT NULL,
   `aid` int(10) unsigned NOT NULL,
-  `ca` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`lid`), KEY `relation` (`sid`,`aid`)
+  `type` set('M','S','T','') NOT NULL DEFAULT 'M' COMMENT 'M = main, S = supporting, T = translator',
+  PRIMARY KEY (`lid`), UNIQUE KEY `fullrelation` (`sid`,`aid`,`type`), UNIQUE KEY `relation` (`sid`,`aid`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for story-author relations';
 --NOTE--Story relation table: Authors
 --SPLIT--
