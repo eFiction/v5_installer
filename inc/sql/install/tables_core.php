@@ -226,7 +226,7 @@ CREATE TABLE `{$new}log` (
   `uid` int(11) NOT NULL DEFAULT '0',
   `ip` int(11) unsigned DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `type` varchar(2) NOT NULL,
+  `type` set('RG','ED','DL','VS','LP','BL','RE','AM','EB','RF') NOT NULL,
   `version` tinyint(1) NOT NULL,
   `new` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`), KEY `type` (`type`), KEY `uid` (`uid`)

@@ -15,10 +15,9 @@ function menu_page($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 $sql = <<<EOF
-INSERT INTO `{$new}menu` (`label`, `order`, `link`) VALUES
+INSERT INTO `{$fw->dbNew}menu` (`label`, `order`, `link`) VALUES
 ('Home', 1, ''),
 ('Authors', 5, 'authors'),
 ('Fandoms', 1, 'story/categories'),
@@ -31,7 +30,7 @@ EOF;
 	$fw->db5->exec($sql);
 	$count = $fw->db5->count();
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -44,10 +43,9 @@ function menu_admin($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 $sql = <<<EOF
-INSERT INTO `{$new}menu_adminpanel` (`label`, `child_of`, `order`, `link`, `icon`, `active`, `requires`, `evaluate`) VALUES
+INSERT INTO `{$fw->dbNew}menu_adminpanel` (`label`, `child_of`, `order`, `link`, `icon`, `active`, `requires`, `evaluate`) VALUES
 ('Home',			NULL, 1, 'home', '{ICON:home}', 1, 32, NULL),
 ('Settings',		NULL, 2, 'settings', '{ICON:settings}', 1, 128, NULL),
 ('Members',			NULL, 3, 'members', '{ICON:member}', 1, 128, NULL),
@@ -92,7 +90,7 @@ EOF;
 	$fw->db5->exec($sql);
 	$count = $fw->db5->count();
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -104,10 +102,9 @@ function menu_user($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 $sql = <<<EOF
-INSERT INTO `{$new}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `evaluate`) VALUES
+INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `evaluate`) VALUES
 ('UserMenu_Settings', 1, 'settings', '{ICON:settings}', NULL, 1, NULL),
 ('UserMenu_Message', 2, 'messaging', '{ICON:mail}', NULL, 1, NULL),
 ('UserMenu_Authoring', 3, 'author', '{ICON:keyboard}', NULL, 1, NULL),
@@ -138,7 +135,7 @@ EOF;
 	$fw->db5->exec($sql);
 	$count = $fw->db5->count();
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']

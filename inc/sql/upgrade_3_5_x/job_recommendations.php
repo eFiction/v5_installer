@@ -7,6 +7,8 @@
 	- recommendations
 	- recommendations relation tables
 	- cache tables and fields
+
+	2017-01-28: Update DB queries to be safer
 */
 
 $fw->jobSteps = array(
@@ -19,15 +21,13 @@ $fw->jobSteps = array(
 function recommendations_data($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 100;
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$old}recommendations`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}recommendations`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
@@ -38,16 +38,16 @@ function recommendations_data($job, $step)
 					`title`, 
 					`author`, 
 					`summary`, 
-					`comments`, 
-					`rid`, 
+					`comments` as comment, 
+					`rid` as ratingid, 
 					Rec.date, 
 					`validated`, 
 					`completed`,
 					(10*SUM(R1.rating)/COUNT(R1.reviewid)) as ranking,
 					COUNT(R.reviewid) as reviews
-				FROM `{$old}recommendations`Rec
-					LEFT JOIN `{$old}reviews`R ON ( Rec.recid = R.item AND R.type = 'RC' )
-					LEFT JOIN `{$old}reviews`R1 ON ( Rec.recid = R1.item AND R1.rating > 0 AND R1.type = 'RC' )
+				FROM `{$fw->dbOld}recommendations`Rec
+					LEFT JOIN `{$fw->dbOld}reviews`R ON ( Rec.recid = R.item AND R.type = 'RC' )
+					LEFT JOIN `{$fw->dbOld}reviews`R1 ON ( Rec.recid = R1.item AND R1.rating > 0 AND R1.type = 'RC' )
 				GROUP BY Rec.recid
 				ORDER BY Rec.recid ASC LIMIT {$step['items']},{$limit};");
 				
@@ -56,28 +56,17 @@ function recommendations_data($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		// build the insert values
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."recommendations" );
 
 		foreach($dataIn as $data)
-			$values[] = "( '{$data['recid']}', 
-							'{$data['uid']}',
-							{$fw->db5->quote($data['guestname'])},
-							{$fw->db5->quote($data['url'])},
-							{$fw->db5->quote($data['title'])},
-							{$fw->db5->quote($data['author'])},
-							{$fw->db5->quote($data['summary'])},
-							{$fw->db5->quote($data['comments'])},
-							'{$data['rid']}',
-							'{$data['date']}',
-							'{$data['validated']}',
-							'{$data['completed']}',
-							'{$data['ranking']}',
-							'{$data['reviews']}' )";
-
-		$fw->db5->exec ( "INSERT INTO `{$new}recommendations` ( `recid`, `uid`, `guestname`, `url`, `title`, `author`, `summary`, `comment`, `ratingid`, `date`, `validated`, `completed`, `ranking`, `reviews` ) VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+			
+			$tracking->items++;
+		}
 		
-		$tracking->items = $tracking->items+$count;
 		$tracking->save();
 	}
 
@@ -92,13 +81,11 @@ function recommendations_data($job, $step)
 function recommendations_featured($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$i = 0;
 	
 	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."featured" );
 	
-	$dataIn = $fw->db3->exec("SELECT Rec.recid as id, Rec.featured as status, 'RC' as type FROM `{$old}recommendations`Rec WHERE Rec.featured > 0;");
+	$dataIn = $fw->db3->exec("SELECT Rec.recid as id, Rec.featured as status, 'RC' as type FROM `{$fw->dbOld}recommendations`Rec WHERE Rec.featured > 0;");
 	
 	foreach($dataIn as $data)
 	{
@@ -108,7 +95,7 @@ function recommendations_featured($job, $step)
 		$newdata->reset();
 	}
 
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $i,
 							':id' => $step['id']
@@ -119,31 +106,29 @@ function recommendations_featured($job, $step)
 function recommendations_relations($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	// recid, relid, type
 	// get tags (formerly classes)
 	$dataIn = $fw->db3->exec("SELECT Rec.recid,C.class_id as relid,'T' as `type`
-				FROM `{$old}recommendations`Rec
-					INNER JOIN `{$old}classes`C ON (FIND_IN_SET(C.class_id,Rec.classes)>0);");
+				FROM `{$fw->dbOld}recommendations`Rec
+					INNER JOIN `{$fw->dbOld}classes`C ON (FIND_IN_SET(C.class_id,Rec.classes)>0);");
 	// get characters
 	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT Rec.recid,Ch.charid as relid,'CH' as `type`
-				FROM `{$old}recommendations`Rec
-					INNER JOIN `{$old}characters`Ch ON (FIND_IN_SET(Ch.charid,Rec.charid)>0);") );
+				FROM `{$fw->dbOld}recommendations`Rec
+					INNER JOIN `{$fw->dbOld}characters`Ch ON (FIND_IN_SET(Ch.charid,Rec.charid)>0);") );
 	// get categories
 	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT Rec.recid,Cat.catid as relid,'CA' as `type`
-				FROM `{$old}recommendations`Rec
-					INNER JOIN `{$old}categories`Cat ON (FIND_IN_SET(Cat.catid,Rec.catid)>0);") );
+				FROM `{$fw->dbOld}recommendations`Rec
+					INNER JOIN `{$fw->dbOld}categories`Cat ON (FIND_IN_SET(Cat.catid,Rec.catid)>0);") );
 
-	// build the insert values
+	// build the insert values - no strings attached *pun*
 	foreach($dataIn as $data)
 		$values[] = "( '{$data['recid']}', '{$data['relid']}', '{$data['type']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}recommendation_relations` (`recid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
+	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}recommendation_relations` (`recid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
 	$count = $fw->db5->count();
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -154,13 +139,12 @@ function recommendations_relations($job, $step)
 function recommendations_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 50;
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$new}recommendations`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbNew}recommendations`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db5->exec("SELECT SELECT_OUTER.recid,
@@ -178,16 +162,16 @@ function recommendations_cache($job, $step)
 										FROM
 										(
 											SELECT R1.*
-											FROM `{$new}recommendations` R1
+											FROM `{$fw->dbNew}recommendations` R1
 											WHERE R1.cache_tags IS NULL
 											LIMIT 0,{$limit}
 										) AS R
-										LEFT JOIN `{$new}ratings` Ra ON ( Ra.rid = R.ratingid )
-										LEFT JOIN `{$new}recommendation_relations`rRT ON ( rRT.recid = R.recid )
-											LEFT JOIN `{$new}tags` T ON ( T.tid = rRT.relid AND rRT.type='T' )
-												LEFT JOIN `{$new}tag_groups` TG ON ( TG.tgid = T.tgid )
-											LEFT JOIN `{$new}characters` Ch ON ( Ch.charid = rRT.relid AND rRT.type = 'CH' )
-											LEFT JOIN `{$new}categories` Cat ON ( Cat.cid = rRT.relid AND rRT.type = 'CA' )
+										LEFT JOIN `{$fw->dbNew}ratings` Ra ON ( Ra.rid = R.ratingid )
+										LEFT JOIN `{$fw->dbNew}recommendation_relations`rRT ON ( rRT.recid = R.recid )
+											LEFT JOIN `{$fw->dbNew}tags` T ON ( T.tid = rRT.relid AND rRT.type='T' )
+												LEFT JOIN `{$fw->dbNew}tag_groups` TG ON ( TG.tgid = T.tgid )
+											LEFT JOIN `{$fw->dbNew}characters` Ch ON ( Ch.charid = rRT.relid AND rRT.type = 'CH' )
+											LEFT JOIN `{$fw->dbNew}categories` Cat ON ( Cat.cid = rRT.relid AND rRT.type = 'CA' )
 								)AS SELECT_OUTER
 								GROUP BY recid ORDER BY recid ASC;");
 	
@@ -200,7 +184,7 @@ function recommendations_cache($job, $step)
 		{
 			$fw->db5->exec
 			(
-				"UPDATE `{$new}recommendations` SET 
+				"UPDATE `{$fw->dbNew}recommendations` SET 
 					`cache_tags`		= :tagblock,
 					`cache_characters`	= :characterblock,
 					`cache_categories`	= :categoryblock,

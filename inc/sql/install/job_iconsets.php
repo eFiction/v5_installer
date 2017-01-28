@@ -13,10 +13,9 @@ function iconsets_create($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 $sql = <<<EOF
-INSERT INTO `{$new}iconsets` (`set_id`, `name`, `value`) VALUES
+INSERT INTO `{$fw->dbNew}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, '#author', 'eFiction.org'),
 (1, '#directory', NULL),
 (1, '#name', 'Font Awesome CSS Icons'),
@@ -87,7 +86,7 @@ EOF;
 	$fw->db5->exec($sql);
 	$count = $fw->db5->count();
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']

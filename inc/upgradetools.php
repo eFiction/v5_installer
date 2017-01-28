@@ -248,10 +248,14 @@ class upgradetools {
 	{
 		$time_start = microtime(TRUE);
 		$fw = \Base::instance();
-		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+		
+		$fw->dbNew = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+		$fw->dbOld = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
+
+		//$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		$step = $fw->get('PARAMS.step');
 		
-		$job = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step = 0 AND success < 2 ORDER BY joborder, step ASC LIMIT 0,1");
+		$job = $fw->db5->exec ( "SELECT * FROM `{$fw->dbNew}convert` WHERE step = 0 AND success < 2 ORDER BY joborder, step ASC LIMIT 0,1");
 		if($fw->db5->count()==0)
 		{
 			$fw->set('continue',

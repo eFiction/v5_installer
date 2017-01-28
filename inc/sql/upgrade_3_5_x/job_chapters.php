@@ -2,6 +2,8 @@
 /*
 	Job definition for 'chapters'
 	eFiction upgrade from version 3.5.x
+
+	2017-01-28: Update DB queries
 */
 
 $fw->jobSteps = array(
@@ -13,8 +15,6 @@ function chapters_copy($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
 	$limit = 100;
 	$report = [];
@@ -44,13 +44,13 @@ function chapters_copy($job, $step)
 			
 		}
 		// Count total chapters and take note
-		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$old}chapters`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}chapters`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 	
 	$dataIn = $fw->db3->exec("SELECT COUNT(reviewid) as reviewsNew, Ch.uid as folder, Ch.chapid as chapter, Ch.*
-								FROM `{$old}chapters`Ch 
-								LEFT JOIN `{$old}reviews`R ON ( Ch.chapid = R.chapid AND R.type='ST' )
+								FROM `{$fw->dbOld}chapters`Ch 
+								LEFT JOIN `{$fw->dbOld}reviews`R ON ( Ch.chapid = R.chapid AND R.type='ST' )
 								GROUP BY Ch.chapid
 								ORDER BY chapid ASC LIMIT {$step['items']},{$limit};");
 	

@@ -7,6 +7,8 @@
 	- recommendations
 	- recommendations relation tables
 	- cache tables and fields
+
+	2017-01-27: Update DB queries to be safer
 */
 
 $fw->jobSteps = array(
@@ -18,21 +20,21 @@ $fw->jobSteps = array(
 function contests_data($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 100;
 	$i = 0;
 	
-	//$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories" );
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$old}challenges`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}challenges`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db5->exec("SELECT
-								`chalid`, `uid`, `title`, `summary` 
-								FROM `{$old}challenges`
+									`chalid` as conid,
+									`uid`,
+									`title`,
+									`summary` 
+								FROM `{$fw->dbOld}challenges`
 								ORDER BY `chalid` ASC LIMIT {$step['items']},{$limit};");
 
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
@@ -40,17 +42,17 @@ function contests_data($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		// build the insert values
-		foreach($dataIn as $data)
-			$values[] = "( '{$data['chalid']}',
-							'{$data['uid']}',			
-							{$fw->db5->quote($data['title'])},
-							{$fw->db5->quote($data['summary'])} )";
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."contests" );
 
-		$fw->db5->exec ( "INSERT INTO `{$new}contests` ( `conid`, `uid`, `title`, `summary` ) VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
-		
-		$tracking->items = $tracking->items+$count;
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+			
+			$tracking->items++;
+		}
+
 		$tracking->save();
 	}
 
@@ -65,33 +67,31 @@ function contests_data($job, $step)
 function contests_relations($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	// recid, relid, type
 	// get characters
 	$dataIn = $fw->db3->exec("SELECT C.chalid,Ch.charid as `relid`, 'CH' as 'type'
-				FROM `{$old}challenges`C
-					INNER JOIN `{$old}characters`Ch ON (FIND_IN_SET(Ch.charid,C.characters));");
+				FROM `{$fw->dbOld}challenges`C
+					INNER JOIN `{$fw->dbOld}characters`Ch ON (FIND_IN_SET(Ch.charid,C.characters));");
 
 	// get categories
 	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT C.chalid, Cat.catid as `relid`, 'CA' as 'type'
-				FROM `{$old}challenges`C
-					INNER JOIN `{$old}categories`Cat ON (FIND_IN_SET(Cat.catid,C.catid));") );
+				FROM `{$fw->dbOld}challenges`C
+					INNER JOIN `{$fw->dbOld}categories`Cat ON (FIND_IN_SET(Cat.catid,C.catid));") );
 
 	// get stories
 	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT C.chalid, S.sid as `relid`,'ST' AS `type` 
-				FROM `{$old}challenges`C
-					INNER JOIN `{$old}stories`S ON (FIND_IN_SET(C.chalid, S.challenges));") );
+				FROM `{$fw->dbOld}challenges`C
+					INNER JOIN `{$fw->dbOld}stories`S ON (FIND_IN_SET(C.chalid, S.challenges));") );
 
-	// build the insert values
+	// build the insert values, only numeric so bulk-insert
 	foreach($dataIn as $data)
 		$values[] = "( '{$data['chalid']}', '{$data['relid']}', '{$data['type']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$new}contest_relations` (`conid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
+	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}contest_relations` (`conid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
 	$count = $fw->db5->count();
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -102,13 +102,12 @@ function contests_relations($job, $step)
 function contests_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 50;
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$new}contests`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbNew}contests`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db5->exec("SELECT 
@@ -120,18 +119,18 @@ function contests_cache($job, $step)
 									FROM 
 									(
 										SELECT Con1.conid
-											FROM `{$new}contests`Con1
+											FROM `{$fw->dbNew}contests`Con1
 											WHERE Con1.cache_tags IS NULL
 											LIMIT 0,{$limit}
 									) AS Con
-										LEFT JOIN `{$new}contest_relations`rC ON ( rC.conid = Con.conid )
-											LEFT JOIN `{$new}stories`S ON ( S.sid = rC.relid and rC.type='ST' )
-												LEFT JOIN `{$new}stories_authors`rSA ON ( rSA.sid = S.sid )
-													LEFT JOIN `{$new}users`U ON ( U.uid = rSA.aid )
-											LEFT JOIN `{$new}tags`T ON ( T.tid = rC.relid AND rC.type = 'T' )
-												LEFT JOIN `{$new}tag_groups`TG ON ( TG.tgid = T.tgid )
-											LEFT JOIN `{$new}characters`Chara ON ( Chara.charid = rC.relid AND rC.type = 'CH' )
-											LEFT JOIN `{$new}categories`C ON ( C.cid = rC.relid AND rC.type = 'CA' )
+										LEFT JOIN `{$fw->dbNew}contest_relations`rC ON ( rC.conid = Con.conid )
+											LEFT JOIN `{$fw->dbNew}stories`S ON ( S.sid = rC.relid and rC.type='ST' )
+												LEFT JOIN `{$fw->dbNew}stories_authors`rSA ON ( rSA.sid = S.sid )
+													LEFT JOIN `{$fw->dbNew}users`U ON ( U.uid = rSA.aid )
+											LEFT JOIN `{$fw->dbNew}tags`T ON ( T.tid = rC.relid AND rC.type = 'T' )
+												LEFT JOIN `{$fw->dbNew}tag_groups`TG ON ( TG.tgid = T.tgid )
+											LEFT JOIN `{$fw->dbNew}characters`Chara ON ( Chara.charid = rC.relid AND rC.type = 'CH' )
+											LEFT JOIN `{$fw->dbNew}categories`C ON ( C.cid = rC.relid AND rC.type = 'CA' )
 									GROUP BY Con.conid;");
 
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
@@ -143,7 +142,7 @@ function contests_cache($job, $step)
 		{
 			$fw->db5->exec
 			(
-					"UPDATE `{$new}contests` SET 
+					"UPDATE `{$fw->dbNew}contests` SET 
 						`cache_stories`		= :storyblock,
 						`cache_tags`		= :tagblock,
 						`cache_characters`	= :characterblock,

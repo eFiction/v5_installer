@@ -7,6 +7,8 @@
 	- stories
 	- story relation tables
 	- cache tables and fields
+
+	2017-01-28: Update DB queries to be safer
 */
 
 $fw->jobSteps = array(
@@ -24,15 +26,13 @@ $fw->jobSteps = array(
 function stories_data($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 100;
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$old}stories`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
@@ -46,7 +46,7 @@ function stories_data($job, $step)
 										S.title, 
 										S.summary, 
 										S.storynotes, 
-										S.rid, 
+										S.rid as ratingid, 
 										S.date, 
 										S.updated, 
 										S.validated, 
@@ -55,45 +55,23 @@ function stories_data($job, $step)
 										SUM(C.wordcount) as wordcount, 
 										COUNT(DISTINCT C.chapid) as chapters, 
 										S.count
-									FROM `{$old}stories`S
-										LEFT JOIN `{$old}chapters`C ON ( C.sid = S.sid )
+									FROM `{$fw->dbOld}stories`S
+										LEFT JOIN `{$fw->dbOld}chapters`C ON ( C.sid = S.sid )
 									GROUP BY S.sid
 									ORDER BY S.sid ASC LIMIT {$step['items']},{$limit}
 								) AS S1
-								LEFT JOIN `{$old}reviews`R ON ( S1.sid = R.item AND R.type = 'ST' )
-								LEFT JOIN `{$old}reviews`R1 ON ( S1.sid = R1.item AND R1.rating > 0 AND R1.type = 'ST' )
+								LEFT JOIN `{$fw->dbOld}reviews`R ON ( S1.sid = R.item AND R.type = 'ST' )
+								LEFT JOIN `{$fw->dbOld}reviews`R1 ON ( S1.sid = R1.item AND R1.rating > 0 AND R1.type = 'ST' )
 							GROUP BY S1.sid
 							ORDER BY S1.sid ASC;");
-				
-/*	$dataIn = $fw->db3->exec("SELECT
-					S.sid, 
-					S.title, 
-					S.summary, 
-					S.storynotes, 
-					S.rid, 
-					S.date, 
-					S.updated, 
-					S.validated, 
-					S.completed, 
-					S.rr as roundrobin, 
-					SUM(C.wordcount) as wordcount, 
-					(10*SUM(R1.rating)/COUNT(R1.reviewid)) as ranking, 
-					COUNT(DISTINCT R.reviewid) as reviews, 
-					COUNT(DISTINCT C.chapid) as chapters, 
-					S.count
-				FROM `{$old}stories`S
-					LEFT JOIN `{$old}reviews`R ON ( S.sid = R.item AND R.type = 'ST' )
-					LEFT JOIN `{$old}reviews`R1 ON ( S.sid = R1.item AND R1.rating > 0 AND R1.type = 'ST' )
-					LEFT JOIN `{$old}chapters`C ON ( C.sid = S.sid )
-				GROUP BY S.sid
-				ORDER BY S.sid ASC LIMIT {$step['items']},{$limit};");*/
 				
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		// build the insert values
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories" );
+
 		foreach($dataIn as $data)
 		{
 			switch($data['validated']) {
@@ -107,27 +85,13 @@ function stories_data($job, $step)
 					$data['validated'] = '23';
 			}
 
-			$values[] = "( '{$data['sid']}', 
-							{$fw->db5->quote($data['title'])},
-							{$fw->db5->quote($data['summary'])},
-							{$fw->db5->quote($data['storynotes'])},
-							'{$data['rid']}',
-							'{$data['date']}',
-							'{$data['updated']}',
-							'{$data['validated']}',
-							'{$data['completed']}',
-							'{$data['roundrobin']}',
-							'{$data['wordcount']}',
-							'{$data['ranking']}',
-							'{$data['reviews']}',
-							'{$data['chapters']}',
-							'{$data['count']}' )";
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+			
+			$tracking->items++;
 		}
 
-		$fw->db5->exec ( "INSERT INTO `{$new}stories` (`sid`, `title`, `summary`, `storynotes`, `ratingid`, `date`, `updated`, `validated`, `completed`, `roundrobin`, `wordcount`, `ranking`, `reviews`, `chapters`, `count`) VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
-		
-		$tracking->items = $tracking->items+$count;
 		$tracking->save();
 	}
 
@@ -142,25 +106,27 @@ function stories_data($job, $step)
 function stories_featured($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
-	$i = 0;
+	$count = 0;
 	
-	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."featured" );
+	$dataIn = $fw->db3->exec("SELECT S.sid as id, S.featured as status FROM `{$fw->dbOld}stories`S WHERE S.featured > 0;");
 	
-	$dataIn = $fw->db3->exec("SELECT S.sid as id, S.featured as status FROM `{$old}stories`S WHERE S.featured > 0;");
-	
-	foreach($dataIn as $data)
+	if ( sizeof($dataIn)>0 )
 	{
-		$i++;
-		$newdata->copyfrom($data);
-		$newdata->save();
-		$newdata->reset();
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."featured" );
+
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+
+			$count++;
+		}
 	}
 
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
-							':items' => $i,
+							':items' => $count,
 							':id' => $step['id']
 						]
 					);
@@ -169,11 +135,9 @@ function stories_featured($job, $step)
 function stories_authors($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
-	$dataIn = $fw->db3->exec("SELECT S.sid, S.uid, '0' as ca FROM `{$old}stories`S ORDER BY S.sid ASC;");
-	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT Ca.sid, Ca.uid, 1 as 'ca' FROM `{$old}coauthors`Ca ORDER BY Ca.sid ASC;") );
+	$dataIn = $fw->db3->exec("SELECT S.sid, S.uid, '0' as ca FROM `{$fw->dbOld}stories`S ORDER BY S.sid ASC;");
+	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT Ca.sid, Ca.uid, 1 as 'ca' FROM `{$fw->dbOld}coauthors`Ca ORDER BY Ca.sid ASC;") );
 
 	// build the insert values
 	if ( sizeof($dataIn)>0 )
@@ -181,18 +145,18 @@ function stories_authors($job, $step)
 		foreach($dataIn as $data)
 			$values[] = "( '{$data['sid']}', '{$data['uid']}', '{$data['ca']}' )";
 
-		$fw->db5->exec ( "INSERT INTO `{$new}stories_authors` (`sid`, `aid`, `ca`) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}stories_authors` (`sid`, `aid`, `ca`) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();
 	}
 	else $count = 0;
 	
 	// Cleanup, there are cases when an author also is set as co_author
 	$fw->db5->exec("DELETE S1 
-			FROM `{$new}stories_authors`S1 
-				INNER JOIN `{$new}stories_authors`S2 ON ( S1.sid=S2.sid AND S1.aid = S2.aid AND S1.lid > S2.lid );");
+			FROM `{$fw->dbNew}stories_authors`S1 
+				INNER JOIN `{$fw->dbNew}stories_authors`S2 ON ( S1.sid=S2.sid AND S1.aid = S2.aid AND S1.lid > S2.lid );");
 	$deleted = $fw->db5->count();
 
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count-$deleted,
 							':id' => $step['id']
@@ -203,25 +167,23 @@ function stories_authors($job, $step)
 function stories_categories($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	$dataIn = $fw->db3->exec("SELECT S.sid,C.catid
-		FROM `{$old}stories`S
-			INNER JOIN `{$old}categories`C ON (FIND_IN_SET(C.catid,S.catid)>0);");
+		FROM `{$fw->dbOld}stories`S
+			INNER JOIN `{$fw->dbOld}categories`C ON (FIND_IN_SET(C.catid,S.catid)>0);");
 
-	// build the insert values
+	// build the insert values - numeric only
 	if ( sizeof($dataIn)>0 )
 	{
 		foreach($dataIn as $data)
 			$values[] = "( '{$data['sid']}', '{$data['catid']}' )";
 
-		$fw->db5->exec ( "INSERT INTO `{$new}stories_categories` (`sid`, `cid`) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}stories_categories` (`sid`, `cid`) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();
 	}
 	else $count = 0;
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -232,30 +194,33 @@ function stories_categories($job, $step)
 function stories_tags($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	
 	// get tags (formerly classes)
 	$dataIn = $fw->db3->exec("SELECT S.sid,C.class_id as tid,'0' as `character`
-				FROM `{$old}stories`S
-					INNER JOIN `{$old}classes`C ON (FIND_IN_SET(C.class_id,S.classes)>0);");
+				FROM `{$fw->dbOld}stories`S
+					INNER JOIN `{$fw->dbOld}classes`C ON (FIND_IN_SET(C.class_id,S.classes)>0);");
 	// get characters
 	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT S.sid,Ch.charid as tid,'1' as `character`
-				FROM `{$old}stories`S
-					INNER JOIN `{$old}characters`Ch ON (FIND_IN_SET(Ch.charid,S.charid)>0);") );
+				FROM `{$fw->dbOld}stories`S
+					INNER JOIN `{$fw->dbOld}characters`Ch ON (FIND_IN_SET(Ch.charid,S.charid)>0);") );
+	
+	$count = 0;
 
-	// build the insert values
 	if ( sizeof($dataIn)>0 )
 	{
-		foreach($dataIn as $data)
-			$values[] = "( '{$data['sid']}', '{$data['tid']}', '{$data['character']}' )";
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories_tags" );
 
-		$fw->db5->exec ( "INSERT INTO `{$new}stories_tags` (`sid`, `tid`, `character`) VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+
+			$count++;
+		}
 	}
-	else $count = 0;
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -266,16 +231,15 @@ function stories_tags($job, $step)
 function stories_recount_tags($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 	$items = 0;
 	do {
-		$fw->db5->exec("UPDATE `{$new}tags` T1 
+		$fw->db5->exec("UPDATE `{$fw->dbNew}tags` T1 
 							LEFT JOIN
 							(
 								SELECT T.tid, COUNT( DISTINCT RT.sid ) AS counter 
-								FROM `{$new}tags`T 
-								LEFT JOIN `{$new}stories_tags`RT ON (RT.tid = T.tid AND RT.character = 0)
+								FROM `{$fw->dbNew}tags`T 
+								LEFT JOIN `{$fw->dbNew}stories_tags`RT ON (RT.tid = T.tid AND RT.character = 0)
 									WHERE T.count IS NULL
 									GROUP BY T.tid
 									LIMIT 0,25
@@ -285,7 +249,7 @@ function stories_recount_tags($job, $step)
 		$items += $count;
 	} while ( 0 < $count );
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $items,
 							':id' => $step['id']
@@ -296,16 +260,15 @@ function stories_recount_tags($job, $step)
 function stories_recount_characters($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 	$items = 0;
 	do {
-		$fw->db5->exec("UPDATE `{$new}characters` C1 
+		$fw->db5->exec("UPDATE `{$fw->dbNew}characters` C1 
 							LEFT JOIN
 							(
 								SELECT C.charid, COUNT( DISTINCT RT.sid ) AS counter 
-								FROM `{$new}characters`C
-								LEFT JOIN `{$new}stories_tags`RT ON (RT.tid = C.charid AND RT.character = 1)
+								FROM `{$fw->dbNew}characters`C
+								LEFT JOIN `{$fw->dbNew}stories_tags`RT ON (RT.tid = C.charid AND RT.character = 1)
 									WHERE C.count IS NULL
 									GROUP BY C.charid
 									LIMIT 0,25
@@ -315,7 +278,7 @@ function stories_recount_characters($job, $step)
 		$items += $count;
 	} while ( 0 < $count );
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $items,
 							':id' => $step['id']
@@ -326,16 +289,15 @@ function stories_recount_characters($job, $step)
 function stories_recount_categories($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 
 	$items = 0;
 
 	$dataIn = $fw->db5->exec("SELECT C.cid, C.category, COUNT(DISTINCT S.sid) as counted, GROUP_CONCAT(DISTINCT C1.category SEPARATOR '||' ) as sub_categories, GROUP_CONCAT(DISTINCT C1.stats SEPARATOR '||' ) as sub_stats
-								FROM `{$new}categories`C 
-									INNER JOIN (SELECT leveldown FROM `{$new}categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )
-								LEFT JOIN `{$new}stories_categories`SC ON ( C.cid = SC.cid )
-									LEFT JOIN `{$new}stories`S ON ( S.sid = SC.sid )
-								LEFT JOIN `{$new}categories`C1 ON ( C.cid = C1.parent_cid )
+								FROM `{$fw->dbNew}categories`C 
+									INNER JOIN (SELECT leveldown FROM `{$fw->dbNew}categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )
+								LEFT JOIN `{$fw->dbNew}stories_categories`SC ON ( C.cid = SC.cid )
+									LEFT JOIN `{$fw->dbNew}stories`S ON ( S.sid = SC.sid )
+								LEFT JOIN `{$fw->dbNew}categories`C1 ON ( C.cid = C1.parent_cid )
 							GROUP BY C.cid;");
 
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
@@ -363,7 +325,7 @@ function stories_recount_categories($job, $step)
 
 			$fw->db5->exec
 			(
-				"UPDATE `{$new}categories`C SET C.stats = :stats WHERE C.cid = :cid",
+				"UPDATE `{$fw->dbNew}categories`C SET C.stats = :stats WHERE C.cid = :cid",
 				[ ":stats" => $stats, ":cid" => $item['cid'] ]
 			);
 			$items++;
@@ -383,13 +345,12 @@ function stories_recount_categories($job, $step)
 function stories_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 50;
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$new}stories`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbNew}stories`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db5->exec("SELECT SELECT_OUTER.sid,
@@ -409,19 +370,19 @@ function stories_cache($job, $step)
 								FROM
 								(
 									SELECT S1.*
-									FROM `{$new}stories` S1
+									FROM `{$fw->dbNew}stories` S1
 									WHERE S1.cache_rating IS NULL
 									LIMIT 0,{$limit}
 								) AS S
-								LEFT JOIN `{$new}ratings` Ra ON ( Ra.rid = S.ratingid )
-								LEFT JOIN `{$new}stories_authors`rSA ON ( rSA.sid = S.sid )
-									LEFT JOIN `{$new}users` U ON ( rSA.aid = U.uid )
-								LEFT JOIN `{$new}stories_tags`rST ON ( rST.sid = S.sid )
-									LEFT JOIN `{$new}tags` T ON ( T.tid = rST.tid AND rST.character = 0 )
-										LEFT JOIN `{$new}tag_groups` TG ON ( TG.tgid = T.tgid )
-									LEFT JOIN `{$new}characters` Ch ON ( Ch.charid = rST.tid AND rST.character = 1 )
-								LEFT JOIN `{$new}stories_categories`rSC ON ( rSC.sid = S.sid )
-									LEFT JOIN `{$new}categories` Cat ON ( rSC.cid = Cat.cid )
+								LEFT JOIN `{$fw->dbNew}ratings` Ra ON ( Ra.rid = S.ratingid )
+								LEFT JOIN `{$fw->dbNew}stories_authors`rSA ON ( rSA.sid = S.sid )
+									LEFT JOIN `{$fw->dbNew}users` U ON ( rSA.aid = U.uid )
+								LEFT JOIN `{$fw->dbNew}stories_tags`rST ON ( rST.sid = S.sid )
+									LEFT JOIN `{$fw->dbNew}tags` T ON ( T.tid = rST.tid AND rST.character = 0 )
+										LEFT JOIN `{$fw->dbNew}tag_groups` TG ON ( TG.tgid = T.tgid )
+									LEFT JOIN `{$fw->dbNew}characters` Ch ON ( Ch.charid = rST.tid AND rST.character = 1 )
+								LEFT JOIN `{$fw->dbNew}stories_categories`rSC ON ( rSC.sid = S.sid )
+									LEFT JOIN `{$fw->dbNew}categories` Cat ON ( rSC.cid = Cat.cid )
 						)AS SELECT_OUTER
 						GROUP BY sid ORDER BY sid ASC;");
 
@@ -434,7 +395,7 @@ function stories_cache($job, $step)
 		{
 			$fw->db5->exec
 			(
-				"UPDATE `{$new}stories` SET 
+				"UPDATE `{$fw->dbNew}stories` SET 
 					`cache_authors`		= :authorblock,
 					`cache_tags`		= :tagblock,
 					`cache_characters`	= :characterblock,

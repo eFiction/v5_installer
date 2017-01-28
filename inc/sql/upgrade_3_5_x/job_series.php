@@ -7,11 +7,13 @@
 	- series
 	- series relation tables
 	- cache tables and fields
+	
+	2017-01-27: Update DB queries to be safer
 */
 
 $fw->jobSteps = array(
-		"data"					=> "Copy series table",//
-		"stories"				=> "Series <-> Story relations", //
+		"data"					=> "Copy series table",
+		"stories"				=> "Series <-> Story relations",
 		"cache"					=> "Build cache fields",
 	);
 
@@ -19,26 +21,31 @@ $fw->jobSteps = array(
 function series_data($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 	$limit = 100;
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$old}stories`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
-					Ser.seriesid, Ser.title, Ser.summary, Ser.uid, Ser.isopen, Ser.challenges,
-					COUNT(DISTINCT Ch.chapid) as chapter_count, SUM(Ch.wordcount) as word_count, COUNT(DISTINCT R.reviewid) as reviews,
-					inS2.seriesid as parent_series
-					FROM `{$old}series`Ser
-					LEFT JOIN `{$old}inseries`inS ON ( Ser.seriesid = inS.seriesid AND inS.subseriesid = 0 )
-						LEFT JOIN `{$old}chapters`Ch ON ( Ch.sid = inS.sid )
-						LEFT JOIN `{$old}reviews`R ON ( R.item = Ser.seriesid AND R.type='SE' )
-					LEFT JOIN `{$old}inseries`inS2 ON ( Ser.seriesid = inS2.subseriesid )
+						Ser.seriesid, 
+						inS2.seriesid as parent_series, 
+						Ser.title,
+						Ser.summary,
+						Ser.uid,
+						Ser.isopen as open,
+						COUNT(DISTINCT R.reviewid) as reviews,
+						Ser.challenges as contests,
+						COUNT(DISTINCT Ch.chapid) as chapters,
+						SUM(Ch.wordcount) as words
+					FROM `{$fw->dbOld}series`Ser
+					LEFT JOIN `{$fw->dbOld}inseries`inS ON ( Ser.seriesid = inS.seriesid AND inS.subseriesid = 0 )
+						LEFT JOIN `{$fw->dbOld}chapters`Ch ON ( Ch.sid = inS.sid )
+						LEFT JOIN `{$fw->dbOld}reviews`R ON ( R.item = Ser.seriesid AND R.type='SE' )
+					LEFT JOIN `{$fw->dbOld}inseries`inS2 ON ( Ser.seriesid = inS2.subseriesid )
 				GROUP BY Ser.seriesid
 				ORDER BY Ser.seriesid ASC LIMIT {$step['items']},{$limit};");
 				
@@ -47,22 +54,17 @@ function series_data($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		foreach($dataIn as $data)
-			$values[] = "( '{$data['seriesid']}', 
-							'{$data['parent_series']}',
-							{$fw->db5->quote($data['title'])},
-							{$fw->db5->quote($data['summary'])},
-							'{$data['uid']}',
-							'{$data['isopen']}',
-							'{$data['reviews']}',
-							'{$data['challenges']}',
-							'{$data['chapter_count']}',
-							'{$data['word_count']}' )";
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."series" );
 
-		$fw->db5->exec ( "INSERT INTO `{$new}series` (`seriesid`, `parent_series`, `title`, `summary`, `uid`, `open`, `reviews`, `contests`, `chapters`, `words` ) VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
-		
-		$tracking->items = $tracking->items+$count;
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+			
+			$tracking->items++;
+		}
+
 		$tracking->save();
 	}
 
@@ -77,23 +79,21 @@ function series_data($job, $step)
 function series_stories($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
-	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$old}inseries` WHERE `subseriesid` = 0;");
+	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$fw->dbOld}inseries` WHERE `subseriesid` = 0;");
 
-	// build the insert values
+	// build the insert values, only numeric, so bulk-insert
 	if ( sizeof($dataIn)>0 )
 	{
 		foreach($dataIn as $data)
 			$values[] = "( '{$data['seriesid']}', '{$data['sid']}', '{$data['confirmed']}', '{$data['inorder']}' )";
 
-		$fw->db5->exec ( "INSERT INTO `{$new}series_stories` ( `seriesid`, `sid`, `confirmed`, `inorder` ) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}series_stories` ( `seriesid`, `sid`, `confirmed`, `inorder` ) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();
 	}
 	else $count = 0;
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -104,13 +104,12 @@ function series_stories($job, $step)
 function series_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$limit = 20;
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$new}series`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbNew}series`;")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db5->exec("SELECT 
@@ -132,24 +131,24 @@ function series_cache($job, $step)
 									FROM 
 									(
 										SELECT Ser1.seriesid
-											FROM `{$new}series`Ser1
+											FROM `{$fw->dbNew}series`Ser1
 											WHERE Ser1.cache_authors IS NULL
 											LIMIT 0,{$limit}
 									) AS Ser
-										LEFT JOIN `{$new}series_stories`TrS ON ( Ser.seriesid = TrS.seriesid )
-											LEFT JOIN `{$new}stories`S ON ( TrS.sid = S.sid )
-												LEFT JOIN `{$new}ratings`Ra ON ( Ra.rid = S.ratingid )
-												LEFT JOIN `{$new}stories_tags`rST ON ( rST.sid = S.sid )
-													LEFT JOIN `{$new}tags`T ON ( T.tid = rST.tid AND rST.character = 0 )
-														LEFT JOIN `{$new}tag_groups`TG ON ( TG.tgid = T.tgid )
-													LEFT JOIN `{$new}characters`Chara ON ( Chara.charid = rST.tid AND rST.character = 1 )
-												LEFT JOIN `{$new}stories_categories`rSC ON ( rSC.sid = S.sid )
-													LEFT JOIN `{$new}categories`C ON ( rSC.cid = C.cid )
-												LEFT JOIN `{$new}stories_authors`rSA ON ( rSA.sid = S.sid )
-													LEFT JOIN `{$new}users` U ON ( rSA.aid = U.uid )
+										LEFT JOIN `{$fw->dbNew}series_stories`TrS ON ( Ser.seriesid = TrS.seriesid )
+											LEFT JOIN `{$fw->dbNew}stories`S ON ( TrS.sid = S.sid )
+												LEFT JOIN `{$fw->dbNew}ratings`Ra ON ( Ra.rid = S.ratingid )
+												LEFT JOIN `{$fw->dbNew}stories_tags`rST ON ( rST.sid = S.sid )
+													LEFT JOIN `{$fw->dbNew}tags`T ON ( T.tid = rST.tid AND rST.character = 0 )
+														LEFT JOIN `{$fw->dbNew}tag_groups`TG ON ( TG.tgid = T.tgid )
+													LEFT JOIN `{$fw->dbNew}characters`Chara ON ( Chara.charid = rST.tid AND rST.character = 1 )
+												LEFT JOIN `{$fw->dbNew}stories_categories`rSC ON ( rSC.sid = S.sid )
+													LEFT JOIN `{$fw->dbNew}categories`C ON ( rSC.cid = C.cid )
+												LEFT JOIN `{$fw->dbNew}stories_authors`rSA ON ( rSA.sid = S.sid )
+													LEFT JOIN `{$fw->dbNew}users` U ON ( rSA.aid = U.uid )
 									GROUP BY Ser.seriesid
 							) AS SERIES
-							LEFT JOIN `{$new}ratings`R ON (R.rid = max_rating_id);");
+							LEFT JOIN `{$fw->dbNew}ratings`R ON (R.rid = max_rating_id);");
 
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
 	$tracking->load(['id = ?', $step['id'] ]);
@@ -160,7 +159,7 @@ function series_cache($job, $step)
 		{
 			$fw->db5->exec
 			(
-					"UPDATE `{$new}series` SET 
+					"UPDATE `{$fw->dbNew}series` SET 
 						`cache_authors`		= :authorblock,
 						`cache_tags`		= :tagblock,
 						`cache_characters`	= :characterblock,
@@ -175,8 +174,9 @@ function series_cache($job, $step)
 						':max_rating'		=> json_encode(explode(",",$item['max_rating'])),
 					]
 			);
+			$tracking->items++;
 		}
-		$tracking->items = $tracking->items+$count;
+		//$tracking->items = $tracking->items+$count;
 		$tracking->save();
 	}
 

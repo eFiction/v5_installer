@@ -13,9 +13,8 @@ function config_create($job, $step)
 {
 	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-
 	$chapterLocation =   ( $fw['installerCFG.chapters']=="filebase" ) ? "local" : "db";
+
 	/*
 	$modules = [];
 	foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )
@@ -57,7 +56,7 @@ function config_create($job, $step)
 
 */
 $sql = <<<EOF
-INSERT INTO `{$new}config` (`name`, `admin_module`, `section_order`, `value`, `comment`, `form_type`, `can_edit`) VALUES
+INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `value`, `comment`, `form_type`, `can_edit`) VALUES
 ('stories_per_page',			'archive_general', 1,			"{$fw['installerCFG.data.itemsperpage']}", 'Stories per page in the Archive', 'text//numeric', 1),
 ('stories_default_order',		'archive_general', 2,			"{$fw['installerCFG.data.defaultsort']}", 'Default sorting for stories', 'select//__sort_date=date//__sort_name=title', 1),
 ('story_toc_default',			'archive_general', 3,			"{$fw['installerCFG.data.displayindex']}", 'Default to table of contents on stories with multiple chapters.', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
@@ -148,7 +147,7 @@ EOF;
 	$fw->db5->exec($sql);
 	$count = $fw->db5->count();
 	
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
