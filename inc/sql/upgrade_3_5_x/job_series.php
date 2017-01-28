@@ -8,6 +8,7 @@
 	- series relation tables
 	- cache tables and fields
 	
+	2017-01-28: Better cache creation
 	2017-01-27: Update DB queries to be safer
 */
 
@@ -155,28 +156,19 @@ function series_cache($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
+		$seriesMap = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."series" );
 		foreach ( $dataIn as $item)
 		{
-			$fw->db5->exec
-			(
-					"UPDATE `{$fw->dbNew}series` SET 
-						`cache_authors`		= :authorblock,
-						`cache_tags`		= :tagblock,
-						`cache_characters`	= :characterblock,
-						`cache_categories`	= :categoryblock,
-						`max_rating`		= :max_rating
-					WHERE seriesid = {$item['seriesid']} ;",
-					[
-						':authorblock'		=> json_encode(upgradetools::cleanResult($item['authorblock'])),
-						':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
-						':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
-						':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
-						':max_rating'		=> json_encode(explode(",",$item['max_rating'])),
-					]
-			);
+			$seriesMap->load(array("seriesid=?",$item['seriesid']));
+			$seriesMap->cache_authors		= json_encode(upgradetools::cleanResult($item['authorblock']));
+			$seriesMap->cache_tags			= json_encode(upgradetools::cleanResult($item['tagblock']));
+			$seriesMap->cache_characters	= json_encode(upgradetools::cleanResult($item['characterblock']));
+			$seriesMap->cache_categories	= json_encode(upgradetools::cleanResult($item['categoryblock']));
+			$seriesMap->max_rating			= json_encode(explode(",",$item['max_rating']));
+			$seriesMap->save();
+
 			$tracking->items++;
 		}
-		//$tracking->items = $tracking->items+$count;
 		$tracking->save();
 	}
 

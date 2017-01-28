@@ -180,25 +180,18 @@ function recommendations_cache($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
+		$recommMap = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."recommendations" );
 		foreach ( $dataIn as $item)
 		{
-			$fw->db5->exec
-			(
-				"UPDATE `{$fw->dbNew}recommendations` SET 
-					`cache_tags`		= :tagblock,
-					`cache_characters`	= :characterblock,
-					`cache_categories`	= :categoryblock,
-					`cache_rating`		= :rating
-				WHERE recid = {$item['recid']} ;",
-				[
-					':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
-					':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
-					':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
-					':rating'			=> json_encode(explode(",",$item['rating'])),
-				]
-			);
+			$recommMap->load(array("recid=?",$item['recid']));
+			$recommMap->cache_tags			= json_encode(upgradetools::cleanResult($item['tagblock']));
+			$recommMap->cache_characters	= json_encode(upgradetools::cleanResult($item['characterblock']));
+			$recommMap->cache_categories	= json_encode(upgradetools::cleanResult($item['categoryblock']));
+			$recommMap->cache_rating		= json_encode(explode(",",$item['rating']));
+			$recommMap->save();
+
+			$tracking->items++;
 		}
-		$tracking->items = $tracking->items+$count;
 		$tracking->save();
 	}
 

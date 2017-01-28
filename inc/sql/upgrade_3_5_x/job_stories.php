@@ -9,6 +9,7 @@
 	- cache tables and fields
 
 	2017-01-28: Update DB queries to be safer
+				Better cache creation
 */
 
 $fw->jobSteps = array(
@@ -345,7 +346,7 @@ function stories_recount_categories($job, $step)
 function stories_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 50;
+	$limit = 100;
 	
 	if ( $step['success'] == 0 )
 	{
@@ -391,27 +392,19 @@ function stories_cache($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
+		$storyMap = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories" );
 		foreach ( $dataIn as $item)
 		{
-			$fw->db5->exec
-			(
-				"UPDATE `{$fw->dbNew}stories` SET 
-					`cache_authors`		= :authorblock,
-					`cache_tags`		= :tagblock,
-					`cache_characters`	= :characterblock,
-					`cache_categories`	= :categoryblock,
-					`cache_rating`		= :rating
-				WHERE sid = {$item['sid']} ;",
-				[
-					':authorblock'		=> json_encode(upgradetools::cleanResult($item['authorblock'])),
-					':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
-					':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
-					':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
-					':rating'			=> json_encode(explode(",",$item['rating'])),
-				]
-			);
+			$storyMap->load(array("sid=?",$item['sid']));
+			$storyMap->cache_authors	= json_encode(upgradetools::cleanResult($item['authorblock']));
+			$storyMap->cache_tags		= json_encode(upgradetools::cleanResult($item['tagblock']));
+			$storyMap->cache_characters	= json_encode(upgradetools::cleanResult($item['characterblock']));
+			$storyMap->cache_categories	= json_encode(upgradetools::cleanResult($item['categoryblock']));
+			$storyMap->cache_rating		= json_encode(explode(",",$item['rating']));
+			$storyMap->save();
+
+			$tracking->items++;
 		}
-		$tracking->items = $tracking->items+$count;
 		$tracking->save();
 	}
 

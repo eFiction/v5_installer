@@ -476,6 +476,7 @@ class upgradetools {
 	
 	public static function cleanResult($messy)
 	{
+		if ( empty($messy) ) return NULL;
 		$mess = explode("||",$messy);
 		$mess = (array_unique($mess));
 		foreach ( $mess as $element )
