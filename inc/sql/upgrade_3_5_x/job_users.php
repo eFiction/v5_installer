@@ -175,7 +175,7 @@ function users_info($job, $step)
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
-	$dataIn = $fw->db3->exec("SELECT Ai.uid, Ai.field, Ai.info
+	$dataIn = $fw->db3->exec("SELECT Ai.uid, Ai.field, Ai.info, Uf.field_type
 								FROM `{$fw->dbOld}authorinfo`Ai
 									INNER JOIN `{$fw->dbOld}authorfields`Uf ON (Ai.field=Uf.field_id)
 								ORDER BY Ai.uid, Ai.field ASC LIMIT {$step['items']},{$limit};");
@@ -189,7 +189,14 @@ function users_info($job, $step)
 
 		foreach($dataIn as $data)
 		{
-			$newdata->copyfrom($data);
+			$newdata->uid	= $data['uid'];
+			$newdata->field = $data['field'];
+			if ( $data['field_type']== 3)
+			{
+				if ( in_array(strtolower($data['info']),["yes", "ja"]) ) $data['info'] = 1;
+				elseif ( in_array(strtolower($data['info']),["no", "nein"]) ) $data['info'] = 0;
+			}
+			$newdata->info	= $data['info'];
 			$newdata->save();
 			$newdata->reset();
 			
