@@ -130,7 +130,7 @@ function users_fields($job, $step)
 	
 	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."user_fields" );
 	
-	$dataIn = $fw->db3->exec("SELECT `field_id`, `field_type`, `field_name`, `field_title`, `field_options`, `field_code_out`, `field_on`
+	$dataIn = $fw->db3->exec("SELECT `field_id`, `field_type`, `field_name`, `field_title`, `field_options`, `field_code_out`, `field_on` as enabled
 							FROM `{$fw->dbOld}authorfields`
 							ORDER BY `field_id` ASC;");	
 

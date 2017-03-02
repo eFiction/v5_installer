@@ -70,13 +70,13 @@ function chapters_copy($job, $step)
 		{
 			switch($chapterIn['validated']) {
 				case 0:
-					$chapterIn['validated'] = '01';
+					$chapterIn['validated'] = '11';
 					break;
 				case 1:
-					$chapterIn['validated'] = '21';
+					$chapterIn['validated'] = '31';
 					break;
 				case 2:
-					$chapterIn['validated'] = '23';
+					$chapterIn['validated'] = '33';
 			}
 				
 			// Get chapter text, from file or DB

@@ -33,7 +33,6 @@ function config_create($job, $step)
   `tinyMCE` tinyint(1) NOT NULL DEFAULT '0',
   `allowed_tags` varchar(200) NOT NULL DEFAULT '<b><i><u><center><hr><p><br /><br><blockquote><ol><ul><li><img><strong><em>',
   `captcha` tinyint(1) NOT NULL DEFAULT '0',
-  `recentdays` tinyint(2) NOT NULL DEFAULT '7', Begrenzung der Tage für zuletzt erschienene Geschichten
   
   `ratings` tinyint(1) NOT NULL DEFAULT '0', Bewertungssystem
 
@@ -58,7 +57,8 @@ function config_create($job, $step)
 $sql = <<<EOF
 INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `value`, `comment`, `form_type`, `can_edit`) VALUES
 ('stories_per_page',			'archive_general', 1,			"{$fw['installerCFG.data.itemsperpage']}", 'Stories per page in the Archive', 'text//numeric', 1),
-('stories_default_order',		'archive_general', 2,			"{$fw['installerCFG.data.defaultsort']}", 'Default sorting for stories', 'select//__sort_date=date//__sort_name=title', 1),
+('stories_recent',				'archive_general', 2,			"{$fw['installerCFG.data.recentdays']}", 'Days for recent stories', 'text//numeric', 1),
+('stories_default_order',		'archive_general', 3,			"{$fw['installerCFG.data.defaultsort']}", 'Default sorting for stories', 'select//__sort_date=date//__sort_name=title', 1),
 ('story_toc_default',			'archive_general', 3,			"{$fw['installerCFG.data.displayindex']}", 'Default to table of contents on stories with multiple chapters.', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('epub_domain',					'archive_general', 9,			'', 'ePub Domain@SMALL@Used to calculate your epub UUID v5. Leave blank for default (Archive URL)', 'text//small', 1),
 ('story_intro_items',			'archive_intro', 1,				'5', 'Stories to show on the archive entry page.', 'text//numeric', 1),
@@ -68,8 +68,9 @@ INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `valu
 ('stories_min_words',			'archive_submit', 3,			"{$fw['installerCFG.data.minwords']}", 'Minimum amount of words for a chapter', 'text//numeric', 1),
 ('stories_max_words',			'archive_submit', 4,			"{$fw['installerCFG.data.maxwords']}", 'Maximum amount of words for a chapter@SMALL@(0 = unlimited)', 'text//numeric', 1),
 ('allow_co_author', 			'archive_submit', 5,			"{$fw['installerCFG.data.coauthallowed']}", 'Allow addition of other authors to stories', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
-('allow_series', 				'archive_submit', 6,			"{$fw['installerCFG.data.allowseries']}", 'Allow authors to create series@SMALL@Member series are now collections', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
-('allow_roundrobin', 			'archive_submit', 7,			"{$fw['installerCFG.data.roundrobins']}", 'Allow guests to write reviews', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('stories_min_tags',			'archive_submit', 6,			'0', 'Minimum amount of tags required', 'text//numeric', 1),
+('allow_series', 				'archive_submit', 7,			"{$fw['installerCFG.data.allowseries']}", 'Allow authors to create series@SMALL@Member series are now collections', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('allow_roundrobin', 			'archive_submit', 8,			"{$fw['installerCFG.data.roundrobins']}", 'Allow roundrobins', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_reviews', 				'archive_reviews', 1,			"{$fw['installerCFG.data.reviewsallowed']}", 'Allow reviews', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_guest_reviews', 		'archive_reviews', 2,			"{$fw['installerCFG.data.anonreviews']}", 'Allow guests to write reviews', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_review_delete', 		'archive_reviews', 3,			"{$fw['installerCFG.data.revdelete']}", 'Authors can delete reviews', 'select//__all=2//__anonymous=1//{{@LN__no}}=0', 1),

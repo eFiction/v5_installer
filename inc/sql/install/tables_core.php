@@ -660,11 +660,12 @@ CREATE TABLE `{$new}user_favourites` (
 DROP TABLE IF EXISTS `{$new}user_fields`;
 CREATE TABLE `{$new}user_fields` (
   `field_id` int(11) NOT NULL AUTO_INCREMENT,
-  `field_type` tinyint(4) NOT NULL DEFAULT '0',
+  `field_order` tinyint(3) UNSIGNED NOT NULL DEFAULT '255',
+  `field_type` tinyint(3) NOT NULL DEFAULT '0',
   `field_name` varchar(30) NOT NULL DEFAULT ' ',
   `field_title` varchar(255) NOT NULL DEFAULT ' ',
   `field_options` text,
-  `field_on` tinyint(1) NOT NULL DEFAULT '0',
+  `enabled` tinyint(1) NOT NULL DEFAULT '0',
    PRIMARY KEY (`field_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 --NOTE--User fields

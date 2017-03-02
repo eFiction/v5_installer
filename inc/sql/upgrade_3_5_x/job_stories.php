@@ -77,13 +77,13 @@ function stories_data($job, $step)
 		{
 			switch($data['validated']) {
 				case 0:
-					$data['validated'] = '01';
+					$data['validated'] = '11';
 					break;
 				case 1:
-					$data['validated'] = '21';
+					$data['validated'] = '31';
 					break;
 				case 2:
-					$data['validated'] = '23';
+					$data['validated'] = '33';
 			}
 
 			$newdata->copyfrom($data);
@@ -361,7 +361,7 @@ function stories_cache($job, $step)
 	}
 
 	$dataIn = $fw->db5->exec("SELECT SELECT_OUTER.sid,
-						GROUP_CONCAT(DISTINCT tid,',',tag,',',description ORDER BY `order`,tgid,tag ASC SEPARATOR '||') AS tagblock,
+						GROUP_CONCAT(DISTINCT tid,',',tag,',',description,',',tgid ORDER BY `order`,tgid,tag ASC SEPARATOR '||') AS tagblock,
 						GROUP_CONCAT(DISTINCT charid,',',charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
 						GROUP_CONCAT(DISTINCT uid,',',nickname ORDER BY nickname ASC SEPARATOR '||' ) as authorblock,
 						GROUP_CONCAT(DISTINCT cid,',',category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
@@ -401,15 +401,20 @@ function stories_cache($job, $step)
 		$storyMap = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories" );
 		foreach ( $dataIn as $item)
 		{
+			$tagblock['simple'] = upgradetools::cleanResult($item['tagblock']);
+			if($tagblock['simple']!==NULL) foreach($tagblock['simple'] as $t)
+				$tagblock['structured'][$t[2]][] = [ $t[0], $t[1], $t[2], $t[3] ];
+			
 			$storyMap->load(array("sid=?",$item['sid']));
 			$storyMap->cache_authors	= json_encode(upgradetools::cleanResult($item['authorblock']));
-			$storyMap->cache_tags		= json_encode(upgradetools::cleanResult($item['tagblock']));
+			$storyMap->cache_tags		= json_encode($tagblock);
 			$storyMap->cache_characters	= json_encode(upgradetools::cleanResult($item['characterblock']));
 			$storyMap->cache_categories	= json_encode(upgradetools::cleanResult($item['categoryblock']));
 			$storyMap->cache_rating		= json_encode(explode(",",$item['rating']));
 			$storyMap->save();
 
 			$tracking->items++;
+			$tagblock = [];
 		}
 		$tracking->save();
 	}
