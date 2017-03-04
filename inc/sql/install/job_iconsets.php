@@ -43,6 +43,7 @@ INSERT INTO `{$fw->dbNew}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, 'external-link', 'fa-external-link'),
 (1, 'favourite,heart', 'fa-heart'),
 (1, 'favourite-off', 'fa-heart-o'),
+(1, 'flag,report', 'fa-flag'),
 (1, 'folder', 'fa-folder-open'),
 (1, 'following', 'fa-reply fa-rotate-180'),
 (1, 'home', 'fa-home'),
