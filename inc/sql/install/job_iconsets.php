@@ -20,7 +20,7 @@ INSERT INTO `{$fw->dbNew}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, '#directory', NULL),
 (1, '#name', 'Font Awesome CSS Icons'),
 (1, '#notes', 'requires ''@import url(//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css);'' in styles.css (See http://fortawesome.github.io/Font-Awesome/get-started/ )'),
-(1, '#pattern', '<span class="fa @1@"></span>'),
+(1, '#pattern', '<span class="fa @1@" title="@T@"></span>'),
 (1, 'archive', 'fa-university'),
 (1, 'arrow-down', 'fa-arrow-down'),
 (1, 'arrow-left', 'fa-arrow-left'),
@@ -81,6 +81,7 @@ INSERT INTO `{$fw->dbNew}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, 'text', 'fa-file-text-o'),
 (1, 'time', 'fa-clock-o'),
 (1, 'trash', 'fa-trash-o'),
+(1, 'twitter', 'fa-twitter'),
 (1, 'unlock', 'fa-unlock'),
 (1, 'waiting', 'fa-spin fa-spinner'),
 (1, 'wrench', 'fa-wrench');

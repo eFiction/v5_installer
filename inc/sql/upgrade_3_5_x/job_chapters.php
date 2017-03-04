@@ -103,7 +103,7 @@ function chapters_copy($job, $step)
 				// Store data in the filebase storage
 				$newchapterText->chapid		 = $chapterIn['chapter'];
 				$newchapterText->sid		 = $chapterIn['sid'];
-				$newchapterText->inorder	= $chapterIn['inorder'];
+				$newchapterText->inorder	 = $chapterIn['inorder'];
 				$newchapterText->chaptertext = $chaptertext;
 				$newchapterText->save();
 				$newchapterText->reset();
@@ -127,9 +127,9 @@ function chapters_copy($job, $step)
 			$newchapter->reset();
 			
 			$tracking->items = $tracking->items+1;
-			$tracking->save();
 		}
-		//
+		// Only save once, this should work unless server halts prior to it
+		$tracking->save();
 	}
 	
 	if ( $count == 0 OR $tracking->items>=$tracking->total )

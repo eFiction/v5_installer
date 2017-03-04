@@ -153,7 +153,7 @@ CREATE TABLE `{$new}characters` (
   `biography` mediumtext NOT NULL,
   `image` tinytext NOT NULL,
   `count` int(10) unsigned DEFAULT NULL,
-  PRIMARY KEY (`charid`), UNIQUE KEY `charname` (`charname`(64))
+  PRIMARY KEY (`charid`), KEY `charname` (`charname`(64))
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table';
 EOF;
 
