@@ -193,8 +193,8 @@ function users_info($job, $step)
 			$newdata->field = $data['field'];
 			if ( $data['field_type']== 3)
 			{
-				if ( in_array(strtolower($data['info']),["yes", "ja"]) ) $data['info'] = 1;
-				elseif ( in_array(strtolower($data['info']),["no", "nein"]) ) $data['info'] = 0;
+				if ( in_array(strtolower($data['info']),["yes", "ja", "evet"]) ) $data['info'] = 1;
+				elseif ( in_array(strtolower($data['info']),["no", "nein", "hayır"]) ) $data['info'] = 0;
 			}
 			$newdata->info	= $data['info'];
 			$newdata->save();

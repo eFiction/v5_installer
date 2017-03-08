@@ -52,10 +52,10 @@ if(isset($upgrade)){
 $core['convert'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}convert`;
 CREATE TABLE `{$new}convert` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `job` tinytext NOT NULL,
-  `joborder` tinyint(4) NOT NULL,
-  `step` tinyint(4) NOT NULL,
+  `joborder` tinyint(3) NOT NULL,
+  `step` tinyint(3) NOT NULL,
   `job_description` tinytext NOT NULL,
   `step_function` tinytext NOT NULL,
   `success` tinyint(1) NOT NULL DEFAULT '0',
@@ -75,7 +75,7 @@ EOF;
 $core['bad_behavior'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}bad_behavior`;
 CREATE TABLE `{$new}bad_behavior` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `ip` text NOT NULL,
   `date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `request_method` text NOT NULL,
@@ -99,15 +99,15 @@ EOF;
 $core['categories'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}categories`;
 CREATE TABLE `{$new}categories` (
-  `cid` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_cid` int(11) NOT NULL DEFAULT '0',
+  `cid` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `parent_cid` mediumint(8) NOT NULL DEFAULT '0',
   `category` varchar(60) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `description` text NOT NULL,
   `image` varchar(100) NOT NULL DEFAULT '',
   `locked` tinyint(1) NOT NULL DEFAULT '0',
-  `leveldown` tinyint(2) unsigned NOT NULL DEFAULT '0',
-  `inorder` int(11) NOT NULL DEFAULT '0',
-  `counter` int(11) NOT NULL DEFAULT '0' COMMENT 'might be obsolete',
+  `leveldown` tinytinyint(3) unsigned NOT NULL DEFAULT '0',
+  `inorder` mediumint(8) NOT NULL DEFAULT '0',
+  `counter` mediumint(8) NOT NULL DEFAULT '0' COMMENT 'might be obsolete',
   `stats` text NOT NULL,
   PRIMARY KEY (`cid`), KEY `byparent` (`parent_cid`,`inorder`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset} COMMENT='(eFI5): derived from _categories';
@@ -121,20 +121,20 @@ EOF;
 $core['chapters'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}chapters`;
 CREATE TABLE `{$new}chapters` (
-  `chapid` int(11) NOT NULL AUTO_INCREMENT,
-  `sid` int(11) NOT NULL DEFAULT '0',
+  `chapid` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `sid` mediumint(8) NOT NULL DEFAULT '0',
   `title` varchar(250) NOT NULL DEFAULT '',
-  `inorder` int(11) NOT NULL DEFAULT '0',
+  `inorder` mediumint(8) NOT NULL DEFAULT '0',
   `notes` text,
   `chaptertext` mediumtext,
   `workingtext` mediumtext,
   `workingdate` timestamp NULL DEFAULT NULL,
   `endnotes` text,
-  `validated` tinyint(2) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
-  `wordcount` int(11) NOT NULL DEFAULT '0',
+  `validated` tinytinyint(3) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
+  `wordcount` mediumint(8) NOT NULL DEFAULT '0',
   `rating` tinyint(3) NOT NULL DEFAULT '0',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
-  `count` int(11) NOT NULL DEFAULT '0',
+  `count` mediumint(8) NOT NULL DEFAULT '0',
   PRIMARY KEY (`chapid`), KEY `sid` (`sid`), KEY `inorder` (`inorder`), KEY `title` (`title`), KEY `validated` (`validated`), KEY `forstoryblock` (`sid`,`validated`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
@@ -147,12 +147,12 @@ EOF;
 $core['characters'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}characters`;
 CREATE TABLE `{$new}characters` (
-  `charid` int(11) NOT NULL,
-  `catid` int(11) NOT NULL DEFAULT '0',
+  `charid` mediumint(8) NOT NULL,
+  `catid` mediumint(8) NOT NULL DEFAULT '0',
   `charname` tinytext NOT NULL,
   `biography` mediumtext NOT NULL,
   `image` tinytext NOT NULL,
-  `count` int(10) unsigned DEFAULT NULL,
+  `count` mediumint(8) unsigned DEFAULT NULL,
   PRIMARY KEY (`charid`), KEY `charname` (`charname`(64))
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table';
 EOF;
@@ -184,7 +184,7 @@ EOF;
 $core['feedback'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}feedback`;
 CREATE TABLE `{$new}feedback` (
-  `fid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `fid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `reference` mediumint(9) unsigned NOT NULL DEFAULT '0',
   `reference_sub` mediumint(9) unsigned DEFAULT NULL,
   `writer_name` varchar(60) DEFAULT NULL,
@@ -193,7 +193,7 @@ CREATE TABLE `{$new}feedback` (
   `datetime` timestamp NULL DEFAULT NULL,
   `rating` tinyint(1) DEFAULT NULL,
   `type` char(2) NOT NULL DEFAULT '',
-  `moderation` int(11) DEFAULT NULL,
+  `moderation` mediumint(8) DEFAULT NULL,
   PRIMARY KEY (`fid`), KEY `sub_ref` (`reference_sub`), KEY `moderation` (`moderation`), KEY `by_uid` (`writer_uid`,`reference`,`type`), KEY `alias_story_chapter` (`reference`,`reference_sub`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
@@ -206,7 +206,7 @@ EOF;
 $core['iconsets'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}iconsets`;
 CREATE TABLE `{$new}iconsets` (
-  `set_id` tinyint(4) unsigned NOT NULL,
+  `set_id` tinyint(3) unsigned NOT NULL,
   `name` varchar(128) NOT NULL,
   `value` text,
   PRIMARY KEY (`set_id`,`name`(30))
@@ -221,10 +221,10 @@ EOF;
 $core['log'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}log`;
 CREATE TABLE `{$new}log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `action` text,
-  `uid` int(11) NOT NULL DEFAULT '0',
-  `ip` int(11) unsigned DEFAULT NULL,
+  `uid` mediumint(8) NOT NULL DEFAULT '0',
+  `ip` int(10) unsigned DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `type` set('RG','ED','DL','VS','LP','BL','RE','AM','EB','RF') NOT NULL,
   `version` tinyint(1) NOT NULL,
@@ -259,13 +259,13 @@ EOF;
 $core['menu'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}menu`;
 CREATE TABLE `{$new}menu` (
-  `id` int(2) unsigned NOT NULL AUTO_INCREMENT,
+  `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
   `label` varchar(64) NOT NULL,
-  `order` int(2) NOT NULL,
+  `order` tinyint(3) unsigned NOT NULL,
   `link` varchar(256) DEFAULT NULL,
   `meta` varchar(128) DEFAULT NULL,
-  `child_of` int(2) DEFAULT NULL,
-  `active` int(1) NOT NULL DEFAULT '1',
+  `child_of` tinyint(3) DEFAULT NULL,
+  `active` ENUM('0','1') NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
 --NOTE--Page menu
@@ -273,13 +273,13 @@ CREATE TABLE `{$new}menu` (
 
 DROP TABLE IF EXISTS `{$new}menu_adminpanel`;
 CREATE TABLE `{$new}menu_adminpanel` (
-  `id` int(2) unsigned NOT NULL AUTO_INCREMENT,
+  `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
   `label` tinytext NOT NULL COMMENT 'must match an ''AdminMenu_...'' entry in the language files!',
-  `order` int(2) NOT NULL,
+  `order` tinyint(3) NOT NULL,
   `link` tinytext,
   `icon` varchar(64) DEFAULT '{ICON:blank}',
   `child_of` varchar(64) DEFAULT NULL,
-  `active` int(1) NOT NULL DEFAULT '1',
+  `active` ENUM('0','1') NOT NULL DEFAULT '1',
   `requires` tinyint(1) unsigned NOT NULL DEFAULT '2',
   `evaluate` tinytext,
   PRIMARY KEY (`id`), KEY `child_of` (`child_of`)
@@ -289,13 +289,13 @@ CREATE TABLE `{$new}menu_adminpanel` (
 
 DROP TABLE IF EXISTS `{$new}menu_userpanel`;
 CREATE TABLE `{$new}menu_userpanel` (
-  `id` int(2) unsigned NOT NULL AUTO_INCREMENT,
+  `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
   `label` tinytext NOT NULL,
-  `order` int(2) NOT NULL,
+  `order` tinyint(3) NOT NULL,
   `link` tinytext,
   `icon` tinytext,
   `child_of` varchar(16) DEFAULT NULL,
-  `active` int(1) NOT NULL DEFAULT '1',
+  `active` ENUM('0','1') NOT NULL DEFAULT '1',
   `evaluate` tinytext DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `menu` (`child_of`,`order`),
@@ -312,9 +312,9 @@ EOF;
 $core['messaging'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}messaging`;
 CREATE TABLE `{$new}messaging` (
-  `mid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `sender` int(10) unsigned NOT NULL,
-  `recipient` int(10) unsigned NOT NULL,
+  `mid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `sender` mediumint(8) unsigned NOT NULL,
+  `recipient` mediumint(8) unsigned NOT NULL,
   `date_sent` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_read` timestamp NULL DEFAULT NULL,
   `subject` tinytext NOT NULL,
@@ -331,12 +331,12 @@ EOF;
 $core['news'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}news`;
 CREATE TABLE `{$new}news` (
-  `nid` int(11) NOT NULL AUTO_INCREMENT,
-  `uid` int(11) NOT NULL,
+  `nid` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `uid` mediumint(8) NOT NULL,
   `headline` varchar(255) NOT NULL DEFAULT '',
   `newstext` text NOT NULL,
   `datetime` datetime DEFAULT NULL,
-  `comments` int(11) NOT NULL DEFAULT '0',
+  `comments` mediumint(8) NOT NULL DEFAULT '0',
   PRIMARY KEY (`nid`), KEY `uid` (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
 EOF;
@@ -349,7 +349,7 @@ EOF;
 $core['poll'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}poll`;
 CREATE TABLE `{$new}poll` (
-  `poll_id` int(11) NOT NULL AUTO_INCREMENT,
+  `poll_id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `question` varchar(250) NOT NULL,
   `options` text NOT NULL,
   `start_date` datetime NOT NULL,
@@ -362,10 +362,10 @@ CREATE TABLE `{$new}poll` (
 
 DROP TABLE IF EXISTS `{$new}poll_votes`;
 CREATE TABLE `{$new}poll_votes` (
-  `vote_id` int(11) NOT NULL AUTO_INCREMENT,
-  `poll_id` int(11) NOT NULL DEFAULT '0',
-  `uid` int(11) NOT NULL DEFAULT '0',
-  `option` int(11) NOT NULL DEFAULT '0',
+  `vote_id` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `poll_id` mediumint(8) NOT NULL DEFAULT '0',
+  `uid` mediumint(8) NOT NULL DEFAULT '0',
+  `option` mediumint(8) NOT NULL DEFAULT '0',
   PRIMARY KEY (`vote_id`),
   KEY `vote_user` (`uid`,`poll_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -380,9 +380,9 @@ EOF;
 $core['ratings'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}ratings`;
 CREATE TABLE `{$new}ratings` (
-  `rid` int(11) NOT NULL AUTO_INCREMENT,
+  `rid` mediumint(8) NOT NULL AUTO_INCREMENT,
   `rating` varchar(60) NOT NULL DEFAULT '',
-  `rating_age` tinyint(2) NOT NULL DEFAULT '0',
+  `rating_age` tinytinyint(3) NOT NULL DEFAULT '0',
   `rating_image` varchar(50) NULL DEFAULT NULL,
   `ratingwarning` tinyint(1) NOT NULL DEFAULT '0',
   `warningtext` text NOT NULL,
@@ -399,18 +399,18 @@ EOF;
 $core['series'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}series`;
 CREATE TABLE `{$new}series` (
-  `seriesid` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_series` int(11) unsigned DEFAULT NULL,
+  `seriesid` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `parent_series` mediumint(8) unsigned DEFAULT NULL,
   `title` varchar(200) NOT NULL DEFAULT '',
   `summary` text NOT NULL,
-  `uid` int(11) NOT NULL DEFAULT '0',
+  `uid` mediumint(8) NOT NULL DEFAULT '0',
   `open` tinyint(1) NOT NULL DEFAULT '0',
-  `rating` tinyint(4) NOT NULL DEFAULT '0',
+  `rating` tinyint(3) NOT NULL DEFAULT '0',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
   `contests` varchar(200) NOT NULL DEFAULT '',
   `max_rating` tinytext NOT NULL,
   `chapters` smallint(5) unsigned NOT NULL,
-  `words` int(10) unsigned DEFAULT NULL,
+  `words` mediumint(8) unsigned DEFAULT NULL,
   `cache_authors` text,
   `cache_tags` text,
   `cache_characters` text,
@@ -423,10 +423,10 @@ CREATE TABLE `{$new}series` (
 
 DROP TABLE IF EXISTS `{$new}series_stories`;
 CREATE TABLE `{$new}series_stories` (
-  `seriesid` int(11) NOT NULL DEFAULT '0',
-  `sid` int(11) NOT NULL DEFAULT '0',
-  `confirmed` int(11) NOT NULL DEFAULT '0',
-  `inorder` int(11) NOT NULL DEFAULT '0',
+  `seriesid` mediumint(8) NOT NULL DEFAULT '0',
+  `sid` mediumint(8) NOT NULL DEFAULT '0',
+  `confirmed` mediumint(8) NOT NULL DEFAULT '0',
+  `inorder` mediumint(8) NOT NULL DEFAULT '0',
   PRIMARY KEY (`sid`,`seriesid`),
   KEY `seriesid` (`seriesid`,`inorder`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
@@ -442,10 +442,10 @@ $core['sessions'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}sessions`;
 CREATE TABLE `{$new}sessions` (
   `session` char(32) NOT NULL,
-  `user` int(8) unsigned NOT NULL DEFAULT '0',
+  `user` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `lastvisited` timestamp NOT NULL,
-  `ip` int(12) unsigned NOT NULL DEFAULT '0',
+  `ip` int(10) unsigned DEFAULT NULL,
   `admin` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`session`),
   KEY `user` (`user`),
@@ -478,36 +478,36 @@ EOF;
 $core['stories'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}stories`;
 CREATE TABLE `{$new}stories` (
-  `sid` int(11) NOT NULL AUTO_INCREMENT,
+  `sid` mediumint(8) NOT NULL AUTO_INCREMENT,
   `title` varchar(200) NOT NULL DEFAULT 'Untitled',
   `summary` text,
   `storynotes` text,
   `ratingid` tinyint(3) DEFAULT NULL,
   `date` datetime DEFAULT NULL,
   `updated` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `validated` tinyint(2) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
+  `validated` tinytinyint(3) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
   `completed` tinyint(1) NOT NULL DEFAULT '-1' COMMENT '-2 deleted, -1 draft, 0 w.i.p., 1 all done',
   `roundrobin` char(1) NOT NULL DEFAULT '0',
-  `wordcount` int(11) NOT NULL DEFAULT '0',
+  `wordcount` mediumint(8) NOT NULL DEFAULT '0',
   `ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
   `chapters` smallint(6) NOT NULL DEFAULT '0',
-  `count` int(11) NOT NULL DEFAULT '0',
+  `count` mediumint(8) NOT NULL DEFAULT '0',
   `cache_authors` text,
   `cache_tags` text,
   `cache_characters` text,
   `cache_categories` text,
   `cache_rating` tinytext DEFAULT NULL,
-  `moderation` int(11) DEFAULT NULL,
+  `moderation` mediumint(8) DEFAULT NULL,
   PRIMARY KEY (`sid`), KEY `moderation` (`moderation`), KEY `title` (`title`), KEY `ratingid` (`ratingid`), KEY `completed` (`completed`), KEY `roundrobin` (`roundrobin`), KEY `validated` (`validated`), KEY `recent` (`updated`,`validated`)
  ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 --SPLIT--
 
 DROP TABLE IF EXISTS `{$new}stories_authors`;
 CREATE TABLE `{$new}stories_authors` (
-  `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `sid` int(10) NOT NULL,
-  `aid` int(10) unsigned NOT NULL,
+  `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `sid` mediumint(8) NOT NULL,
+  `aid` mediumint(8) unsigned NOT NULL,
   `type` set('M','S','T','') NOT NULL DEFAULT 'M' COMMENT 'M = main, S = supporting, T = translator',
   PRIMARY KEY (`lid`), UNIQUE KEY `fullrelation` (`sid`,`aid`,`type`), UNIQUE KEY `relation` (`sid`,`aid`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for story-author relations';
@@ -516,9 +516,9 @@ CREATE TABLE `{$new}stories_authors` (
 
 DROP TABLE IF EXISTS `{$new}stories_categories`;
 CREATE TABLE `{$new}stories_categories` (
-  `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `sid` int(10) NOT NULL,
-  `cid` int(10) unsigned NOT NULL,
+  `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `sid` mediumint(8) NOT NULL,
+  `cid` mediumint(8) unsigned NOT NULL,
   PRIMARY KEY (`lid`), UNIQUE KEY `relation` (`sid`,`cid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for story-category relations';
 --NOTE--Story relation table: Categories
@@ -526,12 +526,12 @@ CREATE TABLE `{$new}stories_categories` (
 
 DROP TABLE IF EXISTS `{$new}featured`;
 CREATE TABLE `{$new}featured` (
-  `id` int(11) NOT NULL,
+  `id` mediumint(8) NOT NULL,
   `type` char(2) NOT NULL DEFAULT 'ST',
   `status` tinyint(1) DEFAULT NULL,
   `start` timestamp NULL DEFAULT NULL,
   `end` timestamp NULL DEFAULT NULL,
-  `uid` int(11) DEFAULT NULL,
+  `uid` mediumint(8) DEFAULT NULL,
   UNIQUE KEY `feature` (`id`,`type`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for featured stories';
 --NOTE--Story relation table: Featured
@@ -539,12 +539,12 @@ CREATE TABLE `{$new}featured` (
 
 DROP TABLE IF EXISTS `{$new}stories_tags`;
 CREATE TABLE `{$new}stories_tags` (
-  `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `sid` int(10) NOT NULL,
-  `tid` int(10) unsigned NOT NULL,
-  `character` int(1) DEFAULT 0,
-  PRIMARY KEY (`lid`), KEY `relation` (`sid`,`tid`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for story-tag relations';
+  `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `sid` mediumint(8) NOT NULL,
+  `tid` mediumint(8) unsigned NOT NULL,
+  `character` ENUM('0','1') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`lid`), KEY `relation` (`sid`,`tid`,`character`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for story-tag/character relations';
 --NOTE--Story relation table: Tags
 EOF;
 
@@ -556,12 +556,12 @@ EOF;
 $core['tags'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}tags`;
 CREATE TABLE `{$new}tags` (
-  `tid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `oldid` int(11) NOT NULL,
-  `tgid` int(10) unsigned NOT NULL,
+  `tid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `oldid` mediumint(8) NOT NULL,
+  `tgid` mediumint(8) unsigned NOT NULL,
   `label` tinytext NOT NULL,
   `description` mediumtext NOT NULL,
-  `count` int(10) unsigned DEFAULT NULL,
+  `count` mediumint(8) unsigned DEFAULT NULL,
   PRIMARY KEY (`tid`), UNIQUE KEY `label` (`label`(64)), KEY `tgid` (`tgid`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table';
 --NOTE--Tag table
@@ -569,9 +569,9 @@ CREATE TABLE `{$new}tags` (
 
 DROP TABLE IF EXISTS `{$new}tag_groups`;
 CREATE TABLE `{$new}tag_groups` (
-  `tgid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tgid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `label` varchar(64) NOT NULL,
-  `order` int(11) NOT NULL DEFAULT '0',
+  `order` mediumint(8) NOT NULL DEFAULT '0',
   `description` mediumtext,
   PRIMARY KEY (`tgid`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='New table, eFiction 5';
@@ -586,7 +586,7 @@ EOF;
 $core['textblocks'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}textblocks`;
 CREATE TABLE `{$new}textblocks` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `label` varchar(50) NOT NULL DEFAULT '',
   `title` varchar(200) NOT NULL DEFAULT '',
   `content` text NOT NULL,
@@ -604,8 +604,8 @@ EOF;
 $core['tracker'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}tracker`;
 CREATE TABLE `{$new}tracker` (
-  `sid` int(11) NOT NULL DEFAULT '0',
-  `uid` int(11) NOT NULL DEFAULT '0',
+  `sid` mediumint(8) NOT NULL DEFAULT '0',
+  `uid` mediumint(8) NOT NULL DEFAULT '0',
   `last_chapter` smallint(5) unsigned NOT NULL DEFAULT '0',
   `last_read` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`sid`,`uid`), KEY `uid` (`uid`)
@@ -627,10 +627,10 @@ CREATE TABLE `{$new}users` (
   `password` varchar(140) CHARACTER SET utf8 NOT NULL,
   `email` varchar(256) CHARACTER SET utf8 NOT NULL,
   `registered` datetime NOT NULL,
-  `groups` int(10) unsigned DEFAULT NULL,
+  `groups` mediumint(8) unsigned DEFAULT NULL,
   `curator` mediumint(8) unsigned DEFAULT NULL,
   `about` mediumtext CHARACTER SET utf8 NULL,
-  `moderation` int(11) DEFAULT NULL,
+  `moderation` mediumint(8) DEFAULT NULL,
   `alert_feedback` tinyint(1) NOT NULL DEFAULT '0',
   `alert_comment` tinyint(1) NOT NULL DEFAULT '0',
   `alert_favourite` tinyint(1) NOT NULL DEFAULT '0',
@@ -641,9 +641,9 @@ CREATE TABLE `{$new}users` (
 
 DROP TABLE IF EXISTS `{$new}user_favourites`;
 CREATE TABLE `{$new}user_favourites` (
-  `fid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `uid` int(11) NOT NULL DEFAULT '0',
-  `item` int(11) NOT NULL DEFAULT '0',
+  `fid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `uid` mediumint(8) NOT NULL DEFAULT '0',
+  `item` mediumint(8) NOT NULL DEFAULT '0',
   `type` char(2) NOT NULL DEFAULT '',
   `bookmark` BOOLEAN NOT NULL,
   `notify` tinyint(1) NOT NULL DEFAULT '0',
@@ -659,7 +659,7 @@ CREATE TABLE `{$new}user_favourites` (
 
 DROP TABLE IF EXISTS `{$new}user_fields`;
 CREATE TABLE `{$new}user_fields` (
-  `field_id` int(11) NOT NULL AUTO_INCREMENT,
+  `field_id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `field_order` tinyint(3) UNSIGNED NOT NULL DEFAULT '255',
   `field_type` tinyint(3) NOT NULL DEFAULT '0',
   `field_name` varchar(30) NOT NULL DEFAULT ' ',
@@ -673,8 +673,8 @@ CREATE TABLE `{$new}user_fields` (
 
 DROP TABLE IF EXISTS `{$new}user_info`;
 CREATE TABLE `{$new}user_info` (
-  `uid` int(11) NOT NULL DEFAULT '0',
-  `field` int(11) NOT NULL DEFAULT '0',
+  `uid` mediumint(8) NOT NULL DEFAULT '0',
+  `field` mediumint(8) NOT NULL DEFAULT '0',
   `info` varchar(255) NOT NULL DEFAULT ' ',
   PRIMARY KEY (`uid`,`field`), KEY `uid` (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
@@ -683,9 +683,9 @@ CREATE TABLE `{$new}user_info` (
 
 DROP TABLE IF EXISTS `{$new}user_friends`;
 CREATE TABLE `{$new}user_friends` (
-  `link` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `uid` int(10) unsigned NOT NULL,
-  `friend` int(10) unsigned NOT NULL,
+  `link` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `uid` mediumint(8) unsigned NOT NULL,
+  `friend` mediumint(8) unsigned NOT NULL,
   `comment` varchar(512) NOT NULL,
   PRIMARY KEY (`link`), UNIQUE KEY `relation` (`uid`,`friend`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
