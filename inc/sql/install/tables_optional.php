@@ -23,7 +23,7 @@ CREATE TABLE `{$new}contests` (
   `date_open` datetime DEFAULT NULL,
   `date_close` datetime DEFAULT NULL,
   `vote_closed` datetime DEFAULT NULL,
-  `concealed` tinyint(1) NOT NULL,
+  `concealed` ENUM('0','1') NOT NULL,
   `cache_tags` text,
   `cache_characters` text,
   `cache_categories` text,
@@ -40,7 +40,7 @@ CREATE TABLE `{$new}contest_relations` (
   `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `conid` int(10) unsigned NOT NULL,
   `relid` int(10) unsigned NOT NULL,
-  `type` SET('CA','CH','ST','T') CHARACTER SET latin1,
+  `type` ENUM('CA','CH','ST','T') NOT NULL COMMENT 'CA = category, CH = character, ST = story, T = tag';
   PRIMARY KEY (`lid`),
   UNIQUE KEY `UNIQUE` (`relid`,`type`,`conid`),
   KEY `conid` (`conid`),
@@ -69,8 +69,8 @@ CREATE TABLE `{$new}recommendations` (
   `comment` text,
   `ratingid` varchar(25) NOT NULL DEFAULT '0',
   `date` datetime DEFAULT NULL,
-  `validated` char(1) NOT NULL DEFAULT '0',
-  `completed` char(1) NOT NULL DEFAULT '0',
+  `validated` ENUM('0','1') NOT NULL DEFAULT '0',
+  `completed` ENUM('0','1') NOT NULL DEFAULT '0',
   `ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
   `reviews` smallint(6) DEFAULT NULL,
   `cache_tags` text,
@@ -90,7 +90,7 @@ CREATE TABLE `{$new}recommendation_relations` (
   `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `recid` int(10) NOT NULL,
   `relid` int(10) unsigned NOT NULL,
-  `type` char(2) DEFAULT 'T',
+  `type` ENUM('CA','CH','T') NOT NULL DEFAULT 'T' COMMENT 'CA = category, CH = character, T = tag';
   PRIMARY KEY (`lid`), KEY `relation` (`recid`,`relid`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table for recommendation relations';
 --NOTE--Recommendation relations table

@@ -104,7 +104,7 @@ CREATE TABLE `{$new}categories` (
   `category` varchar(60) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `description` text NOT NULL,
   `image` varchar(100) NOT NULL DEFAULT '',
-  `locked` tinyint(1) NOT NULL DEFAULT '0',
+  `locked` ENUM('0','1') NOT NULL DEFAULT '0',
   `leveldown` tinytinyint(3) unsigned NOT NULL DEFAULT '0',
   `inorder` mediumint(8) NOT NULL DEFAULT '0',
   `counter` mediumint(8) NOT NULL DEFAULT '0' COMMENT 'might be obsolete',
@@ -171,7 +171,7 @@ CREATE TABLE `{$new}config` (
   `value` varchar(256) NOT NULL,
   `comment` tinytext,
   `form_type` text NOT NULL,
-  `can_edit` tinyint(1) DEFAULT '1',
+  `can_edit` ENUM('0','1') NOT NULL DEFAULT '1',
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
 EOF;
@@ -192,7 +192,7 @@ CREATE TABLE `{$new}feedback` (
   `text` text NOT NULL,
   `datetime` timestamp NULL DEFAULT NULL,
   `rating` tinyint(1) DEFAULT NULL,
-  `type` char(2) NOT NULL DEFAULT '',
+  `type` ENUM('C','N','RC','SE','ST') NOT NULL COMMENT 'C = comment, N = news, RC = recommendation, SE = series, ST = story',
   `moderation` mediumint(8) DEFAULT NULL,
   PRIMARY KEY (`fid`), KEY `sub_ref` (`reference_sub`), KEY `moderation` (`moderation`), KEY `by_uid` (`writer_uid`,`reference`,`type`), KEY `alias_story_chapter` (`reference`,`reference_sub`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
@@ -226,9 +226,9 @@ CREATE TABLE `{$new}log` (
   `uid` mediumint(8) NOT NULL DEFAULT '0',
   `ip` int(10) unsigned DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `type` set('RG','ED','DL','VS','LP','BL','RE','AM','EB','RF') NOT NULL,
+  `type` ENUM('RG','ED','DL','VS','LP','BL','RE','AM','EB','RF') NOT NULL,
   `version` tinyint(1) NOT NULL,
-  `new` tinyint(1) NOT NULL DEFAULT '1',
+  `new` ENUM('0','1') NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`), KEY `type` (`type`), KEY `uid` (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
@@ -384,7 +384,7 @@ CREATE TABLE `{$new}ratings` (
   `rating` varchar(60) NOT NULL DEFAULT '',
   `rating_age` tinytinyint(3) NOT NULL DEFAULT '0',
   `rating_image` varchar(50) NULL DEFAULT NULL,
-  `ratingwarning` tinyint(1) NOT NULL DEFAULT '0',
+  `ratingwarning` ENUM('0','1') NOT NULL DEFAULT '0',
   `warningtext` text NOT NULL,
   PRIMARY KEY (`rid`),
   KEY `rating` (`rating`), KEY `rating_age` (`rating_age`)
@@ -486,7 +486,7 @@ CREATE TABLE `{$new}stories` (
   `date` datetime DEFAULT NULL,
   `updated` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `validated` tinytinyint(3) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
-  `completed` tinyint(1) NOT NULL DEFAULT '-1' COMMENT '-2 deleted, -1 draft, 0 w.i.p., 1 all done',
+  `completed` ENUM('-2','-1','0','1') NOT NULL DEFAULT '-1' COMMENT '-2 deleted, -1 draft, 0 w.i.p., 1 all done',
   `roundrobin` char(1) NOT NULL DEFAULT '0',
   `wordcount` mediumint(8) NOT NULL DEFAULT '0',
   `ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
@@ -508,7 +508,7 @@ CREATE TABLE `{$new}stories_authors` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `sid` mediumint(8) NOT NULL,
   `aid` mediumint(8) unsigned NOT NULL,
-  `type` set('M','S','T','') NOT NULL DEFAULT 'M' COMMENT 'M = main, S = supporting, T = translator',
+  `type` ENUM('M','S','T') NOT NULL DEFAULT 'M' COMMENT 'M = main, S = supporting, T = translator',
   PRIMARY KEY (`lid`), UNIQUE KEY `fullrelation` (`sid`,`aid`,`type`), UNIQUE KEY `relation` (`sid`,`aid`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for story-author relations';
 --NOTE--Story relation table: Authors
@@ -528,7 +528,7 @@ DROP TABLE IF EXISTS `{$new}featured`;
 CREATE TABLE `{$new}featured` (
   `id` mediumint(8) NOT NULL,
   `type` char(2) NOT NULL DEFAULT 'ST',
-  `status` tinyint(1) DEFAULT NULL,
+  `status` ENUM('1','2') NULL DEFAULT NULL COMMENT 'NULL = by date, 1 = manual current, 2 = manual past',
   `start` timestamp NULL DEFAULT NULL,
   `end` timestamp NULL DEFAULT NULL,
   `uid` mediumint(8) DEFAULT NULL,
@@ -590,7 +590,7 @@ CREATE TABLE `{$new}textblocks` (
   `label` varchar(50) NOT NULL DEFAULT '',
   `title` varchar(200) NOT NULL DEFAULT '',
   `content` text NOT NULL,
-  `as_page` tinyint(1) NOT NULL DEFAULT 0,
+  `as_page` ENUM('0','1') NOT NULL DEFAULT '0' COMMENT 'Can be viewed as standalone page',
   PRIMARY KEY (`id`),
   KEY `label` (`label`)
 ) ENGINE=InnoDB  DEFAULT CHARSET={$characterset};
@@ -631,9 +631,9 @@ CREATE TABLE `{$new}users` (
   `curator` mediumint(8) unsigned DEFAULT NULL,
   `about` mediumtext CHARACTER SET utf8 NULL,
   `moderation` mediumint(8) DEFAULT NULL,
-  `alert_feedback` tinyint(1) NOT NULL DEFAULT '0',
-  `alert_comment` tinyint(1) NOT NULL DEFAULT '0',
-  `alert_favourite` tinyint(1) NOT NULL DEFAULT '0',
+  `alert_feedback` ENUM('0','1') NOT NULL DEFAULT '0',
+  `alert_comment` ENUM('0','1') NOT NULL DEFAULT '0',
+  `alert_favourite` ENUM('0','1') NOT NULL DEFAULT '0',
   `preferences` text NOT NULL,
   PRIMARY KEY (`uid`), UNIQUE KEY `name1` (`login`), KEY `pass1` (`password`), KEY `moderation` (`moderation`), KEY `curator` (`curator`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='New table for users';
@@ -645,9 +645,9 @@ CREATE TABLE `{$new}user_favourites` (
   `uid` mediumint(8) NOT NULL DEFAULT '0',
   `item` mediumint(8) NOT NULL DEFAULT '0',
   `type` char(2) NOT NULL DEFAULT '',
-  `bookmark` BOOLEAN NOT NULL,
-  `notify` tinyint(1) NOT NULL DEFAULT '0',
-  `visibility` tinyint(1) NOT NULL DEFAULT '2',
+  `bookmark` ENUM('0','1') NOT NULL DEFAULT '0',
+  `notify` ENUM('0','1') NOT NULL DEFAULT '0',
+  `visibility` ENUM('0','1','2') NOT NULL DEFAULT '2',
   `comments` text NOT NULL,
   PRIMARY KEY (`fid`), 
   UNIQUE KEY `byitem` (`item`,`type`,`bookmark`,`uid`) USING BTREE, 
