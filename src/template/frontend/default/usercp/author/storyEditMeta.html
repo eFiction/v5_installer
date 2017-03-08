@@ -1,0 +1,104 @@
+<a href="{{@BASE}}{{@data.form.returnpath}}">__return</a>
+<div class="grid-wrapper">
+	<div class="gb-3qrt">
+		<form method="post" action="{{@BASE}}/userCP/author/uid={{@data.form.uid}}/edit/sid={{@data.sid}};returnpath={{@data.form.returnpath}}">
+			<div class="ym-grid">
+				<div class="gb-2thrd"><h6>{{@LN__Title}}</h6><input placeholder="Your story title goes here" type="text" name="form[story_title]" value="{{@data.title}}"></div>
+				<div class="gb-1thrd"><h6>{{@LN__Rating}}</h6>
+					<select id="ratingid" name="form[ratingid]">
+					<repeat group="{{ @data.ratings }}" value="{{ @rating }}"><option value="{{ @rating.rid }}"<check if="{{@rating.rid==@data.ratingid}}"> selected="selected"</check>>{{ @rating.rating }}</option></repeat>
+					</select>
+				</div>
+
+		<!-- The next fields will be filled by the javascript below -->
+				<div class="gb-1qrt"><h6>{{@LN__Categories}}</h6></div><div class="gb-3qrt"><input type="text" id="category-select" name="form[category]" /></div>
+				<div class="gb-1qrt"><h6>{{@LN__MainAuthor}} <a class="contextual-popup" href="#mainauthorinfo">{ICON:info} <span> <b>Info:</b><br />{{@UCP_ExplainMainAuthor}}.</span></a></h6></div><div class="gb-3qrt"><input type="text" id="mainauthor-select" name="form[mainauthor]" /></div>
+				<div class="gb-1qrt"><h6>{{@LN__SupAuthor}} <a class="contextual-popup" href="#supauthorinfo">{ICON:info} <span> <b>Info:</b><br />{{@UCP_ExplainSupAuthor}}.</span></a></h6></div><div class="gb-3qrt"><input type="text" id="supauthor-select" name="form[supauthor]" /></div>
+				<div class="gb-1qrt"><h6>{{@LN__Tags}} </h6></div><div class="gb-3qrt"><input type="text" id="tag-select" name="form[tags]" /></div>
+				<div class="gb-1qrt"><h6>{{@LN__Characters}} </h6></div><div class="gb-3qrt"><input type="text" id="character-select" name="form[characters]" /></div>
+		<!-- end of special fields -->
+
+				<div class="gb-full"><h6>{{@LN__StoryNotes}}</h6><textarea placeholder="{{@LN__StoryNotesExplained}}" name="form[story_notes]">{{@data.storynotes}}</textarea></div>
+				<div class="gb-full"><h6>{{@LN__StorySummary}}</h6><textarea placeholder="{{@LN__StorySummaryExplained}}" name="form[story_summary]">{{@data.summary}}</textarea></div>
+
+				<div class="gb-1thrd">** this is not active yet **
+					<h6>{{@LN__UCP_statusValidated}}:<br />{{ ${"LN__UCP_statusValidated_".@data.states.validated[@data.validated.0]} }}</h6>
+					{{@LN__ChangeTo}}:<select id="validated" name="form[validated]">
+						<repeat group="{{ @data.states.validated }}" key="{{ @validated.key }}" value="{{ @validated.label }}">
+							<check if="{{ (@validated.key!=2 OR !(@_SESSION['groups']&8)) AND (@validated.key!=3 OR (@_SESSION['groups']&8)) }}"><option value="{{ @validated.key }}"<check if="{{@validated.key==@data.validated.0}}"> selected="selected"</check>>{{ ${"LN__UCP_statusValidated_".@validated.label} }}</option></check>
+						</repeat>
+					</select>
+				</div>
+				<div class="gb-1thrd">
+					<h6>{{@LN__UCP_statusValidatedReason}}:<br />{{ ${"LN__UCP_statusValidated_".@data.states.reason[@data.validated.1]} }}</h6>
+{*					{{@LN__ChangeTo}}:<select id="validated" name="form[validated]">
+						<repeat group="{{ @data.states.reason }}" key="{{ @validated.key }}" value="{{ @validated.label }}"><option value="{{ @validated.key }}"<check if="{{@validated.key==@data.validated.1}}"> selected="selected"</check>>{{ ${"LN__UCP_statusValidated_".@validated.label} }}</option></repeat>
+					</select> *}
+				</div>
+				<div class="gb-1thrd">
+					<h6>{{@LN__UCP_statusCompleted}}:<br />{{ @data.states.completed[@data.completed] }}</h6>
+					{{@LN__ChangeTo}}:<select id="completed" name="form[completed]">
+						<repeat group="{{ @data.states.completed }}" key="{{ @completed.key }}" value="{{ @completed.label }}"><option value="{{ @completed.key }}"<check if="{{@completed.key==@data.completed}}"> selected="selected"</check>>{{ ${"LN__UCP_statusCompleted_".@completed.label} }}</option></repeat>
+					</select>
+				</div>
+
+				<div class="gb-full" align="right">
+					{* <a class="delete" href="{{@BASE}}/userCP/author/uid={{@data.form.uid}}/edit/sid={{@data.sid}};returnpath={{@data.form.returnpath}}"><span class="fa fa-times"></span> __Delete</a> *}
+					<input class="button" type="reset"> <input class="button" type="submit">
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="gb-1qrt">
+		<include href="usercp/author/chapterlist.html" />
+	</div>
+</div>
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#category-select").tokenInput("{{$BASE}}/userCP/ajax/stories",{
+    	method: "post",
+    	queryParam: "category",
+    	preventDuplicates: true,
+    	prePopulate: {{@prePop.cat | raw}}
+    });
+});
+
+$(document).ready(function() {
+    $("#mainauthor-select").tokenInput("{{$BASE}}/userCP/ajax/stories",{
+    	method: "post",
+    	queryParam: "author",
+    	preventDuplicates: true,
+    	prePopulate: {{@prePop.mainauth | raw}}
+    });
+});
+
+$(document).ready(function() {
+    $("#supauthor-select").tokenInput("{{$BASE}}/userCP/ajax/stories",{
+    	method: "post",
+    	queryParam: "author",
+    	preventDuplicates: true,
+    	prePopulate: {{@prePop.supauth | raw}}
+    });
+});
+
+$(document).ready(function() {
+    $("#tag-select").tokenInput("{{$BASE}}/userCP/ajax/stories",{
+    	method: "post",
+    	queryParam: "tag",
+		hintText: "{{@LN__TokenInputHint}}",
+    	preventDuplicates: true,
+    	prePopulate: {{@prePop.tag | raw}}
+    });
+});
+
+$(document).ready(function() {
+    $("#character-select").tokenInput(function(){
+    return "{{$BASE}}/userCP/ajax/stories/"+$("#category-select").val()},{
+    	method: "post",
+    	queryParam: "character",
+    	preventDuplicates: true,
+    	prePopulate: {{@prePop.char | raw}}
+    });
+});
+
+</script>

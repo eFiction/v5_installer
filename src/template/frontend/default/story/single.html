@@ -1,0 +1,34 @@
+	<div id="story-container">
+		<div class="story-date">{{@LN__Published}}: {{@data.story.published}} <check if="{{ @data.story.published != @data.story.modified}}"><br />{{@LN__Updated}}: {{@data.story.modified}}</check></div>
+		<div class="story-info1"><include href="story/icons.html" /></div>
+		<div class="story-titleauthor">
+			<h2>{{@data.story.title}}<br /> {{@LN__by}} <repeat group="{{@data.story.cache_authors}}" value="{{@author}}" counter="{{ @i }}">
+													<check if="{{ @i>1 }}">, </check>
+													<check if="{{ @_SESSION.userID == @author[0] }}"><set no_review="1" /></check>
+													<a href="{{@BASE}}/authors/{{@author[0]}}">{{@author[1]}}</a>
+												</repeat>
+			</h2>
+		</div>
+		<check if="{{ @data.dropdown }}">
+			<div class="story-chapter">
+			<select class='chap-change' id='chap_change' onchange="changeChapter();">
+				<repeat group="{{ @data.dropdown }}" value="{{ @item }}"><option <check if="{{ @item[0] }}">selected="selected" </check> value="{{ @item[1] }}"><check if="{{ @item[2] }}">{{ @item[2] }}) </check>{{ @item[3] }}</option></repeat>
+			</select>
+			</div>
+		</check>
+		<div class="story-text">
+			<a name="rev"></a>
+			{{@data.infoblock | raw}}
+			{{@data.content | raw }}
+			<br />
+			<br />
+			<a name="review"></a>
+			
+			<check if="{{ is_array(@data.story.reviews) }}">
+				<include href="story/reviews.html" with="story_reviews={{@data.story.reviewData}}" />
+			</check>
+			<check if="{{empty($no_review)}}">
+				<include href="main/feedback_form.html" with="element={{@data.story.chapid}},childof={{@data.story.sid}},level=NULL" />
+			</check>
+		</div>
+	</div>
