@@ -200,6 +200,23 @@ EOF;
 
 
 /* --------------------------------------------------------------------------------------------
+* FEEDBACK *
+	requires: -
+-------------------------------------------------------------------------------------------- */
+$core['feedback'] = <<<EOF
+DROP TABLE IF EXISTS `{$new}friends`;
+CREATE TABLE `{$new}friends` (
+  `link_id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` mediumint(8) UNSIGNED NOT NULL,
+  `friend_id` mediumint(8) UNSIGNED NOT NULL,
+  `note` tinytext,
+  `active` BOOLEAN NOT NULL DEFAULT TRUE,
+  PRIMARY KEY (`link_id`), UNIQUE KEY `relation` (`user_id`,`friend_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for friend relations';
+EOF;
+
+
+/* --------------------------------------------------------------------------------------------
 * ICONSET *
 	requires: -
 -------------------------------------------------------------------------------------------- */
