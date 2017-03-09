@@ -104,8 +104,8 @@ CREATE TABLE `{$new}categories` (
   `category` varchar(60) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `description` text NOT NULL,
   `image` varchar(100) NOT NULL DEFAULT '',
-  `locked` ENUM('0','1') NOT NULL DEFAULT '0',
-  `leveldown` tinytinyint(3) unsigned NOT NULL DEFAULT '0',
+  `locked` BOOLEAN NOT NULL DEFAULT FALSE,
+  `leveldown` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `inorder` mediumint(8) NOT NULL DEFAULT '0',
   `counter` mediumint(8) NOT NULL DEFAULT '0' COMMENT 'might be obsolete',
   `stats` text NOT NULL,
@@ -130,7 +130,7 @@ CREATE TABLE `{$new}chapters` (
   `workingtext` mediumtext,
   `workingdate` timestamp NULL DEFAULT NULL,
   `endnotes` text,
-  `validated` tinytinyint(3) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
+  `validated` tinyint(2) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
   `wordcount` mediumint(8) NOT NULL DEFAULT '0',
   `rating` tinyint(3) NOT NULL DEFAULT '0',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
@@ -171,7 +171,7 @@ CREATE TABLE `{$new}config` (
   `value` varchar(256) NOT NULL,
   `comment` tinytext,
   `form_type` text NOT NULL,
-  `can_edit` ENUM('0','1') NOT NULL DEFAULT '1',
+  `can_edit` BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
 EOF;
@@ -228,7 +228,7 @@ CREATE TABLE `{$new}log` (
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `type` ENUM('RG','ED','DL','VS','LP','BL','RE','AM','EB','RF') NOT NULL,
   `version` tinyint(1) NOT NULL,
-  `new` ENUM('0','1') NOT NULL DEFAULT '1',
+  `new` BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY (`id`), KEY `type` (`type`), KEY `uid` (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 EOF;
@@ -265,7 +265,7 @@ CREATE TABLE `{$new}menu` (
   `link` varchar(256) DEFAULT NULL,
   `meta` varchar(128) DEFAULT NULL,
   `child_of` tinyint(3) DEFAULT NULL,
-  `active` ENUM('0','1') NOT NULL DEFAULT '1',
+  `active` BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
 --NOTE--Page menu
@@ -279,7 +279,7 @@ CREATE TABLE `{$new}menu_adminpanel` (
   `link` tinytext,
   `icon` varchar(64) DEFAULT '{ICON:blank}',
   `child_of` varchar(64) DEFAULT NULL,
-  `active` ENUM('0','1') NOT NULL DEFAULT '1',
+  `active` BOOLEAN NOT NULL DEFAULT TRUE,
   `requires` tinyint(1) unsigned NOT NULL DEFAULT '2',
   `evaluate` tinytext,
   PRIMARY KEY (`id`), KEY `child_of` (`child_of`)
@@ -295,7 +295,7 @@ CREATE TABLE `{$new}menu_userpanel` (
   `link` tinytext,
   `icon` tinytext,
   `child_of` varchar(16) DEFAULT NULL,
-  `active` ENUM('0','1') NOT NULL DEFAULT '1',
+  `active` BOOLEAN NOT NULL DEFAULT TRUE,
   `evaluate` tinytext DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `menu` (`child_of`,`order`),
@@ -382,9 +382,9 @@ DROP TABLE IF EXISTS `{$new}ratings`;
 CREATE TABLE `{$new}ratings` (
   `rid` mediumint(8) NOT NULL AUTO_INCREMENT,
   `rating` varchar(60) NOT NULL DEFAULT '',
-  `rating_age` tinytinyint(3) NOT NULL DEFAULT '0',
+  `rating_age` tinyint(3) NOT NULL DEFAULT '0',
   `rating_image` varchar(50) NULL DEFAULT NULL,
-  `ratingwarning` ENUM('0','1') NOT NULL DEFAULT '0',
+  `ratingwarning` BOOLEAN NOT NULL DEFAULT FALSE,
   `warningtext` text NOT NULL,
   PRIMARY KEY (`rid`),
   KEY `rating` (`rating`), KEY `rating_age` (`rating_age`)
@@ -485,7 +485,7 @@ CREATE TABLE `{$new}stories` (
   `ratingid` tinyint(3) DEFAULT NULL,
   `date` datetime DEFAULT NULL,
   `updated` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `validated` tinytinyint(3) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
+  `validated` tinyint(3) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
   `completed` ENUM('-2','-1','0','1') NOT NULL DEFAULT '-1' COMMENT '-2 deleted, -1 draft, 0 w.i.p., 1 all done',
   `roundrobin` char(1) NOT NULL DEFAULT '0',
   `wordcount` mediumint(8) NOT NULL DEFAULT '0',
@@ -542,7 +542,7 @@ CREATE TABLE `{$new}stories_tags` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `sid` mediumint(8) NOT NULL,
   `tid` mediumint(8) unsigned NOT NULL,
-  `character` ENUM('0','1') NOT NULL DEFAULT '0',
+  `character` BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`lid`), KEY `relation` (`sid`,`tid`,`character`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for story-tag/character relations';
 --NOTE--Story relation table: Tags
@@ -590,7 +590,7 @@ CREATE TABLE `{$new}textblocks` (
   `label` varchar(50) NOT NULL DEFAULT '',
   `title` varchar(200) NOT NULL DEFAULT '',
   `content` text NOT NULL,
-  `as_page` ENUM('0','1') NOT NULL DEFAULT '0' COMMENT 'Can be viewed as standalone page',
+  `as_page` BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Can be viewed as standalone page',
   PRIMARY KEY (`id`),
   KEY `label` (`label`)
 ) ENGINE=InnoDB  DEFAULT CHARSET={$characterset};
@@ -631,9 +631,9 @@ CREATE TABLE `{$new}users` (
   `curator` mediumint(8) unsigned DEFAULT NULL,
   `about` mediumtext CHARACTER SET utf8 NULL,
   `moderation` mediumint(8) DEFAULT NULL,
-  `alert_feedback` ENUM('0','1') NOT NULL DEFAULT '0',
-  `alert_comment` ENUM('0','1') NOT NULL DEFAULT '0',
-  `alert_favourite` ENUM('0','1') NOT NULL DEFAULT '0',
+  `alert_feedback` BOOLEAN NOT NULL DEFAULT FALSE,
+  `alert_comment` BOOLEAN NOT NULL DEFAULT FALSE,
+  `alert_favourite` BOOLEAN NOT NULL DEFAULT FALSE,
   `preferences` text NOT NULL,
   PRIMARY KEY (`uid`), UNIQUE KEY `name1` (`login`), KEY `pass1` (`password`), KEY `moderation` (`moderation`), KEY `curator` (`curator`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='New table for users';
@@ -645,8 +645,8 @@ CREATE TABLE `{$new}user_favourites` (
   `uid` mediumint(8) NOT NULL DEFAULT '0',
   `item` mediumint(8) NOT NULL DEFAULT '0',
   `type` char(2) NOT NULL DEFAULT '',
-  `bookmark` ENUM('0','1') NOT NULL DEFAULT '0',
-  `notify` ENUM('0','1') NOT NULL DEFAULT '0',
+  `bookmark` BOOLEAN NOT NULL DEFAULT FALSE,
+  `notify` BOOLEAN NOT NULL DEFAULT FALSE,
   `visibility` ENUM('0','1','2') NOT NULL DEFAULT '2',
   `comments` text NOT NULL,
   PRIMARY KEY (`fid`), 
