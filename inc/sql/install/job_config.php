@@ -15,62 +15,47 @@ function config_create($job, $step)
 	$fw = \Base::instance();
 	$chapterLocation =   ( $fw['installerCFG.chapters']=="filebase" ) ? "local" : "db";
 
-	/*
-	$modules = [];
-	foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )
-	{
-		if ( $moduleOpt[0]!="-" ) $modules[$moduleName] = 1;
-	}
-	$modules_enabled = json_encode($modules);
-	*/
-//	if ( sizeof($modules)>0 ) $mapper->modules_enabled = $modules;
-
 /*
-  `imageupload` tinyint(1) NOT NULL DEFAULT '0',
-  `imageheight` int(11) NOT NULL DEFAULT '200',
-  `imagewidth` int(11) NOT NULL DEFAULT '200',
-
-  `tinyMCE` tinyint(1) NOT NULL DEFAULT '0',
-  `allowed_tags` varchar(200) NOT NULL DEFAULT '<b><i><u><center><hr><p><br /><br><blockquote><ol><ul><li><img><strong><em>',
-  `captcha` tinyint(1) NOT NULL DEFAULT '0',
+Remaining config variables:
   
-  `ratings` tinyint(1) NOT NULL DEFAULT '0', Bewertungssystem
+  `captcha` tinyint(1) NOT NULL DEFAULT '0',		Use captcha
+  `ratings` tinyint(1) NOT NULL DEFAULT '0', 		Use rating(ranking)
+  `disablepopups` tinyint(1) NOT NULL DEFAULT '0', 	warning popups only once
+  `words` text, 									Bad word filter
+  `favorites` tinyint(1) NOT NULL DEFAULT '0',		Use of favourites
+  `extendcats` tinyint(1) NOT NULL DEFAULT '0', 	Show category path (?)
 
-  `disablepopups` tinyint(1) NOT NULL DEFAULT '0', Warn-Popups nur einmal anzeigen
-  `agestatement` tinyint(1) NOT NULL DEFAULT '0', Altersstellungnahme im Benutzerprofil
+Obsolete config variables:
 
-
---------  `extendcats` tinyint(1) NOT NULL DEFAULT '0', ???????
---------  `words` text,  ????????
---------  `favorites` tinyint(1) NOT NULL DEFAULT '0',
---------  `logging` tinyint(1) NOT NULL DEFAULT '0',
---------  `debug` tinyint(1) NOT NULL DEFAULT '0',
---------  `displaycolumns` tinyint(1) NOT NULL DEFAULT '1', -> TPL
---------  `linkstyle` tinyint(1) NOT NULL DEFAULT '0', -> Paginations (TPL)
---------  `linkrange` tinyint(2) NOT NULL DEFAULT '5', -> Paginations
---------  `multiplecats` tinyint(1) NOT NULL DEFAULT '0', Anzahl Kategorien ????? Auto-detect
---------  `displayprofile` tinyint(1) NOT NULL DEFAULT '0', Profil anzeigen, anders gelöst in eFi5
-
----- ('modules_enabled',				'', 0, 							'{$modules_enabled}', NULL, '', 0),
+  `linkstyle` tinyint(1) NOT NULL DEFAULT '0', 		-> Paginations (TPL)
+  `multiplecats` tinyint(1) NOT NULL DEFAULT '0', 	Category auto detect
+  `displaycolumns` tinyint(1) NOT NULL DEFAULT '1', -> TPL
+  `displayprofile` tinyint(1) NOT NULL DEFAULT '0', Show profile on user page - different way now
+  `allowed_tags` varchar(200) NOT NULL DEFAULT '<b><i><u><center><hr><p><br /><br><blockquote><ol><ul><li><img><strong><em>',
+				editor settings happen in editor.js file
 
 */
 $sql = <<<EOF
 INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `value`, `comment`, `form_type`, `can_edit`) VALUES
-('stories_per_page',			'archive_general', 1,			"{$fw['installerCFG.data.itemsperpage']}", 'Stories per page in the Archive', 'text//numeric', 1),
-('stories_recent',				'archive_general', 2,			"{$fw['installerCFG.data.recentdays']}", 'Days for recent stories', 'text//numeric', 1),
-('stories_default_order',		'archive_general', 3,			"{$fw['installerCFG.data.defaultsort']}", 'Default sorting for stories', 'select//__sort_date=date//__sort_name=title', 1),
-('story_toc_default',			'archive_general', 3,			"{$fw['installerCFG.data.displayindex']}", 'Default to table of contents on stories with multiple chapters.', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
-('epub_domain',					'archive_general', 9,			'', 'ePub Domain@SMALL@Used to calculate your epub UUID v5. Leave blank for default (Archive URL)', 'text//small', 1),
-('story_intro_items',			'archive_intro', 1,				'5', 'Stories to show on the archive entry page.', 'text//numeric', 1),
-('story_intro_order',			'archive_intro', 2,				'modified', 'Order in which stories appear on the archive entry page.', 'select//__modified=modified//__published=published', 1),
+('stories_per_page',			'archive_general', 1,			"{$fw['installerCFG.data.itemsperpage']}", 		NULL, 'text//numeric', 1),
+('stories_recent',				'archive_general', 2,			"{$fw['installerCFG.data.recentdays']}", 		NULL, 'text//numeric', 1),
+('stories_default_order',		'archive_general', 3,			"{$fw['installerCFG.data.defaultsort']}", 		NULL, 'select//__sort_date=date//__sort_name=title', 1),
+('story_toc_default',			'archive_general', 3,			"{$fw['installerCFG.data.displayindex']}", 		NULL, 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('epub_domain',					'archive_general', 9,			'', 											NULL, 'text//small', 1),
+('story_intro_items',			'archive_intro', 1,				'5', 											NULL, 'text//numeric', 1),
+('story_intro_order',			'archive_intro', 2,				'modified', 									NULL, 'select//__modified=modified//__published=published', 1),
 ('author_self', 				'archive_submit', 1,			"{$fw['installerCFG.data.author_self']}", 'Every member can post stories@SMALL@If set to no, members must be added to group Authors to allow them to post stories', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('story_validation', 			'archive_submit', 2,			"{$fw['installerCFG.data.story_validation']}", 'Stories require validation@SMALL@This does not apply to trusted authors.', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('stories_min_words',			'archive_submit', 3,			"{$fw['installerCFG.data.minwords']}", 'Minimum amount of words for a chapter', 'text//numeric', 1),
 ('stories_max_words',			'archive_submit', 4,			"{$fw['installerCFG.data.maxwords']}", 'Maximum amount of words for a chapter@SMALL@(0 = unlimited)', 'text//numeric', 1),
-('allow_co_author', 			'archive_submit', 5,			"{$fw['installerCFG.data.coauthallowed']}", 'Allow addition of other authors to stories', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
-('stories_min_tags',			'archive_submit', 6,			'0', 'Minimum amount of tags required', 'text//numeric', 1),
-('allow_series', 				'archive_submit', 7,			"{$fw['installerCFG.data.allowseries']}", 'Allow authors to create series@SMALL@Member series are now collections', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
-('allow_roundrobin', 			'archive_submit', 8,			"{$fw['installerCFG.data.roundrobins']}", 'Allow roundrobins', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('advanced_editor', 			'archive_submit', 5,			"{$fw['installerCFG.data.tinyMCE']}", 'Allow use of graphical editor', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('allow_co_author', 			'archive_submit', 6,			"{$fw['installerCFG.data.coauthallowed']}", 'Allow addition of other authors to stories', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('stories_min_tags',			'archive_submit', 7,			'0', 'Minimum amount of tags required', 'text//numeric', 1),
+('allow_series', 				'archive_submit', 8,			"{$fw['installerCFG.data.allowseries']}", 'Allow authors to create series@SMALL@Member series are now collections', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('allow_roundrobin', 			'archive_submit', 9,			"{$fw['installerCFG.data.roundrobins']}", 'Allow roundrobins', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('images_allowed', 				'archive_images', 1,			"{$fw['installerCFG.data.imageupload']}", 'Allow posting of story images (cover art)', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('images_height',				'archive_images', 2,			"{$fw['installerCFG.data.imageheight']}", 'Allowed image height.', 'text//numeric', 1),
+('images_width',				'archive_images', 3,			"{$fw['installerCFG.data.imagewidth']}", 'Allowed image width.', 'text//numeric', 1),
 ('allow_reviews', 				'archive_reviews', 1,			"{$fw['installerCFG.data.reviewsallowed']}", 'Allow reviews', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_guest_reviews', 		'archive_reviews', 2,			"{$fw['installerCFG.data.anonreviews']}", 'Allow guests to write reviews', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_review_delete', 		'archive_reviews', 3,			"{$fw['installerCFG.data.revdelete']}", 'Authors can delete reviews', 'select//__all=2//__anonymous=1//{{@LN__no}}=0', 1),
@@ -90,8 +75,9 @@ INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `valu
 ('bb2__httpbl_threat', 			'bad_behaviour_ext', 5,			'25', 'http:BL Threat Level@SMALL@(default <b>"25"</b>)', 'text//numeric', 1),
 ('bb2__httpbl_maxage', 			'bad_behaviour_ext', 6,			'30', 'http:BL Maximum Age@SMALL@(default <b>"30"</b>)', 'text//numeric', 1),
 ('bb2__reverse_proxy', 			'bad_behaviour_rev', 1,			'FALSE', 'Reverse Proxy@SMALL@(default <b>"{{@LN__no}}"</b>)', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
-('bb2__reverse_proxy_header', 	'bad_behaviour_rev', 2,			'X-Forwarded-For', 'Reverse Proxy Header@SMALL@(default “X-Forwarded-For”)\r\nOnly required when using reverse proxy!', 'text//small', 1),
+('bb2__reverse_proxy_header', 	'bad_behaviour_rev', 2,			'X-Forwarded-For', 'Reverse Proxy Header@SMALL@(default "X-Forwarded-For")\r\nOnly required when using reverse proxy!', 'text//small', 1),
 ('bb2__reverse_proxy_addresses','bad_behaviour_rev', 3,			'', 'Reverse Proxy Addresses@SMALL@(no default)\r\nOnly required when using reverse proxy!', 'text//', 1),
+('agestatement',				'members_general',	 1,			"{$fw['installerCFG.data.agestatement']}", NULL, 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('date_format_short',			'settings_datetime', 1,			"{$fw['installerCFG.data.dateformat']}", 'Default short date.@SMALL@(See <a href="http://php.net/manual/en/function.date.php" target="_blank">php.net documentation</a> for syntax)', 'text//small', 1),
 ('date_format_long',			'settings_datetime', 2,			"{$fw['installerCFG.data.dateformat']} {$fw['installerCFG.data.timeformat']}", 'Default long date.@SMALL@(See <a href="http://php.net/manual/en/function.date.php" target="_blank">php.net documentation</a> for syntax)', 'text//small', 1),
 ('time_format',					'settings_datetime', 3,			"{$fw['installerCFG.data.timeformat']}", 'Default time format.', 'select//23:30=H:i//11:30 pm=h:i a', 1),
@@ -110,7 +96,7 @@ INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `valu
 ('page_title_add',				'settings_general', 4, 			'path', 'Show page path or slogan in title', 'select//__path=path//__slogan=slogan', 1),
 ('page_title_reverse',			'settings_general', 5, 			'FALSE', 'Reverse sort order of page title elements.@SMALL@(Default is <b>no</b>)', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('page_title_separator',		'settings_general', 6, 			' | ', 'Separator for page title elements', 'text//small', 1),
-('adjacent_paginations', 		'settings_general',	7,			'2', 'Contiguous page links to display@SMALL@"1" to display: 1 ... 4 [5] 6 ... 9<br>\n"2" to display: 1 ... 3 4 [5] 6 7 ... 9<br>"0" to display all links', 'text//numeric', 1),
+('adjacent_paginations', 		'settings_general',	7,			"{$fw['installerCFG.data.linkrange']}", 'Contiguous page links to display@SMALL@"1" to display: 1 ... 4 [5] 6 ... 9<br>\n"2" to display: 1 ... 3 4 [5] 6 7 ... 9<br>"0" to display all links', 'text//numeric', 1),
 ('shoutbox_entries',			'settings_general', 8,			'5', 'Number of shoutbox items to display', 'text//numeric', 1),
 ('shoutbox_guest',				'settings_general', 9,			'FALSE', 'Allow guest posts in shoutbox', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_comment_news',			'settings_general', 10,			"{$fw['installerCFG.data.newscomments']}", 'Allow news comments', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
@@ -138,8 +124,9 @@ INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `valu
 ('smtp_username',				'settings_mail', 6,				"{$fw['installerCFG.data.smtp_username']}", 'SMTP username', 'text//small', 1),
 ('smtp_password',				'settings_mail', 7,				"{$fw['installerCFG.data.smtp_password']}", 'SMTP password', 'text//password', 1),
 ('chapter_data_location', 		'settings_maintenance', 1,		'{$chapterLocation}', 'Where to store chapters (Database Server or local file storage)@SMALL@Local file is being handled by SQLite', 'select//Database=db//Local Storage=local', 2),
-('debug',						'settings_maintenance', 2,		'5', 'Debug level', 'select//disabled=0//low=1//2=2//3=3//4=4//5=5', 1),
+('debug',						'settings_maintenance', 2,		"{$fw['installerCFG.data.debug']}", 'Debug level', 'select//disabled=0//low=1//2=2//3=3//4=4//5=5', 1),
 ('maintenance',					'settings_maintenance', 3,		'TRUE', 'Archive closed for maintenance', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('logging',						'settings_maintenance', 4,		"{$fw['installerCFG.data.logging']}", 'Log actions', 'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('admin_list_elements', 		'', 0, '20', NULL, 'text//numeric', 1),
 ('iconset_default',				'', 0, '1', NULL, '', 0),
 ('version',						'', '0', '5.0.0', NULL, '', '0');
