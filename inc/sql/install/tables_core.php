@@ -15,6 +15,7 @@ $jobs = array
 	"textblocks"	=>	"Textblocks (former: messages)",
 	"chapters"		=>	"Chapters",
 	"feedback"		=>	"Feedback (former: reviews & comments)",
+	"friends"		=>	"Friends",
 	"users"			=>	"Users",
 	"descriptors"	=>	"Story descriptors",	// This is a meta job
 	"stories"		=>	"Stories",
@@ -169,7 +170,6 @@ CREATE TABLE `{$new}config` (
   `admin_module` varchar(64) NOT NULL,
   `section_order` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `value` varchar(256) NOT NULL,
-  `comment` tinytext,
   `form_type` text NOT NULL,
   `can_edit` BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY (`name`)
@@ -203,7 +203,7 @@ EOF;
 * FEEDBACK *
 	requires: -
 -------------------------------------------------------------------------------------------- */
-$core['feedback'] = <<<EOF
+$core['friends'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}friends`;
 CREATE TABLE `{$new}friends` (
   `link_id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
