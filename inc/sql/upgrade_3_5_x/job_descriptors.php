@@ -64,9 +64,11 @@ function descriptors_categories($job, $step)
 							`description`,
 							`image`,
 							`locked`,
-							`leveldown`,
+							0 as `leveldown`,
 							`displayorder` as inorder
 						FROM `{$fw->dbOld}categories`;");
+						
+						// test: 0 as `leveldown`
 
 	$count = 0;
 
@@ -76,20 +78,42 @@ function descriptors_categories($job, $step)
 
 		foreach($dataIn as $data)
 		{
+			// testing 'erce'
+			// set the leveldown for the root categories to 0, all others require recount
+			$relist[$data['cid']] = ($data['parent_cid']==0) ? 0 : NULL;
+			
 			$newdata->copyfrom($data);
 			$newdata->save();
 			$newdata->reset();
 			
 			$count++;
 		}
-	}
 
+		// test
+		while ( FALSE !== $reData = $newdata->load(['parent_cid > 0 AND leveldown = 0', $step['id'] ]) )
+		{
+			do
+			{
+				if ( NULL !== $relist[$newdata->parent_cid] )
+				{
+					$relist[$newdata->cid] = $relist[$newdata->parent_cid] + 1;
+					$newdata->leveldown = $relist[$newdata->cid];
+					$newdata->save();
+				}
+			}
+			while ( $newdata->next() );
+		}
+		// end test
+		
+	}
+	
 	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' 	 => $step['id']
 						]
 					);
+
 }
 
 function descriptors_ratings($job, $step)

@@ -298,7 +298,7 @@ function stories_recount_categories($job, $step)
 	$fw = \Base::instance();
 
 	$items = 0;
-
+	$fw->db5->exec("SET SESSION group_concat_max_len = 1000000;");
 	$dataIn = $fw->db5->exec("SELECT C.cid, C.category, COUNT(DISTINCT S.sid) as counted, GROUP_CONCAT(DISTINCT C1.category SEPARATOR '||' ) as sub_categories, GROUP_CONCAT(DISTINCT C1.stats SEPARATOR '||' ) as sub_stats
 								FROM `{$fw->dbNew}categories`C 
 									INNER JOIN (SELECT leveldown FROM `{$fw->dbNew}categories` WHERE `stats` = '' ORDER BY leveldown DESC LIMIT 0,1) c2 ON ( C.leveldown = c2.leveldown )
