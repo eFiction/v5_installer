@@ -666,6 +666,7 @@ CREATE TABLE `{$new}user_favourites` (
   `notify` BOOLEAN NOT NULL DEFAULT FALSE,
   `visibility` ENUM('0','1','2') NOT NULL DEFAULT '2',
   `comments` text NOT NULL,
+  `changed` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`fid`), 
   UNIQUE KEY `byitem` (`item`,`type`,`bookmark`,`uid`) USING BTREE, 
   UNIQUE KEY `byuid` (`uid`,`type`,`bookmark`,`item`) USING BTREE,
