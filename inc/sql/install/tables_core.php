@@ -88,7 +88,8 @@ CREATE TABLE `{$new}bad_behavior` (
   `key` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `ip` (`ip`(15)),
-  KEY `user_agent` (`user_agent`(10))
+  KEY `user_agent` (`user_agent`(10)),
+  KEY `key` (`key`(8))
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
 EOF;
 
