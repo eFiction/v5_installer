@@ -652,6 +652,7 @@ CREATE TABLE `{$new}users` (
   `alert_comment` BOOLEAN NOT NULL DEFAULT FALSE,
   `alert_favourite` BOOLEAN NOT NULL DEFAULT FALSE,
   `preferences` text NOT NULL,
+  `feedback_cache` text NOT NULL,
   PRIMARY KEY (`uid`), UNIQUE KEY `name1` (`login`), KEY `pass1` (`password`), KEY `moderation` (`moderation`), KEY `curator` (`curator`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='New table for users';
 --SPLIT--
