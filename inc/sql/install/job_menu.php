@@ -13,7 +13,7 @@ $fw->jobSteps = array(
 
 function menu_page($job, $step)
 {
-	// Chapters copy is a 1-pass module, doing the entire chapter relocation
+	// Page menu
 	$fw = \Base::instance();
 
 $sql = <<<EOF
@@ -41,7 +41,7 @@ EOF;
 
 function menu_admin($job, $step)
 {
-	// Chapters copy is a 1-pass module, doing the entire chapter relocation
+	// Admin menu
 	$fw = \Base::instance();
 
 $sql = <<<EOF
@@ -100,7 +100,7 @@ EOF;
 
 function menu_user($job, $step)
 {
-	// Chapters copy is a 1-pass module, doing the entire chapter relocation
+	// User menu
 	$fw = \Base::instance();
 
 $sql = <<<EOF
@@ -123,7 +123,7 @@ INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `chi
 ('Library_Favourites%%FAVS',		2, 'library/favourite',				'{ICON:favourite}', 'library', 1, NULL),
 ('Library_Recommendations%%RECS',	3, 'library/recommendation',		'{ICON:star}',		'library', 1, NULL),
 --
-('UserMenu_PMInbox',				1, 'messaging/inbox',				'{ICON:inbox}',		'messaging', 1, NULL),
+('UserMenu_PMInbox%%UN',			1, 'messaging/inbox',				'{ICON:inbox}',		'messaging', 1, NULL),
 ('UserMenu_PMWrite',				2, 'messaging/write',				'{ICON:edit}',		'messaging', 1, NULL),
 ('UserMenu_PMOutbox',				3, 'messaging/outbox',				'{ICON:bars}',		'messaging', 1, NULL),
 ('UserMenu_Shoutbox%%SB',			4, 'messaging/shoutbox',			'{ICON:text}',		'messaging', 1, NULL),
