@@ -27,7 +27,7 @@ function series_data($job, $step)
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`;")[0]['found'];
+		$total = $fw->db3->exec("SELECT COUNT(1) as found FROM `{$fw->dbOld}series`;")[0]['found'];
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
