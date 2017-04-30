@@ -105,37 +105,37 @@ function menu_user($job, $step)
 
 $sql = <<<EOF
 INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `evaluate`) VALUES
-('UserMenu_Settings',				1, 'settings',						'{ICON:settings}',	NULL, 1, NULL),
-('UserMenu_Message',				2, 'messaging',						'{ICON:mail}',		NULL, 1, NULL),
-('UserMenu_Authoring',				3, 'author',						'{ICON:keyboard}',	NULL, 1, NULL),
-('UserMenu_MyLibrary',				4, 'library',						'{ICON:book}',		NULL, 1, NULL),
-('UserMenu_Feedback',				5, 'feedback',						'{ICON:comments}',	NULL, 1, NULL),
+('UserMenu_Settings',					1, 'settings',						'{ICON:settings}',	NULL, 1, NULL),
+('UserMenu_Message',					2, 'messaging',						'{ICON:mail}',		NULL, 1, NULL),
+('UserMenu_Authoring',					3, 'author',						'{ICON:keyboard}',	NULL, 1, NULL),
+('UserMenu_MyLibrary',					4, 'library',						'{ICON:book}',		NULL, 1, NULL),
+('UserMenu_Feedback',					5, 'feedback',						'{ICON:comments}',	NULL, 1, NULL),
+('UserMenu_Shoutbox%%SB%%SB',			6, 'shoutbox',						'{ICON:text}',		NULL, 1, 'shoutbox'),
 --
-('%%AUTHORS',						1, 'author/uid=%ID%',				'{ICON:member}', 'author', 1, NULL),
-('UserMenu_Curator',				2, 'author/curator',				'{ICON:member}', 'author', 1, NULL),
+('%%AUTHORS',							1, 'author/uid=%ID%',				'{ICON:member}', 'author', 1, NULL),
+('UserMenu_Curator',					2, 'author/curator',				'{ICON:member}', 'author', 1, NULL),
 --
-('UserMenu_AddStory',				1, 'author/uid=%ID%/add',			'{ICON:following} {ICON:plus}', 'author_sub', 1, NULL),
-('Authoring_Finished%%1',			2, 'author/uid=%ID%/finished',		'{ICON:following} {ICON:text}', 'author_sub', 1, NULL),
-('Authoring_Unfinished%%0',			3, 'author/uid=%ID%/unfinished',	'{ICON:following} {ICON:text}', 'author_sub', 1, NULL),
-('Authoring_Drafts%%-1',			4, 'author/uid=%ID%/drafts',		'{ICON:following} {ICON:text}', 'author_sub', 1, NULL),
+('UserMenu_AddStory',					1, 'author/uid=%ID%/add',			'{ICON:following} {ICON:plus}', 'author_sub', 1, NULL),
+('Authoring_Finished%%1',				2, 'author/uid=%ID%/finished',		'{ICON:following} {ICON:text}', 'author_sub', 1, NULL),
+('Authoring_Unfinished%%0',				3, 'author/uid=%ID%/unfinished',	'{ICON:following} {ICON:text}', 'author_sub', 1, NULL),
+('Authoring_Drafts%%-1',				4, 'author/uid=%ID%/drafts',		'{ICON:following} {ICON:text}', 'author_sub', 1, NULL),
 --
-('Library_Bookmarks%%BMS',			1, 'library/bookmark',				'{ICON:bookmark}',	'library', 1, NULL),
-('Library_Favourites%%FAVS',		2, 'library/favourite',				'{ICON:favourite}', 'library', 1, NULL),
-('Library_Recommendations%%RECS',	3, 'library/recommendation',		'{ICON:star}',		'library', 1, NULL),
+('Library_Bookmarks%%LIB%%BMS',			1, 'library/bookmark',				'{ICON:bookmark}',	'library', 1, NULL),
+('Library_Favourites%%LIB%%FAVS',		2, 'library/favourite',				'{ICON:favourite}', 'library', 1, NULL),
+('Library_Recommendations%%LIB%%RECS',	3, 'library/recommendation',		'{ICON:star}',		'library', 1, NULL),
 --
-('UserMenu_PMInbox%%UN',			1, 'messaging/inbox',				'{ICON:inbox}',		'messaging', 1, NULL),
-('UserMenu_PMWrite',				2, 'messaging/write',				'{ICON:edit}',		'messaging', 1, NULL),
-('UserMenu_PMOutbox',				3, 'messaging/outbox',				'{ICON:bars}',		'messaging', 1, NULL),
-('UserMenu_Shoutbox%%SB',			4, 'messaging/shoutbox',			'{ICON:text}',		'messaging', 1, NULL),
+('UserMenu_PMInbox%%MSG%%UN',			1, 'messaging/inbox',				'{ICON:inbox}',		'messaging', 1, NULL),
+('UserMenu_PMWrite',					2, 'messaging/write',				'{ICON:edit}',		'messaging', 1, NULL),
+('UserMenu_PMOutbox',					3, 'messaging/outbox',				'{ICON:bars}',		'messaging', 1, NULL),
 --
-('UserMenu_ReviewsWritten%%RW',		1, 'feedback/reviews/written',		'{ICON:arrow-right}',	'feedback', 1, NULL),
-('UserMenu_ReviewsReceived%%RR',	2, 'feedback/reviews/received',		'{ICON:arrow-left}',	'feedback', 1, NULL),
-('UserMenu_CommentsWritten%%CW',	3, 'feedback/comments/written',		'{ICON:arrow-right}',	'feedback', 1, NULL),
-('UserMenu_CommentsReceived%%CR',	4, 'feedback/comments/received',	'{ICON:arrow-left}',	'feedback', 1, NULL),
+('UserMenu_ReviewsWritten%%FB%%RW',		1, 'feedback/reviews/written',		'{ICON:arrow-right}',	'feedback', 1, NULL),
+('UserMenu_ReviewsReceived%%FB%%RR',	2, 'feedback/reviews/received',		'{ICON:arrow-left}',	'feedback', 1, NULL),
+('UserMenu_CommentsWritten%%FB%%CW',	3, 'feedback/comments/written',		'{ICON:arrow-right}',	'feedback', 1, NULL),
+('UserMenu_CommentsReceived%%FB%%CR',	4, 'feedback/comments/received',	'{ICON:arrow-left}',	'feedback', 1, NULL),
 --
-('UserMenu_Profile',				1, 'settings/profile',				'{ICON:member}',	'settings', 1, NULL),
-('UserMenu_Preferences',			2, 'settings/preferences',			'{ICON:visible}',	'settings', 1, NULL),
-('ChangePW',						3, 'settings/changepw',				'{ICON:key}',		'settings', 1, NULL);
+('UserMenu_Profile',					1, 'settings/profile',				'{ICON:member}',	'settings', 1, NULL),
+('UserMenu_Preferences',				2, 'settings/preferences',			'{ICON:visible}',	'settings', 1, NULL),
+('ChangePW',							3, 'settings/changepw',				'{ICON:key}',		'settings', 1, NULL);
 EOF;
 
 	$fw->db5->exec($sql);
