@@ -18,7 +18,6 @@ function config_create($job, $step)
 /*
 Remaining config variables:
   
-  `captcha` tinyint(1) NOT NULL DEFAULT '0',		Use captcha
   `ratings` tinyint(1) NOT NULL DEFAULT '0', 		Use rating(ranking)
   `disablepopups` tinyint(1) NOT NULL DEFAULT '0', 	warning popups only once
   `words` text, 									Bad word filter
@@ -33,6 +32,7 @@ Obsolete config variables:
   `displayprofile` tinyint(1) NOT NULL DEFAULT '0', Show profile on user page - different way now
   `allowed_tags` varchar(200) NOT NULL DEFAULT '<b><i><u><center><hr><p><br /><br><blockquote><ol><ul><li><img><strong><em>',
 				editor settings happen in editor.js file
+  `captcha` tinyint(1) NOT NULL DEFAULT '0',		Defaults to '1' now for security reasons
 
 */
 $sql = <<<EOF

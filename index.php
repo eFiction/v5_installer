@@ -20,10 +20,11 @@ $f3->config('cfg/config.ini');
 // Load user's server configuration
 $f3->dbCFG = new \DB\Jig ( "cfg/" , \DB\Jig::FORMAT_JSON );
 $f3->set('installerCFG', $f3->dbCFG->read('config.json'));
+if ( "" == $language = $f3->get('installerCFG.language')) $language = "en";
 
 $f3->route('GET /',
 	function($f3) {
-		$view = new View;
+		$view = new Template;
 		$f3->set('content', $view->render('welcome.htm'));
 	}
 );
@@ -40,6 +41,12 @@ $f3->route('GET /debug',
 		$f3->set('content', "<pre>".print_r($config,TRUE)."</pre>");
 	}
 );
+
+/** Define the basic language **/
+$f3->set('ENCODING','UTF-8');
+$f3->set('LANGUAGE',$language);
+setlocale(LC_ALL, __transLocale);		// http://www.php.net/setlocale
+
 $f3->run();
 echo View::instance()->render('layout.htm');
 
