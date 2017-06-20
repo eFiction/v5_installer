@@ -8,7 +8,7 @@ class language {
 
 	function show(\Base $f3)
 	{
-		$this->fw->set('content', 'Languages');
+		$f3->set('content', 'Languages');
 	}
 	
 	function change(\Base $f3, $params)

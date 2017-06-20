@@ -1,0 +1,14 @@
+<h2>Select chapter storage location</h2>
+<div>
+Below are a few brief recommendations for your hosting environment, a detailed overview <a href="http://efiction.org/wiki/Installer_Chapter_Storage">can be found in the wiki</a>:
+</div>
+<div>
+<check if="{{ @installerCFG.test.db3 == 2 AND @installerCFG.test.data > 0 AND @installerCFG.test.db5 > 0 }}">
+<true>
+	<include href="storage.htm" />
+</true>
+<false>
+	<div class='alert-box error'>Could not connect to database server, please <a href="fresh/config">see the configuration page</a></div>
+</false>
+</check>
+</div>

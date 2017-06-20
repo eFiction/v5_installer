@@ -28,7 +28,7 @@ class installer {
 		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@config');
 		// Say Hi and show, which storage for chapter data is available and offer advise
 		$this->fw->set('scenario', commontools::storageSelect() );
-		$this->fw->set('content', Template::instance()->render('storage.htm'));
+		$this->fw->set('content', Template::instance()->render('storage_fresh.htm'));
 	}
 	
 	function config ()

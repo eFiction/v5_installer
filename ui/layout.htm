@@ -1,7 +1,7 @@
 <html>
 
 <head>
-		<base href="<?php echo $SCHEME.'://'.$HOST.$BASE.'/'; ?>">
+		<base href="{{@SCHEME.'://'.@HOST.@BASE.'/'}}">
 		<meta http-equiv="content-Type" content="text/html; charset=utf8">
 		<meta name="author" content="efiction.org">
 		<meta name="publisher" content="efiction.org">
@@ -9,7 +9,7 @@
 		<meta name="description" content="">
 		<meta name="robots" content="INDEX,FOLLOW">
 		<title>efiction installer</title>
-		<link rel="stylesheet" href="<?php echo $BASE.'/'.$UI; ?>css/base.css" type="text/css" />
+		<link rel="stylesheet" href="{{@BASE.'/'.@UI}}css/base.css" type="text/css" />
 <?php
 	if(isset($script)) echo $script;
 ?>
@@ -21,23 +21,23 @@
 	<div class="gb-1qrt">
 		<a href="<?php echo $BASE; ?>">Home</a>
 		<br /><br />
-		eFiction upgrade from version 3.5.x:
+		{{@LN__upgrade_title}}:
 		<ul>
-		<li><a href="upgrade/config">edit config</a></li>
-		<li><a href="upgrade">perform upgrade</a></li>
-		<li><a href="upgrade/steps/reset">restart upgrade</a></li>
+		<li><a href="upgrade/config">{{@LN__edit_config}}</a></li>
+		<li><a href="upgrade">{{@LN__perform_upgrade}}</a></li>
+		<li><a href="upgrade/steps/reset">{{@LN__restart_upgrade}}</a></li>
 		</ul>
 		<br /><br />
-		eFiction fresh installation:
+		{{@LN__fresh_title}}:
 		<ul>
-		<li><a href="fresh/config">edit config</a></li>
-		<li><a href="fresh">install eFiction 5.x</a></li>
+		<li><a href="fresh/config">{{@LN__edit_config}}</a></li>
+		<li><a href="fresh">{{@LN__perform_install}}</a></li>
 		<br /><br />
 		<a href="language">Languages</a>
 	</div>
 	<div class="gb-3qrt">
-		<h1><?php echo Base::instance()->get('module'); ?></h1>
-		<?php echo Base::instance()->get('content'); ?>
+		<h1>{{@module}}</h1>
+		{{@content | raw}}
 	</div>
 </div>
 </body>

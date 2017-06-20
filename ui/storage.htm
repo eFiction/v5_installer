@@ -1,11 +1,3 @@
-<h2>Select chapter storage location</h2>
-<div>
-During upgrade, you can select to move your chapter data to a new location.<br />
-Below are a few brief recommendations for your hosting environment, a detailed overview <a href="http://efiction.org/wiki/Installer_Chapter_Storage">can be found in the wiki</a>:
-</div>
-<div>
-<check if="{{ @installerCFG.test.db3 == 2 AND @installerCFG.test.data > 0 AND @installerCFG.test.db5 > 0 }}">
-<true>
 	Connected to database server, see advice below:</br ></br >
 	<check if="{{ @scenario == 5 }}">
 		<div class="grid-wrapper">
@@ -68,9 +60,3 @@ Below are a few brief recommendations for your hosting environment, a detailed o
 		<a href="{{ @BASE }}{{ 'storage', 'where=filebase' | alias }}">Use local (filebased) storage</a>
 	</div>
 	</check>
-</true>
-<false>
-	<div class='alert-box error'>Could not connect to database server, please <a href="upgrade/config">see the configuration page</a></div>
-</false>
-</check>
-</div>

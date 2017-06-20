@@ -22,6 +22,14 @@ $f3->dbCFG = new \DB\Jig ( "cfg/" , \DB\Jig::FORMAT_JSON );
 $f3->set('installerCFG', $f3->dbCFG->read('config.json'));
 if ( "" == $language = $f3->get('installerCFG.language')) $language = "en";
 
+/** Define the basic language **/
+$f3->set('ENCODING','UTF-8');
+$f3->set('LANGUAGE',$language);
+setlocale(LC_ALL, __transLocale);		// http://www.php.net/setlocale
+
+// Set a fallback page title
+$f3->set('module', '');
+
 $f3->route('GET /',
 	function($f3) {
 		$view = new Template;
@@ -42,12 +50,7 @@ $f3->route('GET /debug',
 	}
 );
 
-/** Define the basic language **/
-$f3->set('ENCODING','UTF-8');
-$f3->set('LANGUAGE',$language);
-setlocale(LC_ALL, __transLocale);		// http://www.php.net/setlocale
-
 $f3->run();
-echo View::instance()->render('layout.htm');
+echo Template::instance()->render('layout.htm');
 
 ?>

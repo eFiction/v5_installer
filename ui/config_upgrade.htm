@@ -1,10 +1,10 @@
 <check if="{{ extension_loaded('pdo') }}"><true>
 <check if="{{ @@installerCFG.test.db3 == 2 AND @@installerCFG.test.data == 2 AND @@installerCFG.test.db5 > 1 AND @@installerCFG.test.db5 < 4 }}">
-<div class="alert-box success">Everything looks good!<br/>You can now <a href="upgrade">perform the upgrade!</a></div>
+<div class="alert-box success">{{@LN__looks_good}}!<br/>You can now <a href="upgrade">perform the upgrade!</a></div>
 </check>
 <form method="post" action="">
 	<fieldset>
-		<legend>Source database settings (See <a href="http://efiction.org/wiki/Installer_Config">the Wiki entry</a> for help.)</legend>
+		<legend>{{@LN__db_source_label}} (See <a href="http://efiction.org/wiki/Installer_Config">the Wiki entry</a> for help.)</legend>
 		<div class="grid-wrapper">
 			<div class="gb-20">DB driver:</div>
 			<div class="gb-80">
@@ -12,7 +12,7 @@
 					<check if="{{ extension_loaded('pdo_mysql') }}"><option value="mysql">MySQL</option></check>
 {*					<check if="{{ extension_loaded('pdo_pgsql') }}"><option value="pgsql">PostgreSQL *</option></check> *}
 {*					<check if="{{ extension_loaded('pdo_mssql') }}"><option value="mssql">MS SQL/Sybase *</option></check> *}
-				</select> <small>(Drivers marked with * are experimental, at best)</small>
+				</select>{* <small>(Drivers marked with * are experimental, at best)</small> *}
 			</div>
 			<div class="gb-full"><small>Available drivers are auto-detected.</small></div>
 			<div class="gb-20">Server:</div><div class="gb-80"><input type="text" name="new[db3][host]" value="{{ @@installerCFG.db3.host }}"> <small>(localhost when using socket, otherwise use hostname or IP)</small></div>
@@ -49,7 +49,7 @@
 					<check if="{{ extension_loaded('pdo_mysql') }}"><option value="mysql">MySQL</option></check>
 {*					<check if="{{ extension_loaded('pdo_pgsql') }}"><option value="pgsql">PostgreSQL *</option></check> *}
 {*					<check if="{{ extension_loaded('pdo_mssql') }}"><option value="mssql">MS SQL/Sybase *</option></check> *}
-				</select> <small>(Drivers marked with * are experimental, at best)</small>
+				</select>{* <small>(Drivers marked with * are experimental, at best)</small> *}
 			</div>
 			<div class="gb-full"><small>Available drivers are auto-detected.</small></div>
 		<check if="{{ empty(@installerCFG.db5.same_server) }}">
