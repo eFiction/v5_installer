@@ -13,13 +13,17 @@ if ( version_compare(PHP_VERSION, '5.4.0', '<') )
 }
 
 error_reporting(defined('E_STRICT') ? E_ALL | E_STRICT : E_ALL );
+// Caching has to be disabled, otherwise saving config will only take effect after a few reloads - very erratic
+ini_set('opcache.enable', 0);
 
 // Load installer configuration
 $f3->config('cfg/config.ini');
 
 // Load user's server configuration
-$f3->dbCFG = new \DB\Jig ( "cfg/" , \DB\Jig::FORMAT_JSON );
-$f3->set('installerCFG', $f3->dbCFG->read('config.json'));
+$config = [];
+@include('cfg/config.php');
+$f3->set('installerCFG', $config);
+unset($config);
 if ( "" == $language = $f3->get('installerCFG.language')) $language = "en";
 
 /** Define the basic language **/

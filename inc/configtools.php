@@ -188,8 +188,8 @@ class configtools {
 				}
 			}
 		}
-		
-		if ( NULL!==strpos($fw['POST.new.db5.prefix'],'fanfiction') )
+
+		if ( $dsn AND NULL!==strpos($fw['POST.new.db5.prefix'],'fanfiction') )
 		{
 			$probe = $dbTest->exec(
 							"SELECT table_name FROM INFORMATION_SCHEMA.TABLES
@@ -199,7 +199,41 @@ class configtools {
 							);
 			if(sizeof($probe)>0) $test['db5'] = 4;
 		}
-		echo $fw->get('module');
+		
+		if ( NULL!==$fw['POST.admin'] )
+		{
+			//print_r($fw['POST']);exit;
+			if ( $fw['POST.admin.username']!="" )
+				$test['admin']['username'] = TRUE;
+			if ( $fw['POST.admin.mail']!="" )
+				$test['admin']['mail'] = TRUE;
+
+			if ( $fw['POST.admin.pass1']!="" )
+			{
+				if ($fw['POST.admin.pass1']==$fw['POST.admin.pass2'])
+				{
+					// Short password
+					if ( 4>strlen($fw['POST.admin.pass1']) )
+						$test['admin']['pass'] = 3;
+					// All is good
+					else
+						$test['admin']['pass'] = 0;
+				}
+				// Password mismatch
+				else
+					$test['admin']['pass'] = 1;
+			}
+			// Password field empty
+			else
+				$test['admin']['pass'] = 2;
+
+			// Only remember 'good' password
+			if ( $test['admin']['pass'] > 0 )
+				unset($fw['POST.admin.pass1'], $fw['POST.admin.pass2']);
+		}
+		
+		
+		//echo $fw->get('module');
 		return $test;
 	}
 	

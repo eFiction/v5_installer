@@ -19,7 +19,14 @@ return array(
 
 // text blocks DB
 'welcome_title'	=> '',
-'welcome_text'	=> 'This is your welcome message. It appears on the index page. Include it in your template files with {PAGE:welcome}.'
+'welcome_text'	=> 'This is your welcome message. It appears on the index page. Include it in your template files with {PAGE:welcome}.',
+
+// fresh installation
+'new_admin_label'			=> 'eFiction 5 administrative user',
+'new_admin_username'		=> 'Username',
+'new_admin_email'			=> 'e-mail',
+'new_admin_password'		=> 'Password',
+'new_admin_password_repeat'	=> 'Repeat Password',
 
 );
 

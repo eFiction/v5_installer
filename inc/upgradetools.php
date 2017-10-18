@@ -318,6 +318,7 @@ class upgradetools {
 		fwrite($cfgFile, "<?php\n\n");
 		fwrite($cfgFile, '$config = '.var_export($newCFG,TRUE).';');
 		fwrite($cfgFile, "\n\n?>");
+		fclose($cfgFile);
 		
 		// Get entries from configuration table
 		/*

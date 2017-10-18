@@ -4,6 +4,34 @@
 </check>
 <form method="post" action="">
 	<fieldset>
+		<legend>{{@LN__new_admin_label}}</legend>
+		<div class="grid-wrapper">
+			<check if="{{ empty(@installerCFG.test.admin.username) }}">
+				<true><div class="gb-full alert-box warning">No username entered.</div></true>
+				{* <false><div class="gb-full alert-box success">Username entered.</div></false> *}
+			</check>
+			<div class="gb-20">{{@LN__new_admin_username}}:</div><div class="gb-80"><input type="text" name="admin[username]" value="{{ @@installerCFG.admin.username }}">&nbsp;</div>
+			<check if="{{ empty(@installerCFG.test.admin.mail) }}">
+				<true><div class="gb-full alert-box warning">No email entered.</div></true>
+				{* <false><div class="gb-full alert-box success">Email entered.</div></false> *}
+			</check>
+			<div class="gb-20">{{@LN__new_admin_email}}:</div><div class="gb-80"><input type="text" name="admin[mail]" value="{{ @@installerCFG.admin.mail }}">&nbsp;</div>
+			<check if="{{ isset(@installerCFG.test.admin.pass) }}">
+				<check if="{{ @installerCFG.test.admin.pass == 3 }}"><div class="gb-full alert-box info">Short.</div></check>
+				<check if="{{ @installerCFG.test.admin.pass == 2 }}"><div class="gb-full alert-box warning">Empty</div></check>
+				<check if="{{ @installerCFG.test.admin.pass == 1 }}"><div class="gb-full alert-box error">Mismatch</div></check>
+				{* <check if="{{ @installerCFG.test.admin.pass == 0 }}"><div class="gb-full alert-box success">Good</div></check> *}
+			</check>
+			<div class="gb-20">{{@LN__new_admin_password}}:</div><div class="gb-80"><input type="password" name="admin[pass1]" value="{{ @@installerCFG.admin.pass1 }}">&nbsp;</div>
+			<div class="gb-20">{{@LN__new_admin_password_repeat}}:</div><div class="gb-80"><input type="password" name="admin[pass2]" value="{{ @@installerCFG.admin.pass2 }}">&nbsp;</div>
+		</div>
+	</fieldset>
+	<div class="grid-wrapper">
+		<check if="{{ isset(@installerCFG.test.admin.username) AND isset(@installerCFG.test.admin.mail) AND @@installerCFG.test.admin.pass == 0 }}">
+			<div class="gb-50 alert-box success">Admin account can be created</div>
+		</check>
+	</div>	
+	<fieldset>
 		<legend>eFiction 5.x database settings</legend>
 		<div class="grid-wrapper">
 			<div class="gb-20">DB driver:</div>
@@ -32,7 +60,7 @@
 		<check if="{{ isset(@installerCFG.test.db5) }}">
 			<check if="{{ @installerCFG.test.db5 == 3 }}"><div class="gb-50 alert-box info">eFiction 5.x database available, but tables with this prefix already exist.</div></check>
 			<check if="{{ @installerCFG.test.db5 == 2 }}"><div class="gb-50 alert-box success">eFiction 5.x database available</div></check>
-			<check if="{{ @installerCFG.test.db5 == 1 }}"><div class="gb-50 alert-box warning">Cannot probe server without an destination database name.</div></check>
+			<check if="{{ @installerCFG.test.db5 == 1 }}"><div class="gb-50 alert-box warning">Cannot probe server without a destination database name.</div></check>
 			<check if="{{ @installerCFG.test.db5 == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 5.x database.<br />Last error was: {{ @installerCFG.error.db5 }}</div></check>
 		</check>
 	</div>

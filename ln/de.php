@@ -19,7 +19,14 @@ return array(
 
 // text blocks DB
 'welcome_title'	=> '',
-'welcome_text'	=> 'Das ist dein Willkommens-Text. Er erscheint auf der Startseite. Er kann mit {PAGE:welcome} überall eingebunden werden.'
+'welcome_text'	=> 'Das ist dein Willkommens-Text. Er erscheint auf der Startseite. Er kann mit {PAGE:welcome} überall eingebunden werden.',
+
+// fresh installation
+//'new_admin_label'			=> 'eFiction 5 administrative user',
+'new_admin_username'		=> 'Benutzername',
+'new_admin_email'			=> 'e-mail',
+'new_admin_password'		=> 'Passwort',
+'new_admin_password_repeat'	=> 'Passwort wiederholen',
 
 );
 
