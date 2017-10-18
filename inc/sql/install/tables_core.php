@@ -517,10 +517,24 @@ CREATE TABLE `{$new}stories` (
   `cache_categories` text,
   `cache_rating` tinytext DEFAULT NULL,
   `moderation` mediumint(8) DEFAULT NULL,
-  PRIMARY KEY (`sid`), KEY `moderation` (`moderation`), KEY `title` (`title`), KEY `ratingid` (`ratingid`), KEY `completed` (`completed`), KEY `roundrobin` (`roundrobin`), KEY `validated` (`validated`), KEY `recent` (`updated`,`validated`)
+  `translation` tinyint(1) NOT NULL DEFAULT '0',
+  `trans_from` varchar(10) NOT NULL,
+  `trans_to` varchar(10) NOT NULL
+--  PRIMARY KEY (`sid`), KEY `moderation` (`moderation`), KEY `title` (`title`), KEY `ratingid` (`ratingid`), KEY `completed` (`completed`), KEY `roundrobin` (`roundrobin`), KEY `validated` (`validated`), KEY `recent` (`updated`,`validated`), `translation` (`translation`,`trans_from`,`trans_to`)
  ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 --SPLIT--
-
+ALTER TABLE `new5d_stories`
+  ADD PRIMARY KEY (`sid`),
+  ADD KEY `moderation` (`moderation`),
+  ADD KEY `title` (`title`),
+  ADD KEY `ratingid` (`ratingid`),
+  ADD KEY `completed` (`completed`),
+  ADD KEY `roundrobin` (`roundrobin`),
+  ADD KEY `validated` (`validated`),
+  ADD KEY `recent` (`updated`,`validated`),
+  ADD KEY `translation` (`translation`,`trans_from`,`trans_to`) USING BTREE;
+--NOTE--Indices for stories table
+--SPLIT--
 DROP TABLE IF EXISTS `{$new}stories_authors`;
 CREATE TABLE `{$new}stories_authors` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
