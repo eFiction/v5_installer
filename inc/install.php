@@ -28,12 +28,12 @@ class install {
 		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@config');
 		// Say Hi and show, which storage for chapter data is available and offer advise
 		$this->fw->set('scenario', commontools::storageSelect() );
-		$this->fw->set('content', Template::instance()->render('storage_fresh.htm'));
+		$this->fw->set('content', Template::instance()->render('install/storage.htm'));
 	}
 	
 	function config ()
 	{
-		$this->fw->set('content', Template::instance()->render('config_new.htm'));
+		$this->fw->set('content', Template::instance()->render('install/config.htm'));
 	}
 
 	function steps ()
@@ -218,6 +218,82 @@ class installtools {
 		$fw = \Base::instance();
 
 		$upgrade = FALSE;
+		include('inc/sql/install/tables_core.php');
+		include('inc/sql/install/tables_optional.php');
+
+		$modulesDB = [];
+		foreach ($fw['installerCFG.optional'] as $module => $setting )
+		{
+			if( $setting==1 AND isset($optional[$module]) )
+			{
+			// optional module, add init sql and steps
+				$core[$module] = $optional[$module]['sql'];
+				$modulesDB[$module] = 1;
+			}
+			
+		}
+
+		if ( sizeof($modulesDB)>0 )
+		{
+			$fw['installerCFG.modulesDB'] = json_encode($modulesDB);
+			$fw->dbCFG->write('config.json',$fw['installerCFG']);
+		}
+		try
+		{
+			// abusing the try/catch to check if the config table exists
+			$probe = $fw->db5->exec ( ($fw->get('PARAMS.sub')=="flush") ? 'SELECT error' : 'SELECT `value` FROM `'.$fw['installerCFG.db5.dbname'].'`.`'.$fw['installerCFG.db5.prefix'].'config` WHERE `name` LIKE \'version\'' );
+
+			$error = 
+			[
+				"Tables already exist!",
+				" ",
+				"Change eFiction 5.x prefix in the config or",
+				"flush tables before continuing.",
+			];
+			if (isset($probe[0]['value']) ) $error[] = "\nFound tables from version ".$probe[0]['value'];
+			$fw->set('error', implode("\n", $error) );
+			$fw->set('link', [
+				'step'		=> 3,
+				'sub'		=> 'flush',
+				'message'	=> 'flush tables.'
+			]);
+			return Template::instance()->render('steps.htm');
+		}
+		catch (PDOException $e)
+		{
+			$errors=0;
+			$reports=[];
+			$fw->set('currently', "Creating tables");
+
+			foreach ( array_merge($jobs, $tables) as $create => $label )
+			{
+				if(isset($core[$create]))
+				{
+					$sql_steps = explode("--SPLIT--", $core[$create]);
+					foreach ( $sql_steps as $sql_step )
+					{
+						$sql_step = explode("--NOTE--", $sql_step);
+						$r['step'] = isset($sql_step[1]) ? $sql_step[1] : $label;
+						try {
+							$fw->db5->exec ( $sql_step[0] );
+							$r['class'] = 'success';
+							$r['message'] = 'OK';
+						}
+						catch (PDOException $e) {
+							$error = print_r($fw->db5->errorInfo(),TRUE);
+							$r['class'] = 'error';
+							$r['message'] = "ERROR (".$error.")".$sql_step[0] ;
+							$errors++;
+						}
+						$reports[]=$r;
+					}
+				}
+			}
+			$fw->set('reports',$reports);
+			
+			return Template::instance()->render('steps.htm');
+		}
+
 	}
 	
 }
