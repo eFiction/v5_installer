@@ -6,13 +6,13 @@
 		<div class="gb-20">
 			<check if="{{@installerCFG.optional[$module] == 1}}">
 				<true><span class='success'>install</span></true>
-				<false><a href="{{ @BASE }}{{ 'stepsub', 'step=2,sub=add.'.@module | alias }}">install</a></false>
+				<false><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=add.'.@module | alias }}">install</a></false>
 			</check>
 		</div>
 		<div class="gb-20">
 			<check if="{{@installerCFG.optional[$module] == 0}}">
 				<true><span class='error'>not installing</span></true>
-				<false><a href="{{ @BASE }}{{ 'stepsub', 'step=2,sub=drop.'.@module | alias }}">don't install</a></false>
+				<false><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=drop.'.@module | alias }}">don't install</a></false>
 			</check>
 		</div>
 	</check>
@@ -30,6 +30,6 @@
 	</div>
 	<div class="gb-full">
 		<br /><br />
-		<a href="{{ @BASE }}{{ 'steps', 'step=3' | alias }}">Continue</a>
+		<a href="{{ @BASE }}{{ 'steps', 'step=2' | alias }}">Continue</a>
 	</div>
 </div>

@@ -15,6 +15,42 @@ function config_create($job, $step)
 	$fw = \Base::instance();
 	$chapterLocation =   ( $fw['installerCFG.chapters']=="filebase" ) ? "local" : "db";
 
+	if ( empty($fw['installerCFG.data.itemsperpage']) )
+	{
+		$fw['installerCFG.data.itemsperpage']		= 10;
+		$fw['installerCFG.data.recentdays']			= 14;
+		$fw['installerCFG.data.defaultsort']		= 'date';
+		$fw['installerCFG.data.displayindex'] 		= 'TRUE';
+		$fw['installerCFG.data.author_self']		= 'FALSE';		
+		$fw['installerCFG.data.story_validation']	= 'TRUE';
+		$fw['installerCFG.data.minwords']			= 100;
+		$fw['installerCFG.data.maxwords']			= 0;
+		$fw['installerCFG.data.tinyMCE']			= 'FALSE';
+		$fw['installerCFG.data.coauthallowed']		= 'TRUE';
+		$fw['installerCFG.data.allowseries']		= 'FALSE';
+		$fw['installerCFG.data.roundrobins']		= 'FALSE';
+		$fw['installerCFG.data.imageupload']		= 'FALSE';
+		$fw['installerCFG.data.imageheight']		= 200;
+		$fw['installerCFG.data.imagewidth']			= 200;
+		$fw['installerCFG.data.reviewsallowed']		= 'TRUE';
+		$fw['installerCFG.data.anonreviews']		= 'FALSE';
+		$fw['installerCFG.data.revdelete']			= 0;
+		$fw['installerCFG.data.rateonly']			= 'FALSE';
+		$fw['installerCFG.data.agestatement']		= 'FALSE';
+		$fw['installerCFG.data.dateformat']			= 'd.m.y';
+		$fw['installerCFG.data.timeformat']			= 'H:i';
+		$fw['installerCFG.data.sitename']			= 'New archive';
+		$fw['installerCFG.data.siteemail']			= $fw['installerCFG.admin.mail'];
+		$fw['installerCFG.data.slogan']				= 'powered by eFiction 5';
+		$fw['installerCFG.data.linkrange']			= 2;
+		$fw['installerCFG.data.newscomments']		= 'TRUE';
+		$fw['installerCFG.data.alertson']			= 'FALSE';
+		$fw['installerCFG.data.smtp_host'] 			= '';
+		$fw['installerCFG.data.smtp_username']		= '';
+		$fw['installerCFG.data.smtp_password']		= '';
+		$fw['installerCFG.data.debug']				= 0;
+		$fw['installerCFG.data.logging']			= 'TRUE';
+	}
 /*
 Remaining config variables:
   

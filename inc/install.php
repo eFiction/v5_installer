@@ -65,22 +65,22 @@ class install {
 
 		switch($this->fw->get('PARAMS.step'))
 		{
-			case 1:
+			case 0:
 				$this->fw->set('content', installtools::settings() );
 				break;
-			case 2:
+			case 1:
 				$this->fw->set('content', installtools::optional() );
 				break;
-			case 3:
+			case 2:
 				$this->fw->set('content', installtools::newTables() );
 				break;
-			case 4:
+			case 3:
 				$this->fw->set('content', installtools::processJobs() );
 				break;
-			case 5:
+			case 4:
 				$this->fw->set('content', installtools::buildConfig() );
 				break;
-			case 6:
+			case 5:
 				$this->fw->set('content', installtools::moveFiles() );
 				break;
 			default:
@@ -93,7 +93,7 @@ class install {
 	{
 		$this->fw['installerCFG.chapters'] = ($this->fw->get('PARAMS.where')=="database") ? "database" : "filebase";
 		$this->fw->dbCFG->write('config.json',$this->fw['installerCFG']);
-		$this->fw->reroute('@steps(@step=0)');
+		$this->fw->reroute('@steps(@step=1)');
 	}
 
 	function saveConfig ()
@@ -122,7 +122,7 @@ class install {
 
 class installtools {
 	
-	public static function settings()
+	public static function settings()	// Step  #0
 	{
 		$fw = \Base::instance();
 		
@@ -159,13 +159,13 @@ class installtools {
 		{
 			$fw["installerCFG.data.{$sub[1]}"] = $sub[2];
 			$fw->dbCFG->write('config.json',$fw['installerCFG']);
-			$fw->reroute('@steps(@step=1)');
+			$fw->reroute('@steps(@step=0)');
 		}
 		
 		return Template::instance()->render('install/settings.htm');
 	}
 	
-	public static function optional()
+	public static function optional()	// Step  #1
 	{
 		$fw = \Base::instance();
 		$sub = explode(".",$fw->get('PARAMS.sub'));
@@ -197,14 +197,14 @@ class installtools {
 					$fw['installerCFG.optional'][$module] = 0;
 
 				$fw->dbCFG->write('config.json',$fw['installerCFG']);
-				$fw->reroute('@steps(@step=2)');
+				$fw->reroute('@steps(@step=1)');
 			}
 		}
 		
 		return Template::instance()->render('install/optional.htm');
 	}
 
-	public static function newTables ()	// Step  #3
+	public static function newTables ()	// Step  #2
 	{
 		// Not really a job-related task, but the data folder must exist and be protected
 		if ( !is_dir('../data') ) mkdir ('../data');
@@ -252,7 +252,7 @@ class installtools {
 			if (isset($probe[0]['value']) ) $error[] = "\nFound tables from version ".$probe[0]['value'];
 			$fw->set('error', implode("\n", $error) );
 			$fw->set('link', [
-				'step'		=> 3,
+				'step'		=> 2,
 				'sub'		=> 'flush',
 				'message'	=> 'flush tables.'
 			]);
@@ -321,7 +321,7 @@ class installtools {
 		}
 	}
 
-	public static function processJobs ()	// Step  #4
+	public static function processJobs ()	// Step  #3
 	{
 		$time_start = microtime(TRUE);
 		$fw = \Base::instance();
@@ -352,14 +352,14 @@ class installtools {
 
 			else echo "Fehler!";
 
-			jobStart($job[0]);
+			commontools::jobStart($job[0]);
 
 		}
 		$fw->set('time_end', microtime(TRUE) - $time_start);
 		return Template::instance()->render('steps.htm');
 	}
 	
-	public static function buildConfig() 	// Step  #5
+	public static function buildConfig() 	// Step  #4
 	{
 		$fw = \Base::instance();
 		
@@ -390,7 +390,7 @@ class installtools {
 		return Template::instance()->render('steps.htm');
 	}
 
-	public static function moveFiles() 	// Step  #6
+	public static function moveFiles() 	// Step  #5
 	{
 		$fw = \Base::instance();
 		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
@@ -398,129 +398,5 @@ class installtools {
 	}
 }
 
-function jobInit($data)
-{
-	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	$i = 1;
-	
-	if (empty($fw->jobSteps)) return FALSE;
-	
-	foreach ( $fw->jobSteps as $func => $desc )
-	{
-		
-		$fw->db5->exec
-		(
-			"INSERT INTO `{$new}process` 
-			(`job`, 	`joborder`, 	`step`, 	`job_description`, `step_function` ) VALUES 
-			(:job, 		:order,			:step,		:desc_job		 , :func_step );",
-			[
-				':job'			=>	$data['job'],
-				':order'		=>	$data['joborder'],
-				':step'			=>	$i++,
-				':desc_job'		=>	$desc, 
-				':func_step'	=>	$func, 
-			]
-		);
-	}
-	$fw->db5->exec ( "UPDATE `{$new}process`SET `success` = 1 WHERE `id` = :id ", [ ':id' => $data['id'] ] );
-	return TRUE;
-}
-
-
-function jobStart($job)
-{
-	$fw = \Base::instance();
-	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-	
-	if ( $job['success'] == 0 )
-	{
-		if ( FALSE === jobInit($job) )
-		{
-			// error
-		}
-		else
-		{
-			// gut
-		}
-	}
-	
-	// Find the first open step and process it
-	$step = $fw->db5->exec ( "SELECT * FROM `{$new}process` WHERE step > 0 AND success < 2 AND joborder = :joborder ORDER BY step ASC LIMIT 0,1", [ ':joborder' => $job['joborder'] ]);
-	if ( sizeof($step)>0 )
-	{
-		/*
-		PHP 7 style:
-		($job['job'].'_'.$step[0]['step_function'])($job, $step[0]);
-		*/
-		$func = $job['job'].'_'.$step[0]['step_function'];
-		$func($job, $step[0]);
-	}
-	
-	$stepReports = $fw->db5->exec ( "SELECT * FROM `{$new}process` WHERE step > 0 AND joborder = :joborder ORDER BY step ASC", [ ':joborder' => $job['joborder'] ]);
-	foreach ( $stepReports as $stepReport )
-	{
-		if ( $stepReport['success']==0 )
-		{
-			// This step has not even started doing anything
-			$reports[] = [
-				'step'		=> $stepReport['job_description'],
-				'class'		=> 'warning',
-				'message'	=> "open",
-			];
-			$toDo = TRUE;
-		}
-		elseif ( $stepReport['success']==1 )
-		{
-			if ( $stepReport['total']>0 ) $total = " of {$stepReport['total']}";
-			else $total ="";
-			// This step is currently doing something
-			$reports[] = [
-				'step'		=> $stepReport['job_description'],
-				'class'		=> 'warning',
-				'message'	=> "processed ".($stepReport['items'])."$total items so far.",
-			];
-			$toDo = TRUE;
-		}
-		elseif ( $stepReport['success']==2 )
-		{
-			// This one is done
-			$reports[] = [
-					'step'		=> $stepReport['job_description'],
-					'class'		=> 'success',
-					'message'	=> "OK ({$stepReport['items']} items)",
-			];
-		}
-	}
-	
-	if ( isset($reports) ) $fw->set('reports', $reports );
-
-	// setup redirect
-	$fw->set('redirect', 4 );
-	$fw->set('onload', ' onLoad="setTimeout(\'delayedRedirect()\', 3000)"' );
-	
-	if ( isset($toDo) )
-	{
-		$fw->set('continue', 
-			[
-				"step" 		=> 4,
-				"message"	=> 'This page will automatically re-load until all steps have been completed',
-				"message2"	=> " manually",
-			]
-		);
-	}
-	else
-	{
-		// mark this job as completed
-		$fw->db5->exec ( "UPDATE `{$new}process`SET `success` = 2 WHERE `id` = :id ", [ ':id' => $job['id'] ] );
-		$fw->set('continue', 
-			[
-				"step" 		=> 4,
-				"message"	=> 'All steps have been processed',
-				"message2"	=> " with the next job",
-			]
-		);
-	}
-}
 
 ?>
