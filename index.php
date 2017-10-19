@@ -22,11 +22,6 @@ $f3->config('cfg/config.ini');
 // Load user's server configuration
 $f3->dbCFG = new \DB\Jig ( "cfg/" , \DB\Jig::FORMAT_JSON );
 $f3->set('installerCFG', $f3->dbCFG->read('config.json'));
-/*
-$config = [];
-@include('cfg/config.php');
-$f3->set('installerCFG', $config);
-unset($config);*/
 if ( "" == $language = $f3->get('installerCFG.language')) $language = "en";
 
 /** Define the basic language **/

@@ -39,12 +39,12 @@ function various_logs($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}log`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT L.log_id as id, L.log_action as action, L.log_uid as uid, L.log_ip as ip, L.log_timestamp as timestamp, L.log_type as type FROM `{$fw->dbOld}log`L LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -82,7 +82,7 @@ function various_news($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}news`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
@@ -91,7 +91,7 @@ function various_news($job, $step)
 									LEFT JOIN `{$fw->dbOld}authors`A ON ( N.author = A.penname )
 								ORDER BY N.time ASC LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -128,7 +128,7 @@ function various_tracker($job, $step)
 		try
 		{
 			$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}tracker`;")[0]['found'];
-			$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+			$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 		}
 		catch (PDOException $e)
 		{
@@ -144,7 +144,7 @@ function various_tracker($job, $step)
 								FROM `{$fw->dbOld}tracker` 
 								ORDER BY sid, uid ASC LIMIT {$step['items']},{$limit};");
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -180,7 +180,7 @@ function various_shoutbox($job, $step)
 		try
 		{
 			$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}shoutbox`;")[0]['found'];
-			$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+			$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 		}
 		catch (PDOException $e)
 		{
@@ -201,7 +201,7 @@ function various_shoutbox($job, $step)
 								FROM `{$fw->dbOld}shoutbox` 
 								ORDER BY shout_datestamp ASC LIMIT {$step['items']},{$limit};");
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -240,7 +240,7 @@ function various_poll($job, $step)
 		try
 		{
 			$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}poll`;")[0]['found'];
-			$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+			$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 		}
 		catch (PDOException $e)
 		{
@@ -256,7 +256,7 @@ function various_poll($job, $step)
 								FROM `{$fw->dbOld}poll` 
 								ORDER BY `poll_id` ASC LIMIT {$step['items']},{$limit};");
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 	
 	if ( 0 < $count = sizeof($dataIn) )
@@ -295,7 +295,7 @@ function various_poll_votes($job, $step)
 		try
 		{
 			$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}poll_votes`;")[0]['found'];
-			$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+			$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 		}
 		catch (PDOException $e)
 		{
@@ -311,7 +311,7 @@ function various_poll_votes($job, $step)
 								FROM `{$fw->dbOld}poll_votes` 
 								ORDER BY `vote_id` ASC LIMIT {$step['items']},{$limit};");
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )

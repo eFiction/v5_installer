@@ -30,7 +30,7 @@ function textblocks_copy($job, $step)
 		$newdata->reset();
 	}
 	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $i,
 							':id' => $step['id']
@@ -46,7 +46,7 @@ function textblocks_mark($job, $step)
 	$fw->db5->exec("UPDATE `{$fw->dbNew}textblocks`T SET T.as_page=0 WHERE T.id IN(1,2,4,5,7,9);");
 	
 	$count = $fw->db5->count();
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -63,7 +63,7 @@ function textblocks_add($job, $step)
 					('eucookie', '(EU) Cookie consent', 'Cookie stuff ...', '1');");
 					
 	$count = $fw->db5->count();
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']

@@ -26,7 +26,7 @@ function contests_data($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}challenges`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
@@ -37,7 +37,7 @@ function contests_data($job, $step)
 								FROM `{$fw->dbOld}challenges`
 								ORDER BY `chalid` ASC LIMIT {$step['items']},{$limit};");
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -91,7 +91,7 @@ function contests_relations($job, $step)
 	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}contest_relations` (`conid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
 	$count = $fw->db5->count();
 	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -107,7 +107,7 @@ function contests_cache($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbNew}contests`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db5->exec("SELECT 
@@ -133,7 +133,7 @@ function contests_cache($job, $step)
 											LEFT JOIN `{$fw->dbNew}categories`C ON ( C.cid = rC.relid AND rC.type = 'CA' )
 									GROUP BY Con.conid;");
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )

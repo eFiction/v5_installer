@@ -23,7 +23,7 @@ function feedback_reviews($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}reviews`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
@@ -38,7 +38,7 @@ function feedback_reviews($job, $step)
 									type 
 								FROM `{$fw->dbOld}reviews` Rv ORDER BY Rv.reviewid LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -76,7 +76,7 @@ function feedback_comments($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}reviews`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT reviewid as reference, 
@@ -89,7 +89,7 @@ function feedback_comments($job, $step)
 									LEFT JOIN `{$fw->dbOld}coauthors`CA ON ( CA.sid = Rv.item )
 								WHERE LOCATE('{$review_split}', Rv.review) > 0 GROUP BY Rv.reviewid ORDER BY Rv.date LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -126,7 +126,7 @@ function feedback_news($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}comments`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT 
@@ -139,7 +139,7 @@ function feedback_news($job, $step)
 								FROM `{$fw->dbOld}comments`C
 								LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )

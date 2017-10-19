@@ -25,7 +25,7 @@ function users_guest($job, $step)
 							
 	$fw->db5->exec ( "UPDATE `{$fw->dbNew}users` SET `uid` = '0' ;" );
 	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = 1 WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = 1 WHERE `id` = :id ", 
 						[ 
 							':id' => $step['id']
 						]
@@ -41,7 +41,7 @@ function users_copy($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}authors` WHERE uid > 0;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
@@ -65,7 +65,7 @@ function users_copy($job, $step)
 							GROUP BY A.uid
 							ORDER BY A.date ASC LIMIT {$step['items']},{$limit};");
 				
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -154,7 +154,7 @@ function users_fields($job, $step)
 	// Add avatar field (formerly image from author info)
 	//$fw->db5->exec("INSERT INTO `{$fw->dbNew}user_fields` ( field_type, field_name, field_title ) VALUES ( 1, 'avatar', 'Avatar' );");
 
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
 							':id' => $step['id']
@@ -172,7 +172,7 @@ function users_info($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}authorinfo`Ai INNER JOIN `{$fw->dbOld}authorfields`Uf ON (Ai.field=Uf.field_id) WHERE uid > 0;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT Ai.uid, Ai.field, Ai.info, Uf.field_type
@@ -180,7 +180,7 @@ function users_info($job, $step)
 									INNER JOIN `{$fw->dbOld}authorfields`Uf ON (Ai.field=Uf.field_id)
 								ORDER BY Ai.uid, Ai.field ASC LIMIT {$step['items']},{$limit};");
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
@@ -223,14 +223,14 @@ function users_favourites($job, $step)
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}favorites` WHERE uid > 0;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db3->exec("SELECT `uid`, `item`, `type`, `comments`
 								FROM `{$fw->dbOld}favorites`
 								ORDER BY uid, item, type ASC LIMIT {$step['items']},{$limit};");
 
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )

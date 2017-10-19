@@ -62,6 +62,7 @@ CREATE TABLE `{$new}recommendations` (
   `recid` int(11) NOT NULL AUTO_INCREMENT,
   `uid` int(11) NOT NULL,
   `guestname` varchar(50) DEFAULT NULL,
+  `internal` int(11) DEFAULT NULL COMMENT'story ID or NULL for external',
   `url` varchar(255) NOT NULL DEFAULT 'broken',
   `title` varchar(200) NOT NULL DEFAULT 'Untitled',
   `author` varchar(200) NOT NULL,

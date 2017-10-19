@@ -13,10 +13,13 @@ $jobs = array
 	"iconsets"		=>	"Layout: Iconset",
 	"menu"			=>	"Page menus",
 	"textblocks"	=>	"Textblocks (former: messages)",
-	"chapters"		=>	"Chapters",
-	"feedback"		=>	"Feedback (former: reviews & comments)",
-	"friends"		=>	"Friends",
 	"users"			=>	"Users",
+	"chapters"		=>	"Chapters",
+);
+
+$jobs_upgrade = array
+(
+	"feedback"		=>	"Feedback (former: reviews & comments)",
 	"descriptors"	=>	"Story descriptors",	// This is a meta job
 	"stories"		=>	"Stories",
 	"series"		=>	"Series",
@@ -27,7 +30,7 @@ $jobs = array
 // Only create tables
 $tables = array (
 	"bad_behavior"	=>	"Bad Behavior 2",
-	"convert"		=>	"eFiction conversion table",
+	"process"		=>	"eFiction process table",
 	"sessions"		=>	"Session",
 	"messaging"		=>	"Messaging (new feature)",
 	// in job_descriptors
@@ -42,17 +45,22 @@ $tables = array (
 	"shoutbox"		=>	"Shoutbox",
 	"tracker"		=>	"Story tracker (new feature)",
 );
+
+if(!empty($upgrade))
+	$jobs = array_merge($jobs, $jobs_upgrade);
+else
+	$tables = array_merge($tables, $jobs_upgrade);
+
 $_SESSION['skipped'] = array();
 
 
-if(isset($upgrade)){
 /* --------------------------------------------------------------------------------------------
-* UTILITY TABLE to monitor upgrade progress*
+* UTILITY TABLE to monitor progress*
 	requires: -
 -------------------------------------------------------------------------------------------- */
-$core['convert'] = <<<EOF
-DROP TABLE IF EXISTS `{$new}convert`;
-CREATE TABLE `{$new}convert` (
+$core['process'] = <<<EOF
+DROP TABLE IF EXISTS `{$new}process`;
+CREATE TABLE `{$new}process` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `job` tinytext NOT NULL,
   `joborder` tinyint(3) NOT NULL,
@@ -66,7 +74,6 @@ CREATE TABLE `{$new}convert` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} ;
 EOF;
-}
 
 
 /* --------------------------------------------------------------------------------------------
@@ -197,23 +204,6 @@ CREATE TABLE `{$new}feedback` (
   `moderation` mediumint(8) DEFAULT NULL,
   PRIMARY KEY (`fid`), KEY `sub_ref` (`reference_sub`), KEY `moderation` (`moderation`), KEY `by_uid` (`writer_uid`,`reference`,`type`), KEY `alias_story_chapter` (`reference`,`reference_sub`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
-EOF;
-
-
-/* --------------------------------------------------------------------------------------------
-* FEEDBACK *
-	requires: -
--------------------------------------------------------------------------------------------- */
-$core['friends'] = <<<EOF
-DROP TABLE IF EXISTS `{$new}friends`;
-CREATE TABLE `{$new}friends` (
-  `link_id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id` mediumint(8) UNSIGNED NOT NULL,
-  `friend_id` mediumint(8) UNSIGNED NOT NULL,
-  `note` tinytext,
-  `active` BOOLEAN NOT NULL DEFAULT TRUE,
-  PRIMARY KEY (`link_id`), UNIQUE KEY `relation` (`user_id`,`friend_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for friend relations';
 EOF;
 
 
@@ -496,7 +486,7 @@ EOF;
 $core['stories'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}stories`;
 CREATE TABLE `{$new}stories` (
-  `sid` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `sid` mediumint(8) NOT NULL,
   `title` varchar(200) NOT NULL DEFAULT 'Untitled',
   `summary` text,
   `storynotes` text,
@@ -519,9 +509,22 @@ CREATE TABLE `{$new}stories` (
   `moderation` mediumint(8) DEFAULT NULL,
   `translation` tinyint(1) NOT NULL DEFAULT '0',
   `trans_from` varchar(10) NOT NULL,
-  `trans_to` varchar(10) NOT NULL,
-  PRIMARY KEY (`sid`), KEY `moderation` (`moderation`), KEY `title` (`title`), KEY `ratingid` (`ratingid`), KEY `completed` (`completed`), KEY `roundrobin` (`roundrobin`), KEY `validated` (`validated`), KEY `recent` (`updated`,`validated`), `translation` (`translation`,`trans_from`,`trans_to`)
- ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
+  `trans_to` varchar(10) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
+-- Add Indices
+ALTER TABLE `{$new}stories`
+  ADD PRIMARY KEY (`sid`),
+  ADD KEY `moderation` (`moderation`),
+  ADD KEY `title` (`title`),
+  ADD KEY `ratingid` (`ratingid`),
+  ADD KEY `completed` (`completed`),
+  ADD KEY `roundrobin` (`roundrobin`),
+  ADD KEY `validated` (`validated`),
+  ADD KEY `recent` (`updated`,`validated`),
+  ADD KEY `translation` (`translation`,`trans_from`,`trans_to`);
+-- Add auto increment
+ALTER TABLE `{$new}stories`
+  MODIFY `sid` mediumint(8) NOT NULL AUTO_INCREMENT;
 --SPLIT--
 
 DROP TABLE IF EXISTS `{$new}stories_authors`;
@@ -707,12 +710,13 @@ CREATE TABLE `{$new}user_info` (
 
 DROP TABLE IF EXISTS `{$new}user_friends`;
 CREATE TABLE `{$new}user_friends` (
-  `link` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `uid` mediumint(8) unsigned NOT NULL,
-  `friend` mediumint(8) unsigned NOT NULL,
-  `comment` varchar(512) NOT NULL,
-  PRIMARY KEY (`link`), UNIQUE KEY `relation` (`uid`,`friend`)
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
+  `link_id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` mediumint(8) UNSIGNED NOT NULL,
+  `friend_id` mediumint(8) UNSIGNED NOT NULL,
+  `note` tinytext,
+  `active` BOOLEAN NOT NULL DEFAULT TRUE,
+  PRIMARY KEY (`link_id`), UNIQUE KEY `relation` (`user_id`,`friend_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for friend relations';
 --NOTE--User friends
 EOF;
 

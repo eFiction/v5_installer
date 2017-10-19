@@ -222,7 +222,7 @@ class upgradetools {
 				{
 					$fw->db5->exec
 					(
-						"INSERT INTO `{$new}convert` 
+						"INSERT INTO `{$new}process` 
 						(`job`, 	`joborder`, 	`step`, 	`job_description` ) VALUES 
 						(:job, 		:order,			0,			:desc_job		  );",
 						[
@@ -253,10 +253,9 @@ class upgradetools {
 		$fw->dbNew = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		$fw->dbOld = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
 
-		//$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		$step = $fw->get('PARAMS.step');
 		
-		$job = $fw->db5->exec ( "SELECT * FROM `{$fw->dbNew}convert` WHERE step = 0 AND success < 2 ORDER BY joborder, step ASC LIMIT 0,1");
+		$job = $fw->db5->exec ( "SELECT * FROM `{$fw->dbNew}process` WHERE step = 0 AND success < 2 ORDER BY joborder, step ASC LIMIT 0,1");
 		if($fw->db5->count()==0)
 		{
 			$fw->set('continue',
@@ -292,11 +291,6 @@ class upgradetools {
 	public static function buildConfig() 	// Step  #4
 	{
 		$fw = \Base::instance();
-		// $new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-		
-		// create instance of the final config file
-		//$fw->newCFG = new \DB\Jig ( "../data" , \DB\Jig::FORMAT_JSON );
-		//$mapper = new \DB\Jig\Mapper($fw->newCFG, 'config.json');
 		
 		$newCFG = 
 		[
@@ -315,63 +309,6 @@ class upgradetools {
 		fwrite($cfgFile, "\n\n?>");
 		fclose($cfgFile);
 		
-		// Get entries from configuration table
-		/*
-		$cfgData = $fw->db5->exec("SELECT `name`, `value` FROM `{$new}config` WHERE `to_config_file` = 1  ORDER BY `name` ASC ");
-		foreach ( $cfgData as $cfgItem)
-		{
-			if ( $cfgItem['value'] == "TRUE") $cfgItem['value'] = TRUE;
-			elseif ( $cfgItem['value'] == "FALSE") $cfgItem['value'] = FALSE;
-
-			$cfgItem['name'] = explode("__", $cfgItem['name']);
-
-			if ( isset($cfgItem['name'][1]) )
-			{	
-				// nested key structures, like bb2__verbose -> bb2[verbose]
-				if ( empty( $mapper->{$cfgItem['name'][0]} ) ) $mapper->{$cfgItem['name'][0]} = [];
-				$mapper->{$cfgItem['name'][0]}[$cfgItem['name'][1]] = $cfgItem['value'];
-			}
-			else
-			{
-				if ( NULL === $c = json_decode($cfgItem['value']) )
-					$mapper->{$cfgItem['name'][0]} = $cfgItem['value'];
-				else
-					$mapper->{$cfgItem['name'][0]} = $c;
-			}
-		}
-		*/
-
-		// Get optional modules, that were enabled
-		/*
-		$modules = [];
-		foreach ( $fw['installerCFG.optional'] as $moduleName => $moduleOpt )
-		{
-			if ( $moduleOpt[0]!="-" ) $modules[$moduleName] = 1;
-		}
-		if ( sizeof($modules)>0 ) $mapper->modules_enabled = $modules;
-*/
-		// Build page stat cache
-		/*
-		$statSQL = [
-				"SET @users = (SELECT COUNT(*) FROM `{$new}users`U WHERE U.groups > 0);",
-				"SET @authors = (SELECT COUNT(*) FROM `{$new}users`U WHERE ( U.groups & 4 ) );",
-				"SET @reviews = (SELECT COUNT(*) FROM `{$new}feedback`F WHERE F.type='ST');",
-				"SET @stories = (SELECT COUNT(DISTINCT sid) FROM `{$new}stories`S WHERE S.validated > 0 );",
-				"SET @chapters = (SELECT COUNT(DISTINCT chapid) FROM `{$new}chapters`C INNER JOIN `{$new}stories`S ON ( C.sid=S.sid AND S.validated > 0 AND C.validated > 0) );",
-				"SET @words = (SELECT SUM(C.wordcount) FROM `{$new}chapters`C INNER JOIN `{$new}stories`S ON ( C.sid=S.sid AND S.validated > 0 AND C.validated > 0) );",
-				"SET @newmember = (SELECT CONCAT_WS(',', U.uid, U.nickname) FROM `{$new}users`U WHERE U.groups>0 ORDER BY U.registered DESC LIMIT 1);",
-				"SELECT @users as users, @authors as authors, @reviews as reviews, @stories as stories, @chapters as chapters, @words as words, @newmember as newmember;",
-			];
-		$statsData = $fw->db5->exec($statSQL)[0];
-		
-		foreach($statsData as $statKey => $statValue)
-		{
-			$stats[$statKey] = ($statKey=="newmember") ? explode(",",$statValue) : $statValue;
-			//->{$statKey} = ($statKey=="newmember") ? json_encode(explode(",",$statValue)) : $statValue;
-		}
-		$mapper->stats = $stats;
-		$mapper->save();
-		*/
 		$fw->set('continue',
 			[
 				'message'	=> 'Configuration file built',
@@ -389,7 +326,7 @@ class upgradetools {
 		
 		if ( 1 )
 		{
-			$fw->db5->exec("DROP TABLE IF EXISTS `{$new}convert`;");
+			$fw->db5->exec("DROP TABLE IF EXISTS `{$new}process`;");
 			return "Test mode, not moving files or making changes to your eFiction 3.5.x installation at this point!.<br />Thanks for testing the eFiction 5 installer.";
 		}
 		
@@ -502,7 +439,7 @@ function jobInit($data)
 		
 		$fw->db5->exec
 		(
-			"INSERT INTO `{$new}convert` 
+			"INSERT INTO `{$new}process` 
 			(`job`, 	`joborder`, 	`step`, 	`job_description`, `step_function` ) VALUES 
 			(:job, 		:order,			:step,		:desc_job		 , :func_step );",
 			[
@@ -514,7 +451,7 @@ function jobInit($data)
 			]
 		);
 	}
-	$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 1 WHERE `id` = :id ", [ ':id' => $data['id'] ] );
+	$fw->db5->exec ( "UPDATE `{$new}process`SET `success` = 1 WHERE `id` = :id ", [ ':id' => $data['id'] ] );
 	return TRUE;
 }
 
@@ -537,7 +474,7 @@ function jobStart($job)
 	}
 	
 	// Find the first open step and process it
-	$step = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step > 0 AND success < 2 AND joborder = :joborder ORDER BY step ASC LIMIT 0,1", [ ':joborder' => $job['joborder'] ]);
+	$step = $fw->db5->exec ( "SELECT * FROM `{$new}process` WHERE step > 0 AND success < 2 AND joborder = :joborder ORDER BY step ASC LIMIT 0,1", [ ':joborder' => $job['joborder'] ]);
 	if ( sizeof($step)>0 )
 	{
 		/*
@@ -548,7 +485,7 @@ function jobStart($job)
 		$func($job, $step[0]);
 	}
 	
-	$stepReports = $fw->db5->exec ( "SELECT * FROM `{$new}convert` WHERE step > 0 AND joborder = :joborder ORDER BY step ASC", [ ':joborder' => $job['joborder'] ]);
+	$stepReports = $fw->db5->exec ( "SELECT * FROM `{$new}process` WHERE step > 0 AND joborder = :joborder ORDER BY step ASC", [ ':joborder' => $job['joborder'] ]);
 	foreach ( $stepReports as $stepReport )
 	{
 		if ( $stepReport['success']==0 )
@@ -603,7 +540,7 @@ function jobStart($job)
 	else
 	{
 		// mark this job as completed
-		$fw->db5->exec ( "UPDATE `{$new}convert`SET `success` = 2 WHERE `id` = :id ", [ ':id' => $job['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$new}process`SET `success` = 2 WHERE `id` = :id ", [ ':id' => $job['id'] ] );
 		$fw->set('continue', 
 			[
 				"step" 		=> 3,

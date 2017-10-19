@@ -45,7 +45,7 @@ function chapters_copy($job, $step)
 		}
 		// Count total chapters and take note
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}chapters`;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}convert`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 	
 	$dataIn = $fw->db3->exec("SELECT COUNT(reviewid) as reviewsNew, Ch.uid as folder, Ch.chapid as chapter, Ch.*
@@ -54,7 +54,7 @@ function chapters_copy($job, $step)
 								GROUP BY Ch.chapid
 								ORDER BY chapid ASC LIMIT {$step['items']},{$limit};");
 	
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'convert');
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
 
 	if ( 0 < $count = sizeof($dataIn) )
