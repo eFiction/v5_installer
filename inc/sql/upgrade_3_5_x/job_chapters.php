@@ -29,7 +29,7 @@ function chapters_copy($job, $step)
 		if ( file_exists(realpath('..').'/data/chapters.sq3')) unlink ( realpath('..').'/data/chapters.sq3' ) ;
 		
 		// if we need the filebase storage, initialize it now
-		if ( $target = "filebase" )
+		if ( $target == "filebase" )
 		{
 			$fw->dbsqlite = new DB\SQL('sqlite:'.realpath('..').'/data/chapters.sq3');
 
@@ -60,7 +60,7 @@ function chapters_copy($job, $step)
 	if ( 0 < $count = sizeof($dataIn) )
 	{
 		$newchapter = new DB\SQL\Mapper($fw->db5,$fw->get('installerCFG.db5.prefix').'chapters');
-		if ( $target = "filebase" )
+		if ( $target == "filebase" )
 		{
 			$fw->dbsqlite = new DB\SQL('sqlite:'.realpath('..').'/data/chapters.sq3');
 			$newchapterText = new DB\SQL\Mapper($fw->dbsqlite,'chapters');
@@ -83,7 +83,8 @@ function chapters_copy($job, $step)
 			if ( $source=="files")
 			{
 				$s = upgradetools::getChapterFile($chapterIn);
-				if ($s[0]) $chaptertext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
+				if ($s[0])
+					$chaptertext = mb_convert_encoding ($s[1], "UTF-8", mb_detect_encoding($s[1], 'UTF-8, ISO-8859-1'));
 				else{
 					//
 					$chaptertext = "not found";
@@ -95,6 +96,7 @@ function chapters_copy($job, $step)
 				$chaptertext = $chapterIn['storytext'];
 			}
 			
+
 			if ( $target=="filebase" )
 			{
 				// No text in Database
@@ -112,6 +114,7 @@ function chapters_copy($job, $step)
 			{
 				$newchapter->chaptertext = $chaptertext;
 			}
+
 			$newchapter->chapid		= $chapterIn['chapter'];
 			$newchapter->sid		= $chapterIn['sid'];
 			$newchapter->title		= $chapterIn['title'];

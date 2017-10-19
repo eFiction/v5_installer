@@ -113,6 +113,7 @@ class upgradetools {
 			}
 			$description[$module] = $optional[$module]['description'];
 		}
+
 		$fw->set('check', $check);
 		$fw->set('description', $description);
 		

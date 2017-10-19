@@ -14,7 +14,7 @@
 	</repeat>
 	<div class="gb-full"><br /><h2>New core modules:</h2></div>
 	<repeat group="{{ @installerCFG.optional }}" key="{{ @module }}" value="{{ @select }}" counter="{{ @ctr }}">
-		<check if="{{ @select.0=='*' AND @select.1!='*'}}"><check if="{{ @opt=TRUE }}"></check>
+		<check if="{{ @select.0=='*' AND @select.1!='*'}}">
 			<div class="gb-40">"{{ @module }}" ({{ @description[@module] }})</div>
 			<div class="gb-20"><check if="{{ @select.1!='?' }}"><true>Current setting:</true><false><span class='info'>No data</span></false></check>&nbsp;</div>
 			<div class="gb-20">
