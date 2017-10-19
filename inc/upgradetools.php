@@ -4,12 +4,11 @@ class upgradetools {
 	
 	public static function sitedata()
 	{
-		// reads data from the v3 for later use and moves to next step
 		$fw = \Base::instance();
 
+		// reads data from the v3 for later use and moves to next step
 		$probe = $fw->db3->exec
 		(
-//			'SELECT `sitename` , `slogan`, `siteemail`, `storiespath`, `store`, `itemsperpage`, `dateformat`, `timeformat`, `anonreviews` FROM `'.$fw['installerCFG.db3.dbname'].'`.`'.$fw['installerCFG.db3.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
 			'SELECT * FROM `'.$fw['installerCFG.db3.dbname'].'`.`'.$fw['installerCFG.db3.settings'].'fanfiction_settings` WHERE `sitekey` LIKE :sitekey',
 			[
 				':sitekey'	=> $fw['installerCFG.db3.sitekey']
@@ -92,12 +91,8 @@ class upgradetools {
 						$fw['installerCFG.optional'][$module] = ($check[$module]) ? "++" : "+-";
 				$fw->dbCFG->write('config.json',$fw['installerCFG']);
 			}
-			if(@$sub[1]==$module)// AND $check[$module]>0)
+			if(@$sub[1]==$module)
 			{
-				/*
-				if($sub[0]=="add")$fw['installerCFG.optional'][$module]=($optional[$module]['type']==1)?"*+":"+";
-				if($sub[0]=="drop")	$fw['installerCFG.optional'][$module]=($optional[$module]['type']==1)?"*-":"-";
-				*/
 				if($sub[0]=="add")
 				{
 					if($optional[$module]['type']==1)

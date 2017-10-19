@@ -169,9 +169,7 @@ class upgrade {
 		$this->fw['POST.new.db5.dsn'] = $dsn['db5'].";charset=".$this->fw['POST.new.db5.charset'];
 		
 		//save data and return to form
-		$config = "<?php\n\n\$config=".var_export($this->fw['POST.new'],TRUE).";\n\n?>";
-		file_put_contents("cfg/config.php", $config, LOCK_EX);
-		//$this->fw->dbCFG->write('config.json',$this->fw['POST.new']);
+		$this->fw->dbCFG->write('config.json',$this->fw['POST.new']);
 
 		$this->fw->reroute('config',false);
 		exit;

@@ -202,7 +202,6 @@ class configtools {
 		
 		if ( NULL!==$fw['POST.admin'] )
 		{
-			//print_r($fw['POST']);exit;
 			if ( $fw['POST.admin.username']!="" )
 				$test['admin']['username'] = TRUE;
 			if ( $fw['POST.admin.mail']!="" )
@@ -232,8 +231,6 @@ class configtools {
 				unset($fw['POST.admin.pass1'], $fw['POST.admin.pass2']);
 		}
 		
-		
-		//echo $fw->get('module');
 		return $test;
 	}
 	

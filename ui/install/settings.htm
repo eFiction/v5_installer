@@ -1,0 +1,23 @@
+<div class="grid-wrapper">
+	<div class="gb-full"><h2>Basic settings:</h2></div>
+	<repeat group="{{ @options }}" key="{{ @key }}" value="{{ @options }}">
+		<div class="gb-40">{{ ${"LN__set_".@key} }}</div>
+		<div class="gb-20">
+			<check if="{{@installerCFG.data[$key] == 1}}">
+				<true><span class='success'>yes</span></true>
+				<false><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=set.'.@key.'.1' | alias }}">yes</a></false>
+			</check>
+		</div>
+		<div class="gb-20">
+			<check if="{{@installerCFG.data[$key] == 0}}">
+				<true><span class='error'>no</span></true>
+				<false><a href="{{ @BASE }}{{ 'stepsub', 'step=1,sub=set.'.@key.'.0' | alias }}">no</a></false>
+			</check>
+		</div>
+	</repeat>
+	</div>
+	<div class="gb-full">
+		<br /><br />
+		<a href="{{ @BASE }}{{ 'steps', 'step=2' | alias }}">Continue</a>
+	</div>
+</div>

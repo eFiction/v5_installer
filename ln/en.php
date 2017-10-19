@@ -28,6 +28,29 @@ return array(
 'new_admin_password'		=> 'Password',
 'new_admin_password_repeat'	=> 'Repeat Password',
 
+'set_anonreviews'		=> 'Allow anonymous reviews',
+'set_reviewsallowed'	=> 'Allow reviews',
+'set_newscomments'		=> 'Allow news comments',
+'set_tinyMCE'			=> 'tinyMCE',
+'set_imageupload'		=> 'image upload',
+'set_coauthallowed'		=> 'coauth allowed',
+'set_roundrobins'		=> 'roundrobins',
+'set_rateonly'			=> 'rate only',
+'set_alertson'			=> 'alerts on',
+'set_logging'			=> 'logging',
+'set_agestatement'		=> 'age statement',
+'set_story_validation'	=> 'story_validation',
+'set_author_self'		=> 'author_self',
+'set_displayindex'		=> 'display index',
+'set_allowseries'		=> 'allow series',
+'set_defaultsort'		=> 'defaultsort',
+
+'opt_recommendations'	=> 'Recommendations',
+'opt_contests'			=> 'Contest module (previously named challenge)',
+'opt_shoutbox'			=> 'Shoutbox',
+'opt_tracker'			=> 'Tracker',
+'opt_poll'				=> 'Poll',
+
 );
 
 ?>

@@ -1,0 +1,35 @@
+<div class="grid-wrapper">
+	<div class="gb-full"><h2>Optional modules:</h2></div>
+	<repeat group="{{ @installerCFG.optional }}" key="{{ @module }}" value="{{ @selected }}">
+	<check if="{{ !@optional[@module] }}">
+		<div class="gb-40">"{{ @module }}"</div>
+		<div class="gb-20">
+			<check if="{{@installerCFG.optional[$module] == 1}}">
+				<true><span class='success'>install</span></true>
+				<false><a href="{{ @BASE }}{{ 'stepsub', 'step=2,sub=add.'.@module | alias }}">install</a></false>
+			</check>
+		</div>
+		<div class="gb-20">
+			<check if="{{@installerCFG.optional[$module] == 0}}">
+				<true><span class='error'>not installing</span></true>
+				<false><a href="{{ @BASE }}{{ 'stepsub', 'step=2,sub=drop.'.@module | alias }}">don't install</a></false>
+			</check>
+		</div>
+	</check>
+	</repeat>
+	<div class="gb-full"><br /><h2>New core modules:</h2></div>
+	<repeat group="{{ @installerCFG.optional }}" key="{{ @module }}" value="{{ @selected }}">
+	<check if="{{ @optional[@module] }}">
+		<div class="gb-40">"{{ @module }}"</div>
+		<div class="gb-20"><span class='info'>mandatory</span></true></div>
+		<div class="gb-20">&nbsp;</div>
+	</check>
+	</repeat>
+	<div class="gb-full">
+		<br />All installed modules can be deactivated at a later point.
+	</div>
+	<div class="gb-full">
+		<br /><br />
+		<a href="{{ @BASE }}{{ 'steps', 'step=3' | alias }}">Continue</a>
+	</div>
+</div>
