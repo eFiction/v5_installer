@@ -1,3 +1,4 @@
-/cfg/config.json
-/cfg/config.php
+/cfg/*
+!/cfg/.htaccess
+!/cfg/config.ini
 /tmp/*

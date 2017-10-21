@@ -15,6 +15,8 @@ function config_create($job, $step)
 	$fw = \Base::instance();
 	$chapterLocation =   ( $fw['installerCFG.chapters']=="filebase" ) ? "local" : "db";
 
+	
+	// Upon fresh installation, deliver sane and safe default variables
 	if ( empty($fw['installerCFG.data.itemsperpage']) )
 	{
 		$fw['installerCFG.data.itemsperpage']		= 10;

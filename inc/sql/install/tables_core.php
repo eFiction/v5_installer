@@ -14,7 +14,8 @@ $jobs = array
 	"menu"			=>	"Page menus",
 	"textblocks"	=>	"Textblocks (former: messages)",
 	"users"			=>	"Users",
-	"chapters"		=>	"Chapters",
+	"chapters"		=>	"Chapters",				// in case of install, just create chapter file if necessary
+	"various"		=>	"Various",				// This is a meta job that will perform different database tasks
 );
 
 $jobs_upgrade = array
@@ -23,7 +24,6 @@ $jobs_upgrade = array
 	"descriptors"	=>	"Story descriptors",	// This is a meta job
 	"stories"		=>	"Stories",
 	"series"		=>	"Series",
-	"various"		=>	"Various",				// This is a meta job
 //	"layout",		=>	"Layout",
 );
 

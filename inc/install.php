@@ -222,11 +222,15 @@ class installtools {
 		$modulesDB = [];
 		foreach ($fw['installerCFG.optional'] as $module => $setting )
 		{
-			if( $setting==1 AND isset($optional[$module]) )
+			if( $setting==1 )
+			//if( $setting==1 AND isset($optional[$module]) )
 			{
 			// optional module, add init sql and steps
-				$core[$module] = $optional[$module]['sql'];
-				$tables = array_merge($tables, $optional[$module]['steps']);
+				if( isset($optional[$module]) )
+				{
+					$core[$module] = $optional[$module]['sql'];
+					$tables = array_merge($tables, $optional[$module]['steps']);
+				}
 				$modulesDB[$module] = 1;
 			}
 			
