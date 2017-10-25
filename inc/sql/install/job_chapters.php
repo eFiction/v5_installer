@@ -29,7 +29,7 @@ function chapters_copy($job, $step)
 		if ( file_exists(realpath('..').'/data/chapters.sq3')) unlink ( realpath('..').'/data/chapters.sq3' ) ;
 		
 		// if we need the filebase storage, initialize it now
-		if ( $target = "filebase" )
+		if ( $target == "filebase" )
 		{
 			$fw->dbsqlite = new DB\SQL('sqlite:'.realpath('..').'/data/chapters.sq3');
 

@@ -1,0 +1,12 @@
+		<div class="grid-wrapper">
+			<h2>Extracting source files:</h2>
+			<check if="{{ isset(@error) }}">
+				<true>
+					<check if="{{ @error=='open'   }}"><div class="gb-full alert-box error">Failed open source file container</div></check>
+					<check if="{{ @error=='extract'}}"><div class="gb-full alert-box error">Failed to deploy source files</div></check>
+				</true>
+				<false>
+					<div class="gb-full alert-box success">Source files deployed</div>
+				</false>
+			</check>
+		</div>

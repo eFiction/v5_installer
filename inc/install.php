@@ -25,7 +25,7 @@ class install {
 			return TRUE;
 		}
 		// See if the DB connection has been set up and checked, if not force to config
-		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@config');
+		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@freshconfig');
 		// Say Hi and show, which storage for chapter data is available and offer advise
 		$this->fw->set('scenario', commontools::storageSelect() );
 		$this->fw->set('content', Template::instance()->render('install/storage.htm'));
@@ -82,6 +82,9 @@ class install {
 				break;
 			case 5:
 				$this->fw->set('content', installtools::moveFiles() );
+				break;
+			case 6:
+				$this->fw->set('content', installtools::lockInstaller() );
 				break;
 			default:
 				$this->fw->reroute('@steps(@step=1)');
@@ -399,7 +402,56 @@ class installtools {
 		$fw = \Base::instance();
 		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		
+		// Whatever there is, we don't need the process table any longer
+		$delete = $fw->db5->exec("DROP TABLE IF EXISTS `{$new}process`;");
+		
+		// Scan source folder for zip files
+		$sourcedir  = opendir('src');
+		while (false !== ($filename = readdir($sourcedir)))
+		{
+			if ( !is_dir('src/'.$filename) AND pathinfo('src/'.$filename)['extension']=="zip"  )
+				$files[] = $filename;
+		}
+		
+		// See if we have potential source files
+		if ( !isset($files) )
+		{
+			$fw->set('error', "notfound" );
+		}
+		else
+		{
+			if ( sizeof($files)==1 )
+				$sourcefile = "src/".$files[0];
+			else $sourcefile = "src/sources.zip";
+			
+			// Open source files
+			$zip = new ZipArchive;
+			if ( TRUE === $zip->open($sourcefile) )
+			{
+				// Can we extract the archive ?
+				if ( TRUE === $zip->extractTo('../') )
+					$zip->close();
+				else
+					$fw->set('error', "extract" );
+			}
+			else $fw->set('error', "open" );
+		}
+
+		return Template::instance()->render('install/installed.htm');
 	}
+
+	public static function lockInstaller() 	// Step  #5
+	{
+		$fw = \Base::instance();
+		
+		// purge settings to protect data
+		$fw['installerCFG'] = [];
+		$fw->dbCFG->write('config.json',$fw['installerCFG']);
+		
+		// lock the installer
+		touch('lock.file');
+	}
+
 }
 
 
