@@ -132,8 +132,13 @@ class upgradetools {
 		$fw = \Base::instance();
 
 		$upgrade = TRUE;
-		include('inc/sql/install/tables_core.php');
-		include('inc/sql/install/tables_optional.php');
+		
+		$path = realpath ( "./inc/sql/" );
+		include( $path.'/install/tables_core.php');
+		include( $path.'/install/tables_optional.php');
+		if ( file_exists ( $path."/upgrade_3_5_x/job_custom.php" ) )
+			require_once( $path."/upgrade_3_5_x/job_custom.php" );
+
 
 		$modulesDB = [];
 		foreach ($fw['installerCFG.optional'] as $module => $setting )
@@ -213,6 +218,45 @@ class upgradetools {
 						$reports[]=$r;
 					}
 				}
+				// let's see if we have a custom job to take care of
+				if($errors==0 AND isset($fw->customFields[$create]))
+				{
+					$r['step'] = $r['step'] . " custom fields";
+					foreach($fw->customFields[$create] as $custom)
+					try {
+						$fw->db5->exec(
+							"ALTER TABLE `{$new}{$create}` ADD `{$custom['field']}` {$custom['type']} AFTER `{$custom['after']}`;"
+						);
+						$r['class'] = 'success';
+						$r['message'] = 'OK';
+					}
+					catch (PDOException $e) {
+						$error = print_r($fw->db5->errorInfo(),TRUE);
+						$r['class'] = 'error';
+						$r['message'] = "ERROR (".$error.")".$sql_step[0] ;
+						$errors++;
+					}
+					$reports[]=$r;
+				}
+				// custom index also ?
+				if($errors==0 AND isset($fw->customIndex[$create]))
+				{
+					$r['step'] = $r['step'] . " custom index";
+					try {
+						$fw->db5->exec(
+							"ALTER TABLE `{$new}{$create}` ".implode(", ", $fw->customIndex[$create]).";"
+						);
+						$r['class'] = 'success';
+						$r['message'] = 'OK';
+					}
+					catch (PDOException $e) {
+						$error = print_r($fw->db5->errorInfo(),TRUE);
+						$r['class'] = 'error';
+						$r['message'] = "ERROR (".$error.")".$sql_step[0] ;
+						$errors++;
+					}
+					$reports[]=$r;
+				}
 			}
 			$fw->set('reports',$reports);
 			if(!$errors)
@@ -280,9 +324,13 @@ class upgradetools {
 				require_once( $path."/install/".$file );
 
 			else echo "Fehler!";
+			
+			if ( file_exists ( $path."/upgrade_3_5_x/job_custom.php" ) )
+				require_once( $path."/upgrade_3_5_x/job_custom.php" );
 
+			$fw->customfields = isset($fw->customDataIn[$job[0]]) ? implode(",",$fw->customDataIn[$job[0]])."," : "";
+			
 			jobStart($job[0]);
-
 		}
 		$fw->set('time_end', microtime(TRUE) - $time_start);
 		return Template::instance()->render('steps.htm');

@@ -57,10 +57,11 @@ function users_copy($job, $step)
 								AP.newrespond as alert_comment,
 								AP.alertson as alert_favourite,
 								AP.ageconsent, AP.tinyMCE, AP.sortby, AP.storyindex, -- to JSON
+								{$fw->customfields}
 								AP.level, AP.validated, COUNT(S.sid) as storycount -- for Level
 							FROM `{$fw->dbOld}authors`A
 								LEFT JOIN `{$fw->dbOld}authorprefs`AP ON ( A.uid=AP.uid )
-								LEFT JOIN `{$fw->dbOld}stories` S ON ( S.uid = A.uid )
+								LEFT JOIN `{$fw->dbOld}stories` S ON ( S.uid = A.uid AND S.validated > 0 )
 							WHERE A.uid > 0
 							GROUP BY A.uid
 							ORDER BY A.date ASC LIMIT {$step['items']},{$limit};");

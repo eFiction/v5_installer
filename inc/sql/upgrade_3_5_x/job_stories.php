@@ -35,7 +35,7 @@ function stories_data($job, $step)
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`;")[0]['found'];
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
-
+	
 	$dataIn = $fw->db3->exec("SELECT
 								S1.*,
 								(10*SUM(R1.rating)/COUNT(R1.reviewid)) as ranking, 
@@ -55,6 +55,7 @@ function stories_data($job, $step)
 										S.rr as roundrobin, 
 										SUM(C.wordcount) as wordcount, 
 										COUNT(DISTINCT C.chapid) as chapters, 
+										{$fw->customfields}
 										S.count
 									FROM `{$fw->dbOld}stories`S
 										LEFT JOIN `{$fw->dbOld}chapters`C ON ( C.sid = S.sid )

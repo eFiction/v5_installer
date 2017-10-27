@@ -2,3 +2,4 @@
 !/cfg/.htaccess
 !/cfg/config.ini
 /tmp/*
+/inc/sql/upgrade_3_5_x/job_custom.php
