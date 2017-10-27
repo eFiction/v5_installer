@@ -466,11 +466,38 @@ class upgradetools {
 				$zip = new ZipArchive;
 				if ( TRUE === $zip->open($sourcefile) )
 				{
+					// check if the sources are within another folder
+					if ( FALSE === $zip->locateName('app') )
+						$folder = $zip->getNameIndex(0);
+
 					// Can we extract the archive ?
 					if ( TRUE === $zip->extractTo('../') )
 						$zip->close();
 					else
 						$fw->set('warn', "extract" );
+					
+					/*
+						downloaded from git, the source files are in another folder
+						unfortunately, zip extract can't extract from within this folder, 
+						so we have to move stuff around
+					*/
+					if (isset($folder))
+					{
+						$movefolder = opendir("../{$folder}");
+						while (false !== ($entry = readdir($movefolder)))
+						{
+							if ( !in_array($entry, [".", "..", "data" ] ) )
+								rename( "../{$folder}{$entry}", "../{$entry}" );
+						}
+						rename( "../{$folder}/data/config.ini", "../data/config.ini" );
+						rename( "../{$folder}/data/.htaccess", "../data/.htaccess" );
+						rmdir( "../{$folder}/data" );
+						closedir($movefolder);
+						rmdir( "../{$folder}" );
+					}
+					/*
+						moved
+					*/
 				}
 				else $fw->set('warn', "open" );
 			}
