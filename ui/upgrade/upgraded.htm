@@ -3,8 +3,6 @@
 			<check if="{{ isset(@error) }}">
 				<true>
 					<check if="{{ @error=='version'}}"><div class="gb-full alert-box error">File version error</div></check>
-					<check if="{{ @error=='open'   }}"><div class="gb-full alert-box error">Failed open source file container</div></check>
-					<check if="{{ @error=='extract'}}"><div class="gb-full alert-box error">Failed to deploy source files</div></check>
 				</true>
 				<false>
 					<check if="{{ isset(@remaining) }}">
@@ -28,7 +26,17 @@
 						<div class="gb-full">They do not belong to the new eFiction, so they can safely be removed if not required otherwise.</div>
 					</check>
 					<div class="gb-full alert-box success">All other files and folders belonging to eFiction 3 were moved to the backup folder</div>
-					<div class="gb-full alert-box success">Source files deployed</div>
+					<check if="{{ isset(@warn) }}">
+						<true>
+							<check if="{{ @warn=='open'   }}"><div class="gb-full alert-box warning">Failed open source file container</div></check>
+							<check if="{{ @warn=='extract'}}"><div class="gb-full alert-box warning">Failed to deploy source files</div></check>
+							<check if="{{ @warn=='notfound'}}"><div class="gb-full alert-box warning">Source files not found</div></check>
+						</true>
+						<false>
+							<div class="gb-full alert-box success">Source files deployed</div>
+						</false>
+					</check>
 				</false>
 			</check>
+			If everything went through, click <a href="{{ @BASE }}{{ 'steps', 'step=6' | alias }}">here to lock the installer</a>
 		</div>

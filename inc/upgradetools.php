@@ -328,7 +328,7 @@ class upgradetools {
 			if ( file_exists ( $path."/upgrade_3_5_x/job_custom.php" ) )
 				require_once( $path."/upgrade_3_5_x/job_custom.php" );
 
-			$fw->customfields = isset($fw->customDataIn[$job[0]]) ? implode(",",$fw->customDataIn[$job[0]])."," : "";
+			$fw->customfields = isset($fw->customDataIn[$job[0]['job']]) ? implode(",",$fw->customDataIn[$job[0]['job']])."," : "";
 			
 			jobStart($job[0]);
 		}
@@ -410,7 +410,7 @@ class upgradetools {
 			// moving away old files
 			$movers = [ 
 				// files from eFiction 3
-				".htaccess", "admin.php", "authors.php", "browse.php", "contact.php", "header.php", "index.php", "maintenance.php", "news.php", "README.txt", "reviews.php", "rss.php", "search.php", "series.php", "stories.php", "template.php", "toplists.php", "update.php", "user.php", "version.php", "viewpage.php", "viewseries.php", "viewstory.php", "viewuser.php",
+				".htaccess", "admin.php", "authors.php", "browse.php", "config.php", "contact.php", "header.php", "index.php", "maintenance.php", "news.php", "README.txt", "reviews.php", "rss.php", "search.php", "series.php", "stories.php", "template.php", "toplists.php", "update.php", "user.php", "version.php", "viewpage.php", "viewseries.php", "viewstory.php", "viewuser.php",
 			];
 			foreach ( $movers as $move )
 			{
@@ -454,7 +454,7 @@ class upgradetools {
 			// See if we have potential source files
 			if ( !isset($files) )
 			{
-				$fw->set('error', "notfound" );
+				$fw->set('warn', "notfound" );
 			}
 			else
 			{
@@ -470,9 +470,9 @@ class upgradetools {
 					if ( TRUE === $zip->extractTo('../') )
 						$zip->close();
 					else
-						$fw->set('error', "extract" );
+						$fw->set('warn', "extract" );
 				}
-				else $fw->set('error', "open" );
+				else $fw->set('warn', "open" );
 			}
 			
 			// make note of the outcome in the config file
