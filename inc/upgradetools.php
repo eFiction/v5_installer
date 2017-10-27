@@ -117,7 +117,7 @@ class upgradetools {
 		$fw->set('check', $check);
 		$fw->set('description', $description);
 		
-		return Template::instance()->render('optional.htm');
+		return Template::instance()->render('upgrade/optional.htm');
 	}
 	
 	public static function newTables ()	// Step  #2
@@ -373,13 +373,17 @@ class upgradetools {
 		$fw = \Base::instance();
 		$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 		
+		$fw->db5->exec("DROP TABLE IF EXISTS `{$new}process`;");
+
+		/*
 		if ( 1 )
 		{
-			$fw->db5->exec("DROP TABLE IF EXISTS `{$new}process`;");
 			return "Test mode, not moving files or making changes to your eFiction 3.5.x installation at this point!.<br />Thanks for testing the eFiction 5 installer.";
 		}
+		*/
 		
-		if ( !is_dir('./backup') ) mkdir ('./backup');
+		$backup = "backup-".date("Y-m-d_H.i.s");
+		mkdir ("../{$backup}");
 
 		if( file_exists("../version.php") )
 		{
@@ -391,13 +395,30 @@ class upgradetools {
 		if( empty( $version ) OR version_compare($version, 4, "<") )
 		{
 			// found an old version file in base directory or no version file at all
-			$movers = [ "admin", "blocks", "bridges", "browse", "default_tpls", "docs", "images", "includes", "languages", "modules", "skins", "stories", "tinymce", "toplists", "user" ];
-
+			
+			// moving away old folders
+			$movers = [ 
+				// folder names used by eFiction 3 or both versions
+				"admin", "blocks", "bridges", "browse", "default_tpls", "docs", "images", "includes", "languages", "modules", "skins", "stories", "tinymce", "toplists", "user",
+				// folder names used by eFiction 5
+				"app", "lib", "template", "tmp"
+			];
 			foreach ( $movers as $move )
 			{
-				if(is_dir("../".$move)) rename("../".$move, "./backup/".$move);
+				if(is_dir("../".$move)) rename("../".$move, "../{$backup}/{$move}");
 			}
+			// moving away old files
+			$movers = [ 
+				// files from eFiction 3
+				".htaccess", "admin.php", "authors.php", "browse.php", "contact.php", "header.php", "index.php", "maintenance.php", "news.php", "README.txt", "reviews.php", "rss.php", "search.php", "series.php", "stories.php", "template.php", "toplists.php", "update.php", "user.php", "version.php", "viewpage.php", "viewseries.php", "viewstory.php", "viewuser.php",
+			];
+			foreach ( $movers as $move )
+			{
+				if(is_file("../".$move)) rename("../".$move, "../{$backup}/{$move}");
+			}
+
 			$efi3root = opendir("../");
+			/*
 			while (false !== ($entry = readdir($efi3root)))
 			{
 				if ( !in_array($entry, [".", ".." ] ) )
@@ -406,12 +427,13 @@ class upgradetools {
 					//rename("../{$entry}", "./backup/{$entry}");
 				}
 			}
+			*/
 		
 			// probe for remaining files
 			rewinddir ($efi3root);
 			while (false !== ($entry = readdir($efi3root)))
 			{
-				if ( !in_array($entry, [".", "..", "data", "install" ] ) )
+				if ( !in_array($entry, [".", "..", "data", "install", $backup ] ) )
 				{
 					if(is_dir("../".$entry)) $remaining['folders'][] =  $entry;
 					else $remaining['files'][] =  $entry;
@@ -419,33 +441,57 @@ class upgradetools {
 				
 			}
 			if(isset($remaining)) $fw->set('remaining', $remaining);
+
 			// old script was moved away, put new files in place
-			$efi5root = opendir("./sources");
-			while (false !== ($entry = readdir($efi5root)))
+			// Scan source folder for zip files
+			$sourcedir  = opendir('src');
+			while (false !== ($filename = readdir($sourcedir)))
 			{
-				if ( $entry != "." && $entry != ".." )
+				if ( !is_dir('src/'.$filename) AND pathinfo('src/'.$filename)['extension']=="zip"  )
+					$files[] = $filename;
+			}
+			
+			// See if we have potential source files
+			if ( !isset($files) )
+			{
+				$fw->set('error', "notfound" );
+			}
+			else
+			{
+				if ( sizeof($files)==1 )
+					$sourcefile = "src/".$files[0];
+				else $sourcefile = "src/sources.zip";
+				
+				// Open source files
+				$zip = new ZipArchive;
+				if ( TRUE === $zip->open($sourcefile) )
 				{
-					//rename("./sources/{$entry}", "../{$entry}");
+					// Can we extract the archive ?
+					if ( TRUE === $zip->extractTo('../') )
+						$zip->close();
+					else
+						$fw->set('error', "extract" );
 				}
+				else $fw->set('error', "open" );
 			}
 			
 			// make note of the outcome in the config file
 		}
-		else
-		{
-			$error = 
-			[
-				"A version higher higher than 3.x.x was detected, did not attempt to move files.",
-				" ",
-				"Please move files manually, sources can be found in the install/sources folder.",
-				" ",
-				"If the files were previously moved successfully and you came here by reloading,",
-				" this error can be ignored."
-			];
-			$fw->set('error', implode("\n", $error) );
-		}
+		else $fw->set('error', "version" );
 
-		return Template::instance()->render('upgraded.htm');
+		return Template::instance()->render('upgrade/upgraded.htm');
+	}
+
+	public static function lockInstaller() 	// Step  #6
+	{
+		$fw = \Base::instance();
+		
+		// purge settings to protect data
+		$fw['installerCFG'] = [];
+		$fw->dbCFG->write('config.json',$fw['installerCFG']);
+		
+		// lock the installer
+		touch('lock.file');
 	}
 
 	public static function getChapterFile($item)

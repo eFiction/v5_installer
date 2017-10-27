@@ -440,7 +440,7 @@ class installtools {
 		return Template::instance()->render('install/installed.htm');
 	}
 
-	public static function lockInstaller() 	// Step  #5
+	public static function lockInstaller() 	// Step  #6
 	{
 		$fw = \Base::instance();
 		

@@ -58,12 +58,12 @@ class upgrade {
 			$this->fw->reroute('@config');
 		// Say Hi and show, which storage for chapter data is available and offer advise
 		$this->fw->set('scenario', commontools::storageSelect() );
-		$this->fw->set('content', Template::instance()->render('storage.htm'));
+		$this->fw->set('content', Template::instance()->render('upgrade/storage.htm'));
 	}
 	
 	function config ()
 	{
-		$this->fw->set('content', Template::instance()->render('config_upgrade.htm'));
+		$this->fw->set('content', Template::instance()->render('upgrade/config.htm'));
 	}
 	
 	function error ($error="")
@@ -128,6 +128,9 @@ class upgrade {
 				break;
 			case 5:
 				$this->fw->set('content', upgradetools::moveFiles() );
+				break;
+			case 6:
+				$this->fw->set('content', upgradetools::lockInstaller() );
 				break;
 			default:
 				$this->fw->reroute('@steps(@step=0)');
