@@ -35,7 +35,7 @@ function users_guest($job, $step)
 function users_copy($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 100;
+	$limit = $fw->get("limit.medium");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
@@ -126,7 +126,7 @@ function users_fields($job, $step)
 		6 = text
 	*/
 	$fw = \Base::instance();
-	$limit = 50;
+	$limit = $fw->get("limit.heavy");
 	$count = 0;
 	
 	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."user_fields" );
@@ -167,7 +167,7 @@ function users_fields($job, $step)
 function users_info($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 500;
+	$limit = $fw->get("limit.xlight");
 	$i = 0;
 
 	if ( $step['success'] == 0 )
@@ -218,7 +218,7 @@ function users_info($job, $step)
 function users_favourites($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 500;
+	$limit = $fw->get("limit.xlight");
 	$i = 0;
 
 	if ( $step['success'] == 0 )

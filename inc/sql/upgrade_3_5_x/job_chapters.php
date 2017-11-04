@@ -13,10 +13,9 @@ $fw->jobSteps = array(
 
 function chapters_copy($job, $step)
 {
-	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
 
-	$limit = 100;
+	$limit = $fw->get("limit.medium");
 	$report = [];
 
 	$source = $fw->get('installerCFG.data.store'); // "files" or "mysql"

@@ -33,7 +33,7 @@ $fw->jobSteps += array(
 function various_logs($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 250;
+	$limit = $fw->get("limit.light");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
@@ -76,7 +76,7 @@ function various_logs($job, $step)
 function various_news($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 500;
+	$limit = $fw->get("limit.xlight");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
@@ -121,7 +121,7 @@ function various_news($job, $step)
 function various_tracker($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 500;
+	$limit = $fw->get("limit.xlight");
 
 	if ( $step['success'] == 0 )
 	{
@@ -173,7 +173,7 @@ function various_tracker($job, $step)
 function various_shoutbox($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 500;
+	$limit = $fw->get("limit.xlight");
 
 	if ( $step['success'] == 0 )
 	{
@@ -231,7 +231,7 @@ function various_shoutbox($job, $step)
 function various_poll($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 20;
+	$limit = $fw->get("limit.heavy");
 
 	$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."poll" );
 
@@ -288,7 +288,7 @@ function various_poll_votes($job, $step)
 	$fw = \Base::instance();
 	$new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
 	$old = "{$fw['installerCFG.db3.dbname']}`.`{$fw['installerCFG.db3.prefix']}fanfiction_";
-	$limit = 50;
+	$limit = $fw->get("limit.medium");
 
 	if ( $step['success'] == 0 )
 	{

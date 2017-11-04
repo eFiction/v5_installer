@@ -21,7 +21,7 @@ $fw->jobSteps = array(
 function recommendations_data($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 100;
+	$limit = $fw->get("limit.medium");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
@@ -139,7 +139,7 @@ function recommendations_relations($job, $step)
 function recommendations_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 50;
+	$limit = $fw->get("limit.heavy");
 	
 	if ( $step['success'] == 0 )
 	{

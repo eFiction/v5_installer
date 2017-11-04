@@ -2,5 +2,6 @@
 /cfg/*
 !/cfg/.htaccess
 !/cfg/config.ini
+!/cfg/speed.php
 /tmp/*
 /inc/sql/upgrade_3_5_x/job_custom.php

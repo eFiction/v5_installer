@@ -15,7 +15,7 @@ $fw->jobSteps = array(
 function feedback_reviews($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 500;
+	$limit = $fw->get("limit.xlight");
 	$i = 0;
 	
 	$review_split = "<br><br><i>";
@@ -68,7 +68,7 @@ function feedback_reviews($job, $step)
 function feedback_comments($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 500;
+	$limit = $fw->get("limit.xlight");
 	$i = 0;
 	
 	$review_split = "<br><br><i>";
@@ -120,7 +120,7 @@ function feedback_comments($job, $step)
 function feedback_news($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 500;
+	$limit = $fw->get("limit.xlight");
 	$i = 0;
 		
 	if ( $step['success'] == 0 )

@@ -52,6 +52,9 @@ $f3->route('GET /debug',
 	}
 );
 
+// Limit settings to adjust the conversion speed
+include('cfg/speed.php');
+
 $f3->run();
 echo Template::instance()->render('layout.htm');
 

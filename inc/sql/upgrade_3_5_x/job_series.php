@@ -22,7 +22,7 @@ $fw->jobSteps = array(
 function series_data($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 100;
+	$limit = $fw->get("limit.medium");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
@@ -105,7 +105,7 @@ function series_stories($job, $step)
 function series_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 20;
+	$limit = $fw->get("limit.xheavy");
 	
 	if ( $step['success'] == 0 )
 	{

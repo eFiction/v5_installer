@@ -18,6 +18,7 @@ $fw->jobSteps = array(
 		"authors"				=> "Story <-> (co)Author relations",
 		"categories"			=> "Story <-> Category relations",
 		"tags"					=> "Story <-> Tag relations",
+		"characters"			=> "Story <-> Character relations",
 		"recount_tags"			=> "Recount tags",
 		"recount_characters"	=> "Recount characters",
 		"recount_categories"	=> "Recount categories",
@@ -27,7 +28,7 @@ $fw->jobSteps = array(
 function stories_data($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 100;
+	$limit = $fw->get("limit.medium");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
@@ -155,15 +156,6 @@ function stories_authors($job, $step)
 	}
 	else $count = 0;
 	
-	// Cleanup, there are cases when an author was also set as co_author
-	// Should be obsolete with unique key restraints
-	/*
-	$fw->db5->exec("DELETE S1 
-			FROM `{$fw->dbNew}stories_authors`S1 
-				INNER JOIN `{$fw->dbNew}stories_authors`S2 ON ( S1.sid=S2.sid AND S1.aid = S2.aid AND S1.lid > S2.lid );");
-	$deleted = $fw->db5->count();
-	*/
-
 	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
 							':items' => $count,
@@ -175,46 +167,70 @@ function stories_authors($job, $step)
 function stories_categories($job, $step)
 {
 	$fw = \Base::instance();
+	$limit = $fw->get("limit.xlight");
+	$items = 0;
 	
-	$dataIn = $fw->db3->exec("SELECT S.sid,C.catid
-		FROM `{$fw->dbOld}stories`S
-			INNER JOIN `{$fw->dbOld}categories`C ON (FIND_IN_SET(C.catid,S.catid)>0);");
-
-	// build the insert values - numeric only
-	if ( sizeof($dataIn)>0 )
+	if ( $step['success'] == 0 )
 	{
-		foreach($dataIn as $data)
-			$values[] = "( '{$data['sid']}', '{$data['catid']}' )";
-
-		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}stories_categories` (`sid`, `cid`) VALUES ".implode(", ",$values)."; " );
-		$count = $fw->db5->count();
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}categories`C ON (FIND_IN_SET(C.catid,S.catid)>0);")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
-	else $count = 0;
 	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
-						[ 
-							':items' => $count,
-							':id' => $step['id']
-						]
-					);
+	// get tags (formerly classes)
+	$dataIn = $fw->db3->exec("SELECT S.sid,C.catid as cid
+		FROM `{$fw->dbOld}stories`S
+			INNER JOIN `{$fw->dbOld}categories`C ON (FIND_IN_SET(C.catid,S.catid)>0)
+				LIMIT {$step['items']},{$limit};");
+	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
+	$tracking->load(['id = ?', $step['id'] ]);
+
+	if ( 0 < $count = sizeof($dataIn) )
+	{
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories_categories" );
+
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+
+			$items++;
+		}
+		$tracking->items = $tracking->items + $items;
+		$tracking->save();
+	}
+	
+	if ( $count == 0 )
+	{
+		// There was either nothing to be done, or there are no elements left for the next run
+		$tracking->success = 2;
+		$tracking->save();
+	}
 }
 
 function stories_tags($job, $step)
 {
 	$fw = \Base::instance();
+	$limit = $fw->get("limit.xlight");
+	$items = 0;
+	
+	if ( $step['success'] == 0 )
+	{
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}classes`C ON (FIND_IN_SET(C.class_id,S.classes)>0);")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+	}
 	
 	// get tags (formerly classes)
 	$dataIn = $fw->db3->exec("SELECT S.sid,C.class_id as tid,'0' as `character`
 				FROM `{$fw->dbOld}stories`S
-					INNER JOIN `{$fw->dbOld}classes`C ON (FIND_IN_SET(C.class_id,S.classes)>0);");
-	// get characters
-	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT S.sid,Ch.charid as tid,'1' as `character`
-				FROM `{$fw->dbOld}stories`S
-					INNER JOIN `{$fw->dbOld}characters`Ch ON (FIND_IN_SET(Ch.charid,S.charid)>0);") );
+					INNER JOIN `{$fw->dbOld}classes`C ON (FIND_IN_SET(C.class_id,S.classes)>0)
+				LIMIT {$step['items']},{$limit};");
 	
-	$count = 0;
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
+	$tracking->load(['id = ?', $step['id'] ]);
 
-	if ( sizeof($dataIn)>0 )
+	if ( 0 < $count = sizeof($dataIn) )
 	{
 		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories_tags" );
 
@@ -224,16 +240,63 @@ function stories_tags($job, $step)
 			$newdata->save();
 			$newdata->reset();
 
-			$count++;
+			$items++;
 		}
+		$tracking->items = $tracking->items + $items;
+		$tracking->save();
 	}
 	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
-						[ 
-							':items' => $count,
-							':id' => $step['id']
-						]
-					);
+	if ( $count == 0 )
+	{
+		// There was either nothing to be done, or there are no elements left for the next run
+		$tracking->success = 2;
+		$tracking->save();
+	}
+}
+
+function stories_characters($job, $step)
+{
+	$fw = \Base::instance();
+	$limit = $fw->get("limit.xlight");
+	$items = 0;
+	
+	if ( $step['success'] == 0 )
+	{
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}characters`Ch ON (FIND_IN_SET(Ch.charid,S.charid)>0);")[0]['found'];
+		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
+	}
+	
+	// get characters
+	$dataIn = $fw->db3->exec("SELECT S.sid,Ch.charid as tid,'1' as `character`
+				FROM `{$fw->dbOld}stories`S
+					INNER JOIN `{$fw->dbOld}characters`Ch ON (FIND_IN_SET(Ch.charid,S.charid)>0)
+				LIMIT {$step['items']},{$limit};");
+	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
+	$tracking->load(['id = ?', $step['id'] ]);
+
+	if ( 0 < $count = sizeof($dataIn) )
+	{
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."stories_tags" );
+
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+
+			$items++;
+		}
+		$tracking->items = $tracking->items + $items;
+		$tracking->save();
+	}
+	
+	if ( $count == 0 )
+	{
+		// There was either nothing to be done, or there are no elements left for the next run
+		$tracking->success = 2;
+		$tracking->save();
+	}
 }
 
 function stories_recount_tags($job, $step)
@@ -353,7 +416,7 @@ function stories_recount_categories($job, $step)
 function stories_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 100;
+	$limit = $fw->get("limit.medium");
 	
 	if ( $step['success'] == 0 )
 	{

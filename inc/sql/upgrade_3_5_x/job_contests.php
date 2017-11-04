@@ -20,7 +20,7 @@ $fw->jobSteps = array(
 function contests_data($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 100;
+	$limit = $fw->get("limit.medium");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )
@@ -102,7 +102,7 @@ function contests_relations($job, $step)
 function contests_cache($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = 50;
+	$limit = $fw->get("limit.heavy");
 	
 	if ( $step['success'] == 0 )
 	{

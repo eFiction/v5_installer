@@ -7,19 +7,14 @@
 */
 
 $fw->jobSteps = array(
-		"copy"	=> "Create chapter file if required",
+		"create"	=> "Create chapter file if required",
 	);
 
 
-function chapters_copy($job, $step)
+function chapters_create($job, $step)
 {
-	// Chapters copy is a 1-pass module, doing the entire chapter relocation
 	$fw = \Base::instance();
 
-	$limit = 100;
-	$report = [];
-
-	$source = $fw->get('installerCFG.data.store'); // "files" or "mysql"
 	$target = $fw->get('installerCFG.chapters');	// "filebase" or "database"
 
 	// Initialize
