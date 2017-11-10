@@ -24,11 +24,12 @@
 				<div class="gb-40"><small>#{{ @ctr }}: {{ @report.step }}</small></div>
 				<div class="gb-50"><span class="alert-box {{ @report.class }}"><small>{{ @report.message }}</small></div></repeat>
 		</div>
-		<check if="{{ isset(@time_end) }}"><small>Time: {{ @time_end }}</small></check>
+		<check if="{{ isset(@time_end) }}"><small>Time: {{ @time_end }}</small><br/></check>
 		<check if="{{ isset(@redirect) }}">
 			<script type='text/javascript'>
 				function delayedRedirect(){
 					window.location = '{{ @BASE }}{{ "steps", "step={@redirect}" | alias }}'
 				}
 			</script>
+			Page will automatically jump to next step every 3 seconds
 		</check>

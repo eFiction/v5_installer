@@ -23,6 +23,7 @@ $fw->jobSteps = array(
 		"recount_characters"	=> "Recount characters",
 		"recount_categories"	=> "Recount categories",
 		"cache"					=> "Build cache fields",
+		"orphans"				=> "Find and shelter orphans",
 	);
 
 function stories_data($job, $step)
@@ -77,6 +78,8 @@ function stories_data($job, $step)
 
 		foreach($dataIn as $data)
 		{
+			$data['completed'] = (int)$data['completed'] + 2;
+			
 			switch($data['validated']) {
 				case 0:
 					$data['validated'] = '11';
@@ -313,7 +316,7 @@ function stories_recount_tags($job, $step)
 								LEFT JOIN `{$fw->dbNew}stories_tags`RT ON (RT.tid = T.tid AND RT.character = 0)
 									WHERE T.count IS NULL
 									GROUP BY T.tid
-									LIMIT 0,25
+									LIMIT 0,{$fw->get('limit.heavy')}
 							) AS T2 ON T1.tid = T2.tid
 							SET T1.count = T2.counter WHERE T1.tid = T2.tid;");
 		$count = $fw->db5->count();
@@ -342,7 +345,7 @@ function stories_recount_characters($job, $step)
 								LEFT JOIN `{$fw->dbNew}stories_tags`RT ON (RT.tid = C.charid AND RT.character = 1)
 									WHERE C.count IS NULL
 									GROUP BY C.charid
-									LIMIT 0,25
+									LIMIT 0,{$fw->get('limit.heavy')}
 							) AS C2 ON C1.charid = C2.charid
 							SET C1.count = C2.counter WHERE C1.charid = C2.charid;");
 		$count = $fw->db5->count();
@@ -489,6 +492,28 @@ function stories_cache($job, $step)
 		$tracking->success = 2;
 		$tracking->save();
 	}
+}
+
+function stories_orphans($job, $step)
+{
+	$fw = \Base::instance();
+	$items = 0;
+
+	do {
+		$fw->db5->exec("UPDATE `{$fw->dbNew}stories`S
+							SET S.validated = '009'
+							WHERE S.cache_authors = 'null';");
+		// moderation field maybe ?
+		$count = $fw->db5->count();
+		$items += $count;
+	} while ( 0 < $count );
+	
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+						[ 
+							':items' => $items,
+							':id' => $step['id']
+						]
+					);
 }
 
 ?>

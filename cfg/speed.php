@@ -54,6 +54,8 @@ $f3->set("limit.xheavy",  25); /*
  used in:
  
  Series - Cache
+ Stories - Recount characters
+         - Recount tags
 */
 
 $f3->set("limit.omgpwn",  10);
