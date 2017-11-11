@@ -69,7 +69,7 @@ INSERT INTO `{$fw->dbNew}menu_adminpanel` (`label`, `child_of`, `order`, `link`,
 ('Modules',			'home',				4, 'home/modules', '{ICON:modules}', 1, 128, NULL),
 ('Logs',			'home',				5, 'home/logs', '{ICON:blank}', 1, 64, ''),
 ('Shoutbox',		'home',				6, 'home/shoutbox', '{ICON:blank}', 1, 64, '\$shoutbox == 1;'),
-('Search',			'members',			1, 'members/search', '{ICON:search}', 1, 128, NULL),
+('Edit',			'members',			1, 'members/edit', '{ICON:search}', 1, 128, NULL),
 ('Pending',			'members',			2, 'members/pending', '{ICON:waiting}', 1, 128, NULL),
 ('Groups',			'members',			3, 'members/groups', '{ICON:members}', 1, 128, NULL),
 ('Profile',			'members',			4, 'members/profile', '{ICON:blank}', 1, 128, NULL),
@@ -83,7 +83,7 @@ INSERT INTO `{$fw->dbNew}menu_adminpanel` (`label`, `child_of`, `order`, `link`,
 ('Themes',			'settings/layout',	1, 'settings/layout/themes', '{ICON:blank}', 1, 128, NULL),
 ('Icons',			'settings/layout',	2, 'settings/layout/icons', '{ICON:blank}', 1, 128, NULL),
 ('Pending',			'stories',			1, 'stories/pending', '{ICON:waiting}', 1, 32, NULL),
-('Edit',			'stories',			2, 'stories/edit', '{ICON:edit}', 1, 64, NULL),
+('Edit',			'stories',			2, 'stories/edit', '{ICON:edit}', 1, 32, NULL),
 ('Add',				'stories',			3, 'stories/add', '{ICON:document-new}', 1, 64, NULL);
 EOF;
 
