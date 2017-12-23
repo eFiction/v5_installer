@@ -59,6 +59,17 @@ function series_data($job, $step)
 
 		foreach($dataIn as $data)
 		{
+			// eFiction 3 can have weird series-challenge relations (like ",26" or "Array,26")
+			if ( $data['contests']!="" )
+			{
+				$c_new = [];
+				$cc = explode(",",$data['contests']);
+
+				foreach ( $cc as $c )
+					if ( is_numeric($c) ) $c_new[] = $c;
+					
+				$data['contests'] = implode(",",$c_new);
+			}
 			$newdata->copyfrom($data);
 			$newdata->save();
 			$newdata->reset();

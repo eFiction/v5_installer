@@ -62,15 +62,15 @@ $core['process'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}process`;
 CREATE TABLE `{$new}process` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `job` tinytext NOT NULL,
+  `job` varchar(255) NOT NULL,
   `joborder` tinyint(3) NOT NULL,
   `step` tinyint(3) NOT NULL,
-  `job_description` tinytext NOT NULL,
-  `step_function` tinytext NOT NULL,
+  `job_description` varchar(255) NOT NULL,
+  `step_function` varchar(255) NOT NULL,
   `success` tinyint(1) NOT NULL DEFAULT '0',
   `items` smallint(5) unsigned NOT NULL DEFAULT '0',
   `total` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `error` tinytext,
+  `error` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} ;
 EOF;
@@ -158,9 +158,9 @@ DROP TABLE IF EXISTS `{$new}characters`;
 CREATE TABLE `{$new}characters` (
   `charid` mediumint(8) NOT NULL,
   `catid` mediumint(8) NOT NULL DEFAULT '0',
-  `charname` tinytext NOT NULL,
+  `charname` varchar(255) NOT NULL,
   `biography` mediumtext NOT NULL,
-  `image` tinytext NOT NULL,
+  `image` varchar(255) NOT NULL,
   `count` mediumint(8) unsigned DEFAULT NULL,
   PRIMARY KEY (`charid`), KEY `charname` (`charname`(64))
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table';
@@ -282,14 +282,14 @@ CREATE TABLE `{$new}menu` (
 DROP TABLE IF EXISTS `{$new}menu_adminpanel`;
 CREATE TABLE `{$new}menu_adminpanel` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `label` tinytext NOT NULL COMMENT 'must match an ''AdminMenu_...'' entry in the language files!',
+  `label` varchar(255) NOT NULL COMMENT 'must match an ''AdminMenu_...'' entry in the language files!',
   `order` tinyint(3) NOT NULL,
-  `link` tinytext,
+  `link` varchar(128),
   `icon` varchar(64) DEFAULT '{ICON:blank}',
   `child_of` varchar(64) DEFAULT NULL,
   `active` BOOLEAN NOT NULL DEFAULT TRUE,
   `requires` tinyint(1) unsigned NOT NULL DEFAULT '2',
-  `evaluate` tinytext,
+  `evaluate` varchar(255),
   PRIMARY KEY (`id`), KEY `child_of` (`child_of`)
 ) ENGINE=MyISAM  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table';
 --NOTE--Admin/moderation menu
@@ -298,13 +298,13 @@ CREATE TABLE `{$new}menu_adminpanel` (
 DROP TABLE IF EXISTS `{$new}menu_userpanel`;
 CREATE TABLE `{$new}menu_userpanel` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `label` tinytext NOT NULL,
+  `label` varchar(255) NOT NULL,
   `order` tinyint(3) NOT NULL,
-  `link` tinytext,
-  `icon` tinytext,
+  `link` varchar(128),
+  `icon` varchar(64),
   `child_of` varchar(16) DEFAULT NULL,
   `active` BOOLEAN NOT NULL DEFAULT TRUE,
-  `evaluate` tinytext DEFAULT NULL,
+  `evaluate` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `menu` (`child_of`,`order`),
   KEY `child_of` (`child_of`)
@@ -325,7 +325,7 @@ CREATE TABLE `{$new}messaging` (
   `recipient` mediumint(8) unsigned NOT NULL,
   `date_sent` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_read` timestamp NULL DEFAULT NULL,
-  `subject` tinytext NOT NULL,
+  `subject` varchar(255) NOT NULL,
   `message` text NOT NULL,
   PRIMARY KEY (`mid`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset} COMMENT='(eFiction 5): new table for user messages';
@@ -409,14 +409,16 @@ DROP TABLE IF EXISTS `{$new}series`;
 CREATE TABLE `{$new}series` (
   `seriesid` mediumint(8) NOT NULL AUTO_INCREMENT,
   `parent_series` mediumint(8) unsigned DEFAULT NULL,
+  `type` SET('S','C') NOT NULL DEFAULT 'S' COMMENT '\'S\' - Series, \'C\' - Collection',
   `title` varchar(200) NOT NULL DEFAULT '',
   `summary` text NOT NULL,
   `uid` mediumint(8) NOT NULL DEFAULT '0',
   `open` tinyint(1) NOT NULL DEFAULT '0',
+  `status` SET('H','P','A') NOT NULL DEFAULT 'P' COMMENT 'Applies only to collections (Hidden, Public, Archive)',
   `rating` tinyint(3) NOT NULL DEFAULT '0',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
   `contests` varchar(200) NOT NULL DEFAULT '',
-  `max_rating` tinytext NOT NULL,
+  `max_rating` varchar(64) NOT NULL,
   `chapters` smallint(5) unsigned NOT NULL,
   `words` mediumint(8) unsigned DEFAULT NULL,
   `cache_authors` text,
@@ -471,7 +473,7 @@ DROP TABLE IF EXISTS `{$new}shoutbox`;
 CREATE TABLE `{$new}shoutbox` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `uid` mediumint(5) NOT NULL DEFAULT 0,
-  `guest_name` tinytext,
+  `guest_name` varchar(255),
   `message` varchar(200) NOT NULL DEFAULT '',
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -505,7 +507,7 @@ CREATE TABLE `{$new}stories` (
   `cache_tags` text,
   `cache_characters` text,
   `cache_categories` text,
-  `cache_rating` tinytext DEFAULT NULL,
+  `cache_rating` varchar(255) DEFAULT NULL,
   `moderation` mediumint(8) DEFAULT NULL,
   `translation` tinyint(1) NOT NULL DEFAULT '0',
   `trans_from` varchar(10) NOT NULL,
@@ -583,7 +585,7 @@ CREATE TABLE `{$new}tags` (
   `tid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `oldid` mediumint(8) NOT NULL,
   `tgid` mediumint(8) unsigned NOT NULL,
-  `label` tinytext NOT NULL,
+  `label` varchar(255) NOT NULL,
   `description` mediumtext NOT NULL,
   `count` mediumint(8) unsigned DEFAULT NULL,
   PRIMARY KEY (`tid`), UNIQUE KEY `label` (`label`(64)), KEY `tgid` (`tgid`)
@@ -653,7 +655,7 @@ CREATE TABLE `{$new}users` (
   `registered` datetime NOT NULL,
   `groups` mediumint(8) unsigned DEFAULT NULL,
   `curator` mediumint(8) unsigned DEFAULT NULL,
-  `about` mediumtext CHARACTER SET utf8 NULL,
+  `about` text CHARACTER SET utf8 NULL,
   `moderation` mediumint(8) DEFAULT NULL,
   `alert_feedback` BOOLEAN NOT NULL DEFAULT FALSE,
   `alert_comment` BOOLEAN NOT NULL DEFAULT FALSE,
@@ -702,7 +704,7 @@ DROP TABLE IF EXISTS `{$new}user_info`;
 CREATE TABLE `{$new}user_info` (
   `uid` mediumint(8) NOT NULL DEFAULT '0',
   `field` mediumint(8) NOT NULL DEFAULT '0',
-  `info` varchar(255) NOT NULL DEFAULT ' ',
+  `info` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`uid`,`field`), KEY `uid` (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
 --NOTE--User info
@@ -713,7 +715,7 @@ CREATE TABLE `{$new}user_friends` (
   `link_id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` mediumint(8) UNSIGNED NOT NULL,
   `friend_id` mediumint(8) UNSIGNED NOT NULL,
-  `note` tinytext,
+  `note` varchar(255),
   `active` BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY (`link_id`), UNIQUE KEY `relation` (`user_id`,`friend_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for friend relations';

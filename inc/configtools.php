@@ -189,7 +189,7 @@ class configtools {
 			}
 		}
 
-		if ( $dsn AND NULL!==strpos($fw['POST.new.db5.prefix'],'fanfiction') )
+		if ( isset($dbTest) AND $dsn AND NULL!==strpos($fw['POST.new.db5.prefix'],'fanfiction') )
 		{
 			$probe = $dbTest->exec(
 							"SELECT table_name FROM INFORMATION_SCHEMA.TABLES
