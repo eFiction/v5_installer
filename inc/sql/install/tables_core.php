@@ -156,7 +156,7 @@ EOF;
 $core['characters'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}characters`;
 CREATE TABLE `{$new}characters` (
-  `charid` mediumint(8) NOT NULL,
+  `charid` mediumint(8) NOT NULL AUTO_INCREMENT,
   `catid` mediumint(8) NOT NULL DEFAULT '0',
   `charname` varchar(255) NOT NULL,
   `biography` mediumtext NOT NULL,
