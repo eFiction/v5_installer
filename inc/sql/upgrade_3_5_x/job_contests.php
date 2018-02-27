@@ -84,12 +84,16 @@ function contests_relations($job, $step)
 				FROM `{$fw->dbOld}challenges`C
 					INNER JOIN `{$fw->dbOld}stories`S ON (FIND_IN_SET(C.chalid, S.challenges));") );
 
-	// build the insert values, only numeric so bulk-insert
-	foreach($dataIn as $data)
-		$values[] = "( '{$data['chalid']}', '{$data['relid']}', '{$data['type']}' )";
+	if ( !empty($dataIn) )
+	{
+		// build the insert values, only numeric so bulk-insert
+		foreach($dataIn as $data)
+			$values[] = "( '{$data['chalid']}', '{$data['relid']}', '{$data['type']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}contest_relations` (`conid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
-	$count = $fw->db5->count();
+		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}contest_relations` (`conid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 	
 	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 

@@ -121,12 +121,16 @@ function recommendations_relations($job, $step)
 				FROM `{$fw->dbOld}recommendations`Rec
 					INNER JOIN `{$fw->dbOld}categories`Cat ON (FIND_IN_SET(Cat.catid,Rec.catid)>0);") );
 
-	// build the insert values - no strings attached *pun*
-	foreach($dataIn as $data)
-		$values[] = "( '{$data['recid']}', '{$data['relid']}', '{$data['type']}' )";
+	if ( !empty($dataIn) )
+	{	
+		// build the insert values - no strings attached *pun*
+		foreach($dataIn as $data)
+			$values[] = "( '{$data['recid']}', '{$data['relid']}', '{$data['type']}' )";
 
-	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}recommendation_relations` (`recid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
-	$count = $fw->db5->count();
+		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}recommendation_relations` (`recid`, `relid`, `type`) VALUES ".implode(", ",$values)."; " );
+		$count = $fw->db5->count();
+	}
+	else $count = 0;
 	
 	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
 						[ 
