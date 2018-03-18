@@ -139,7 +139,7 @@ CREATE TABLE `{$new}chapters` (
   `workingtext` mediumtext,
   `workingdate` timestamp NULL DEFAULT NULL,
   `endnotes` text,
-  `validated` tinyint(2) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
+  `validated` tinyint(2) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (https://efiction.org/wiki/DataStructure)',
   `wordcount` mediumint(8) NOT NULL DEFAULT '0',
   `rating` tinyint(3) NOT NULL DEFAULT '0',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
@@ -161,7 +161,7 @@ CREATE TABLE `{$new}characters` (
   `charname` varchar(255) NOT NULL,
   `biography` mediumtext NOT NULL,
   `image` varchar(255) NOT NULL,
-  `count` mediumint(8) unsigned NOT NULL,
+  `count` mediumint(8) UNSIGNED DEFAULT NULL,
   PRIMARY KEY (`charid`), KEY `charname` (`charname`(64))
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table';
 EOF;

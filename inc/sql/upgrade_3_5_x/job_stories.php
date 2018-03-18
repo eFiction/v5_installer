@@ -175,7 +175,14 @@ function stories_categories($job, $step)
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}categories`C ON (FIND_IN_SET(C.catid,S.catid)>0);")[0]['found'];
+		try
+		{
+			$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}categories`C ON (FIND_IN_SET(C.catid,S.catid)>0);")[0]['found'];
+		}
+		catch (PDOException $e)
+		{
+			$total = -1;
+		}
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 	

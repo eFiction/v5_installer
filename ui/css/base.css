@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700);
 
 body {
 	margin: 0 auto;
@@ -22,7 +22,7 @@ body {
 	margin: 0 auto;
 }
 #headerimg {
-	background-image:url(http://efiction.org/webpics/header.png);
+	background-image:url(https://efiction.org/webpics/header.png);
 	background-repeat: no-repeat;
 	background-color: #0099bb;	
 	width: 637px;

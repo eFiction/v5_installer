@@ -4,6 +4,7 @@
 return array(
 // global
 'Welcome'	=> 'Welcome',
+'StepTime'	=> 'Time required for previous step',
 
 //menu
 'edit_config'		=> 'edit config',

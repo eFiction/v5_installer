@@ -4,6 +4,7 @@
 return array(
 // global
 'Welcome'	=> 'Willkommen',
+'StepTime'	=> 'Benötigte Zeit für den letzten Arbeitsschritt',
 
 //menu
 'edit_config'		=> 'Einstellungen',
