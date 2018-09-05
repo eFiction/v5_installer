@@ -9,7 +9,7 @@
 $fw->jobSteps = array(
 		"logs"			=> "Copy action log",
 		"news"			=> "Copy news entries",
-		"db_keys"		=> "Add DB keys relations",
+		"db_keys"		=> "Create foreign keys relations",
 );		
 
 if("+"==$fw['installerCFG.optional.shoutbox'][1])
@@ -342,27 +342,49 @@ function various_poll_votes($job, $step)
 function various_db_keys($job, $step)
 {
 	$fw = \Base::instance();
+	$FK_prefix = str_replace ('`.`', '_', $fw->dbNew );
 	
+	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
+	$tracking->load(['id = ?', $step['id'] ]);
+
 	// add foreign key restriction to drop all story_author relations when a story gets deleted
-	$fw->db5->exec("ALTER TABLE `{$fw->dbNew}stories_authors`
-						ADD CONSTRAINT `rSA_drop` FOREIGN KEY (`sid`) 
+	$sql[] = "ALTER TABLE `{$fw->dbNew}stories_authors`
+						ADD CONSTRAINT `{$FK_prefix}rSA_drop` FOREIGN KEY (`sid`) 
 						REFERENCES `{$fw->dbNew}stories` (`sid`) 
 						ON DELETE CASCADE 
-						ON UPDATE NO ACTION;");
+						ON UPDATE NO ACTION;";
 
 	// add foreign key restriction to drop all story_category relations when a story gets deleted
-	$fw->db5->exec("ALTER TABLE `{$fw->dbNew}stories_categories`
-						ADD CONSTRAINT `rSC_drop` FOREIGN KEY (`sid`) 
+	$sql[] = "ALTER TABLE `{$fw->dbNew}stories_categories`
+						ADD CONSTRAINT `{$FK_prefix}rSC_drop` FOREIGN KEY (`sid`) 
 						REFERENCES `{$fw->dbNew}stories` (`sid`) 
 						ON DELETE CASCADE 
-						ON UPDATE NO ACTION;");
+						ON UPDATE NO ACTION;";
 
 	// add foreign key restriction to drop all story_tag relations when a story gets deleted
-	$fw->db5->exec("ALTER TABLE `{$fw->dbNew}stories_tags`
-						ADD CONSTRAINT `rST_drop` FOREIGN KEY (`sid`) 
+	$sql[] = "ALTER TABLE `{$fw->dbNew}stories_tags`
+						ADD CONSTRAINT `{$FK_prefix}rST_drop` FOREIGN KEY (`sid`) 
 						REFERENCES `{$fw->dbNew}stories` (`sid`) 
 						ON DELETE CASCADE 
-						ON UPDATE NO ACTION;");
+						ON UPDATE NO ACTION;";
 
+	foreach ( $sql as $addKey )
+	{
+		try
+		{
+			$fw->db5->exec($addKey);
+			$tracking->items++;
+		}
+		catch (PDOException $e)
+		{
+			// If there is an issue creating a foreign key, we'll simply take note and move on, it's not that bad, might improve that at a later point
+			$tracking->items--;
+			$tracking->error = "Issue creating at least one foreign key";
+		}
+	}
+
+	$tracking->success = 2;
+	$tracking->save();
 }
+
 ?>

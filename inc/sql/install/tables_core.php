@@ -486,6 +486,10 @@ EOF;
 	requires: tags, categories, characters, rating
 -------------------------------------------------------------------------------------------- */
 $core['stories'] = <<<EOF
+-- remove relation tables first to deal with the foreign keys
+DROP TABLE IF EXISTS `{$new}stories_tags`;
+DROP TABLE IF EXISTS `{$new}stories_authors`;
+DROP TABLE IF EXISTS `{$new}stories_categories`;
 DROP TABLE IF EXISTS `{$new}stories`;
 CREATE TABLE `{$new}stories` (
   `sid` mediumint(8) NOT NULL,
@@ -529,7 +533,6 @@ ALTER TABLE `{$new}stories`
   MODIFY `sid` mediumint(8) NOT NULL AUTO_INCREMENT;
 --SPLIT--
 
-DROP TABLE IF EXISTS `{$new}stories_authors`;
 CREATE TABLE `{$new}stories_authors` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `sid` mediumint(8) NOT NULL,
@@ -540,7 +543,6 @@ CREATE TABLE `{$new}stories_authors` (
 --NOTE--Story relation table: Authors
 --SPLIT--
 
-DROP TABLE IF EXISTS `{$new}stories_categories`;
 CREATE TABLE `{$new}stories_categories` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `sid` mediumint(8) NOT NULL,
@@ -563,7 +565,6 @@ CREATE TABLE `{$new}featured` (
 --NOTE--Story relation table: Featured
 --SPLIT--
 
-DROP TABLE IF EXISTS `{$new}stories_tags`;
 CREATE TABLE `{$new}stories_tags` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `sid` mediumint(8) NOT NULL,
