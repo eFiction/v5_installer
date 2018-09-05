@@ -527,8 +527,13 @@ class upgradetools {
 		$filename = realpath("../".$fw['installerCFG.data.storiespath']."/{$item['folder']}/{$item['chapter']}.txt");
 		if ( file_exists($filename) )
 		{
-			return [ TRUE, file_get_contents ( $filename ) ];
-			//$contents = file_get_contents ( $filename );
+			$contents = file_get_contents ( $filename );
+			if ( FALSE === mb_check_encoding ( $contents, 'UTF-8' ) )
+			// adjust codepage if need be
+			// WINDOWS-1252 = western Europe
+				$contents = iconv('WINDOWS-1252', 'UTF-8', $contents);
+			
+			return [ TRUE, $contents ];
 		}
 		return [ FALSE ];
 		//else echo "<span class='warning'>Not found: {$item['folder']}/{$item['chapter']}.txt</span><br />";
