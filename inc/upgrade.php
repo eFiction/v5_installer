@@ -51,7 +51,7 @@ class upgrade {
 		( 
 			empty($this->fw['installerCFG.test']) 		// no test on config
 			OR @$this->fw['installerCFG.test.db3']<2 	// can't connect to db3
-			OR @$this->fw['installerCFG.test.data']<2	// db3 data not found
+			OR @$this->fw['installerCFG.test.data']!=2	// db3 data not found or integrity check failed
 			OR @$this->fw['installerCFG.test.db5']<2	// can't connect to db5
 			OR @$this->fw['installerCFG.test.db5']>3 	// prefix conflict
 		)

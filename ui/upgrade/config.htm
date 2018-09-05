@@ -34,6 +34,7 @@
 		<check if="{{ @@installerCFG.test.db3 == 1 }}"><div class="gb-50 alert-box warning">Cannot probe server without an eFiction 3.5.x database name</div></check>
 		<check if="{{ @@installerCFG.test.db3 == 0 AND isset(@installerCFG.db3.dsn) }}"><div class="gb-50 alert-box error">Failed to connect to database Server.<check if="{{ isset(@installerCFG.error.db3) }}"><br />Last error was: {{ @installerCFG.error.db3 }}</check></div></check>
 		<check if="{{ isset(@installerCFG.test.data ) AND @@installerCFG.test.db3 == 2 }}">
+			<check if="{{ @installerCFG.test.data == 3 }}"><div class="gb-50 alert-box error">Dual author penname detected, upgrade will fail! Name(s): <repeat group="{{ @installerCFG.error.doublename }}" value="{{ @doublename }}" counter="{{ @i }}"><check if="{{ @i }}>1">, </check>{{ @doublename.penname }}</div></check>
 			<check if="{{ @installerCFG.test.data == 2 }}"><div class="gb-50 alert-box success">eFiction 3.5.x settings validated</div></check>
 			<check if="{{ @installerCFG.test.data == 1 }}"><div class="gb-50 alert-box warning">eFiction 3.5.x database found, please check sitekey</div></check>
 			<check if="{{ @installerCFG.test.data == 0 }}"><div class="gb-50 alert-box error">Failed to open eFiction 3.5.x database.<check if="{{ isset(@installerCFG.error.data) }}"><br />Last error was: {{ @installerCFG.error.data }}</check></div></check>

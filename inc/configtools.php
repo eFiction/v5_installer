@@ -164,6 +164,23 @@ class configtools {
 						{
 							$fw['POST.new.db3.prefix'] = $probe[0]['tableprefix'];
 							$fw['POST.new.data.sitename'] = $probe[0]['sitename'];
+
+							$testDoubleAuthors = "SELECT A1.penname 
+													FROM `{$fw['POST.new.db3.dbname']}`.`{$probe[0]['tableprefix']}fanfiction_authors`A1 
+														INNER JOIN `{$fw['POST.new.db3.dbname']}`.`{$probe[0]['tableprefix']}fanfiction_authors`A2 
+													ON ( A1.penname = A2.penname AND A1.uid < A2.uid )";
+							try {
+								$probe = $dbTest->exec( $testDoubleAuthors );
+								// double penname detected, upgrade will fail
+								if ( sizeof($probe)>0 )
+								{
+									$test['data'] = 3;
+									$fw["POST.new.error.doublename"] = $probe;
+								}
+								
+							} catch (PDOException $e) {
+								
+							}
 						}
 					}
 
