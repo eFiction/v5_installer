@@ -512,7 +512,7 @@ CREATE TABLE `{$new}stories` (
   `translation` tinyint(1) NOT NULL DEFAULT '0',
   `trans_from` varchar(10) NOT NULL,
   `trans_to` varchar(10) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
+) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
 -- Add Indices
 ALTER TABLE `{$new}stories`
   ADD PRIMARY KEY (`sid`),
