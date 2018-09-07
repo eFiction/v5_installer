@@ -39,7 +39,7 @@ function config_create($job, $step)
 		$fw['installerCFG.data.revdelete']			= 0;
 		$fw['installerCFG.data.rateonly']			= 'FALSE';
 		$fw['installerCFG.data.agestatement']		= 'FALSE';
-		$fw['installerCFG.data.dateformat']			= 'd.m.y';
+		$fw['installerCFG.data.dateformat']			= 'd.m.Y';
 		$fw['installerCFG.data.timeformat']			= 'H:i';
 		$fw['installerCFG.data.sitename']			= 'New archive';
 		$fw['installerCFG.data.siteemail']			= $fw['installerCFG.admin.mail'];
@@ -117,8 +117,8 @@ INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `valu
 ('bb2__reverse_proxy_addresses','bad_behaviour_rev', 3,			'',												'text//', 1),
 ('agestatement',				'members_general',	 1,			"{$fw['installerCFG.data.agestatement']}", 		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('datetime_preset_explain',		'settings_datetime', 1,			'', 											'note', 1),
-('date_preset',					'settings_datetime', 2,			'd.m.Y',										'select//24.12.1997=d.m.Y//1997/24/12=Y/d/m', 1),
-('time_preset',					'settings_datetime', 3,			"H:i", 											'select//23:30=H:i//11:30 pm=h:i a', 1),
+('date_preset',					'settings_datetime', 2,			'd.m.Y',										'select//24.12.1997 [d.m.Y]=d.m.Y//1997/24/12 [Y/d/m]=Y/d/m', 1),
+('time_preset',					'settings_datetime', 3,			"H:i", 											'select//23:30 [H:i]=H:i//11:30 pm [h:i a]=h:i a', 1),
 ('monday_first_day',			'settings_datetime', 4,			'1',											'select//{{ @LN__Weekday, strtotime(''2016/02/01'') | format }}=1//{{ @LN__Weekday, strtotime(''2016/05/01'') | format }}=0', 1),
 ('datetime_custom_explain',		'settings_datetime', 5,			'', 											'note', 1),
 ('date_format',					'settings_datetime', 6,			"{$fw['installerCFG.data.dateformat']}", 		'text//small', 1),
