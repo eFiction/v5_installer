@@ -1,4 +1,5 @@
 .gitignore
+lock.file
 /cfg/*
 !/cfg/.htaccess
 !/cfg/config.ini

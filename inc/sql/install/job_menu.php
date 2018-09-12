@@ -121,7 +121,7 @@ INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `chi
 ('Authoring_Finished%%3',				2, 'author/uid=%ID%/finished',		'{ICON:following} {ICON:text}',  'author_sub', 1, NULL),
 ('Authoring_Unfinished%%2',				3, 'author/uid=%ID%/unfinished',	'{ICON:following} {ICON:text}',  'author_sub', 1, NULL),
 ('Authoring_Drafts%%1',					4, 'author/uid=%ID%/drafts',		'{ICON:following} {ICON:text}',  'author_sub', 1, NULL),
-('Authoring_Deleted%%0',				5, 'author/uid=%ID%/deleted',		'{ICON:following} {ICON:trash}', 'author_sub', 1, NULL)
+('Authoring_Deleted%%0',				5, 'author/uid=%ID%/deleted',		'{ICON:following} {ICON:trash}', 'author_sub', 1, NULL),
 --
 ('Library_Bookmarks%%LIB%%BMS',			1, 'library/bookmark',				'{ICON:bookmark}',	'library', 1, NULL),
 ('Library_Favourites%%LIB%%FAVS',		2, 'library/favourite',				'{ICON:favourite}', 'library', 1, NULL),

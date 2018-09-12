@@ -321,13 +321,14 @@ $core['messaging'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}messaging`;
 CREATE TABLE `{$new}messaging` (
   `mid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `sent` mediumint(9) DEFAULT NULL,
   `sender` mediumint(8) unsigned NOT NULL,
   `recipient` mediumint(8) unsigned NOT NULL,
   `date_sent` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_read` timestamp NULL DEFAULT NULL,
   `subject` varchar(255) NOT NULL,
   `message` text NOT NULL,
-  PRIMARY KEY (`mid`)
+  PRIMARY KEY (`mid`), KEY `sent` (`sent`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset} COMMENT='(eFiction 5): new table for user messages';
 EOF;
 

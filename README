@@ -1,0 +1,5 @@
+Welcome to the development branch of the eFiction 5 installer.
+
+This will come shipped with source files from the main project, downloads from this repository should only be used if there was a bug in the release and a hotfix was announced.
+
+To handle the beloved UTF-8 issue, the installer will attempt to convert stories that are stored as files from Windows-1252 to UTF-8. If this fails or you are using a different codepage, drop a support ticket. This does not affect imports from database.
