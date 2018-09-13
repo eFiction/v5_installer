@@ -537,7 +537,6 @@ class upgradetools {
 		}
 		return [ FALSE ];
 		//else echo "<span class='warning'>Not found: {$item['folder']}/{$item['chapter']}.txt</span><br />";
-
 	}
 	
 	public static function cleanResult($messy)

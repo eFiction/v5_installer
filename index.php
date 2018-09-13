@@ -6,9 +6,9 @@ $f3=require('lib/base.php');
 // A few version checks
 if ((float)PCRE_VERSION<7.9)
 	trigger_error('PCRE version is out of date');
-if ( version_compare(PHP_VERSION, '5.4.0', '<') )
+if ( version_compare(PHP_VERSION, '5.5.0', '<') )
 {
-	echo "You do not meet the minimum requirements to run this script on this server ( PHP 5.4.0 required ).<br>You are running ".PHP_VERSION;
+	echo "You do not meet the minimum requirements to run this script on this server ( PHP 5.5.0 required ).<br>You are running ".PHP_VERSION;
 	exit;
 }
 
@@ -32,7 +32,10 @@ setlocale(LC_ALL, __transLocale);		// http://www.php.net/setlocale
 // Set a fallback page title
 $f3->set('module', '');
 
-$f3->route('GET /',
+if ( file_exists('lock.file') ) $f3->set('locked',TRUE);
+else include("inc/routes.php");
+
+$f3->route( ['GET /', 'GET /*'],
 	function($f3) {
 		$view = new Template;
 		$f3->set('content', $view->render('welcome.htm'));

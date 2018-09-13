@@ -4,9 +4,11 @@
 				<true>
 					<check if="{{ @error=='open'   }}"><div class="gb-full alert-box error">Failed open source file container</div></check>
 					<check if="{{ @error=='extract'}}"><div class="gb-full alert-box error">Failed to deploy source files</div></check>
+					Manual upload required.
 				</true>
 				<false>
 					<div class="gb-full alert-box success">Source files deployed</div>
 				</false>
 			</check>
+			<div class="gb-full alert-box info">Installer has been locked, delete 'lock.file' to unlock.</div>
 		</div>

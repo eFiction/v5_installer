@@ -487,13 +487,13 @@ EOF;
 	requires: tags, categories, characters, rating
 -------------------------------------------------------------------------------------------- */
 $core['stories'] = <<<EOF
--- remove relation tables first to deal with the foreign keys
+-- remove relation tables first to deal with the foreign keys (currently not used)
 DROP TABLE IF EXISTS `{$new}stories_tags`;
 DROP TABLE IF EXISTS `{$new}stories_authors`;
 DROP TABLE IF EXISTS `{$new}stories_categories`;
 DROP TABLE IF EXISTS `{$new}stories`;
 CREATE TABLE `{$new}stories` (
-  `sid` mediumint(8) NOT NULL,
+  `sid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(200) NOT NULL DEFAULT 'Untitled',
   `summary` text,
   `storynotes` text,
@@ -516,22 +516,17 @@ CREATE TABLE `{$new}stories` (
   `moderation` mediumint(8) DEFAULT NULL,
   `translation` tinyint(1) NOT NULL DEFAULT '0',
   `trans_from` varchar(10) NOT NULL,
-  `trans_to` varchar(10) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
--- Add Indices
-ALTER TABLE `{$new}stories`
-  ADD PRIMARY KEY (`sid`),
-  ADD KEY `moderation` (`moderation`),
-  ADD KEY `title` (`title`),
-  ADD KEY `ratingid` (`ratingid`),
-  ADD KEY `completed` (`completed`),
-  ADD KEY `roundrobin` (`roundrobin`),
-  ADD KEY `validated` (`validated`),
-  ADD KEY `recent` (`updated`,`validated`),
-  ADD KEY `translation` (`translation`,`trans_from`,`trans_to`);
--- Add auto increment
-ALTER TABLE `{$new}stories`
-  MODIFY `sid` mediumint(8) NOT NULL AUTO_INCREMENT;
+  `trans_to` varchar(10) NOT NULL,
+  PRIMARY KEY (`sid`),
+  KEY `moderation` (`moderation`),
+  KEY `title` (`title`),
+  KEY `ratingid` (`ratingid`),
+  KEY `completed` (`completed`),
+  KEY `roundrobin` (`roundrobin`),
+  KEY `validated` (`validated`),
+  KEY `recent` (`updated`,`validated`),
+  KEY `translation` (`translation`,`trans_from`,`trans_to`)
+ ) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
 --SPLIT--
 
 CREATE TABLE `{$new}stories_authors` (

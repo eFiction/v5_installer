@@ -13,7 +13,7 @@ if(1==$fw['installerCFG.optional.shoutbox'])
 // add shoutbox
 $fw->jobSteps += array(
 		"shoutbox"	=> "Copy shoutbox data",
-		"db_keys"	=> "Create foreign keys relations",
+//		"db_keys"	=> "Create foreign keys relations",		// skipping foreign keys at this point, leaving too many odds and ends open
 );
 
 

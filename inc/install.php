@@ -82,6 +82,7 @@ class install {
 				break;
 			case 5:
 				$this->fw->set('content', installtools::moveFiles() );
+				$this->fw->set('content', installtools::lockInstaller() );
 				break;
 			case 6:
 				$this->fw->set('content', installtools::lockInstaller() );

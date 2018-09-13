@@ -5,6 +5,7 @@ return array(
 // global
 'Welcome'	=> 'Welcome',
 'StepTime'	=> 'Time required for previous step',
+'InstallerLocked'	=> 'The installer is currently locked.<br/>Remove the file `lock.file` from the installer directory to unlock.',
 
 //menu
 'edit_config'		=> 'edit config',

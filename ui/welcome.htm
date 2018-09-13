@@ -2,3 +2,5 @@
 <div>This is the test version of the eFiction 5.x installer.<br /></div>
 <p>In order to upgrade or perform a fresh install, you must first edit the configuration.<br/>
 There is/will be a help item for this in the eFiction wiki</p>
+<br/>
+<check if="{{isset(@locked)}}"><p><div class="alert-box warning">{{@LN__InstallerLocked|raw}}</div></p></check>
