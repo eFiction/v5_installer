@@ -77,6 +77,7 @@ INSERT INTO `{$fw->dbNew}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, 'plus', 'fas fa-plus-square'),
 (1, 'print', 'fas fa-print'),
 (1, 'profile', 'fas fa-user-cog'),
+(1, 'rating', 'fas fa-registered'),
 (1, 'reader', 'fas fa-book-reader'),
 (1, 'recommendation-off', 'far fa-star'),
 (1, 'register', 'fas fa-sign-in-alt'),

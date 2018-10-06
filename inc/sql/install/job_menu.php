@@ -57,6 +57,7 @@ INSERT INTO `{$fw->dbNew}menu_adminpanel` (`label`, `child_of`, `order`, `link`,
 ('Characters',	'archive',			4, 'archive/characters', '{ICON:members}', 1, 64, NULL),
 ('Tags',		'archive',			5, 'archive/tags', '{ICON:tags}', 1, 64, NULL),
 ('Categories',	'archive',			6, 'archive/categories', '{ICON:categories}', 1, 64, NULL),
+('Ratings',		'archive',			7, 'archive/ratings', '{ICON:rating}', 1, 64, NULL),
 ('Settings',	'archive/featured', 1, 'archive/featured', '{ICON:blank}', 1, 64, NULL),
 ('Current',		'archive/featured', 2, 'archive/featured/select=current', '{ICON:blank}', 1, 64, NULL),
 ('Future',		'archive/featured', 3, 'archive/featured/select=future', '{ICON:blank}', 1, 64, NULL),
@@ -118,8 +119,8 @@ INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `chi
 ('UserMenu_Curator',					2, 'author/curator',				'{ICON:member}', 'author', 1, NULL),
 --
 ('UserMenu_AddStory',					1, 'author/uid=%ID%/add',			'{ICON:following} {ICON:plus}',  'author_sub', 1, NULL),
-('Authoring_Finished%%3',				2, 'author/uid=%ID%/finished',		'{ICON:following} {ICON:text}',  'author_sub', 1, NULL),
-('Authoring_Unfinished%%2',				3, 'author/uid=%ID%/unfinished',	'{ICON:following} {ICON:text}',  'author_sub', 1, NULL),
+('Authoring_Finished%%9',				2, 'author/uid=%ID%/finished',		'{ICON:following} {ICON:text}',  'author_sub', 1, NULL),
+('Authoring_Unfinished%%6',				3, 'author/uid=%ID%/unfinished',	'{ICON:following} {ICON:text}',  'author_sub', 1, NULL),
 ('Authoring_Drafts%%1',					4, 'author/uid=%ID%/drafts',		'{ICON:following} {ICON:text}',  'author_sub', 1, NULL),
 ('Authoring_Deleted%%0',				5, 'author/uid=%ID%/deleted',		'{ICON:following} {ICON:trash}', 'author_sub', 1, NULL),
 --

@@ -122,7 +122,8 @@ function descriptors_ratings($job, $step)
 
 	$dataIn = $fw->db3->exec("SELECT
 						`rid`, `rating`, `ratingwarning`, `warningtext`
-						FROM `{$fw->dbOld}ratings`;");
+						FROM `{$fw->dbOld}ratings`
+						ORDER BY `rid` ASC;");
 
 	$count = 0;
 
@@ -132,11 +133,12 @@ function descriptors_ratings($job, $step)
 
 		foreach($dataIn as $data)
 		{
+			$count++;
+
 			$newdata->copyfrom($data);
+			$newdata->inorder = $count;
 			$newdata->save();
 			$newdata->reset();
-			
-			$count++;
 		}
 	}
 

@@ -121,7 +121,7 @@ function chapters_copy($job, $step)
 			$newchapter->notes		= $chapterIn['notes'];
 			$newchapter->endnotes	= $chapterIn['endnotes'];
 			$newchapter->validated	= $chapterIn['validated'];
-			$newchapter->wordcount	= count(preg_split("/\p{L}[\p{L}\p{Mn}\p{Pd}'\x{2019}]{1,}/u",$chaptertext));
+			$newchapter->wordcount	= max(count(preg_split("/\p{L}[\p{L}\p{Mn}\p{Pd}'\x{2019}]{0,}/u",$chaptertext))-1, 0);
 			$newchapter->rating		= $chapterIn['rating'];
 			$newchapter->reviews	= $chapterIn['reviewsNew'];
 			$newchapter->count		= $chapterIn['count'];

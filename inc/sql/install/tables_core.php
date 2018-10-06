@@ -390,14 +390,15 @@ EOF;
 $core['ratings'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}ratings`;
 CREATE TABLE `{$new}ratings` (
-  `rid` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `rid` smallint(6) NOT NULL AUTO_INCREMENT,
+  `inorder` smallint(6) NOT NULL,
   `rating` varchar(60) NOT NULL DEFAULT '',
   `rating_age` tinyint(3) NOT NULL DEFAULT '0',
   `rating_image` varchar(50) NULL DEFAULT NULL,
   `ratingwarning` BOOLEAN NOT NULL DEFAULT FALSE,
   `warningtext` text NOT NULL,
   PRIMARY KEY (`rid`),
-  KEY `rating` (`rating`), KEY `rating_age` (`rating_age`)
+  KEY `rating` (`rating`), KEY `inorder` (`inorder`)
 ) ENGINE=MyISAM  DEFAULT CHARSET={$characterset};
 EOF;
 
