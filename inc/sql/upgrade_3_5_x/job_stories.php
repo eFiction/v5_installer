@@ -78,7 +78,13 @@ function stories_data($job, $step)
 
 		foreach($dataIn as $data)
 		{
-			$data['completed'] = (int)$data['completed'] + 2;
+			switch($data['completed']) {
+				case 0:
+					$data['completed'] = 6;
+					break;
+				case 1:
+					$data['completed'] = 9;
+			}
 			
 			switch($data['validated']) {
 				case 0:

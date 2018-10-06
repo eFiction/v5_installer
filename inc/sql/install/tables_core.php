@@ -134,6 +134,7 @@ CREATE TABLE `{$new}chapters` (
   `sid` mediumint(8) NOT NULL DEFAULT '0',
   `title` varchar(250) NOT NULL DEFAULT '',
   `inorder` mediumint(8) NOT NULL DEFAULT '0',
+  `created` datetime DEFAULT NULL,
   `notes` text,
   `chaptertext` mediumtext,
   `workingtext` mediumtext,
