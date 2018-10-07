@@ -393,7 +393,7 @@ CREATE TABLE `{$new}ratings` (
   `rid` smallint(6) NOT NULL AUTO_INCREMENT,
   `inorder` smallint(6) NOT NULL,
   `rating` varchar(60) NOT NULL DEFAULT '',
-  `rating_age` tinyint(3) NOT NULL DEFAULT '0',
+  `rating_age` tinyint(3) DEFAULT NULL,
   `rating_image` varchar(50) NULL DEFAULT NULL,
   `ratingwarning` BOOLEAN NOT NULL DEFAULT FALSE,
   `warningtext` text NOT NULL,
