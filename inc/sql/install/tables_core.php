@@ -503,7 +503,7 @@ CREATE TABLE `{$new}stories` (
   `date` datetime DEFAULT NULL,
   `updated` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `validated` tinyint(2) UNSIGNED ZEROFILL NOT NULL DEFAULT '00' COMMENT 'First digit is status, second can be an explanation (http://efiction.org/wiki/DataStructure)',
-  `completed` ENUM('0','1','2','3') NOT NULL DEFAULT '1' COMMENT '0 deleted, 1 draft, 2 w.i.p., 3 all done',
+  `completed` tinyint(2) UNSIGNED NOT NULL DEFAULT '1' COMMENT '0 deleted, 1 draft, 6 w.i.p., 9 all done',
   `roundrobin` char(1) NOT NULL DEFAULT '0',
   `wordcount` mediumint(8) NOT NULL DEFAULT '0',
   `ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
