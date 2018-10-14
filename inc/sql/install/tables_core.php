@@ -235,7 +235,8 @@ CREATE TABLE `{$new}log` (
   `uid` mediumint(8) NOT NULL DEFAULT '0',
   `ip` int(10) unsigned DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `type` ENUM('RG','ED','DL','VS','LP','BL','RE','AM','EB','RF') NOT NULL,
+  `type` ENUM('AM','BL','DL','EB','ED','LP','RE','RG','VS') NOT NULL,
+  `subtype` char(1) DEFAULT NULL,
   `version` tinyint(1) NOT NULL,
   `new` BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY (`id`), KEY `type` (`type`), KEY `uid` (`uid`)
