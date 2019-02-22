@@ -34,8 +34,6 @@ function users_admin($job, $step)
 {
 	$fw = \Base::instance();
 	
-	// Load a compatibility wrapper for PHP versions prior to 5.5.0
-	if ( !function_exists("password_hash") ) include ( "inc/password_compat.php" );
 	$passwordhash = password_hash( $fw['installerCFG.admin.pass1'], PASSWORD_DEFAULT );
 
 	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}users`
