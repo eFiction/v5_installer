@@ -9,8 +9,8 @@ $f3->route( 'GET @config: /upgrade/config', 'upgrade->config' );
 $f3->route( 'POST /upgrade/config', 		'upgrade->saveConfig' );
 
 // fresh config
-$f3->route( 'GET @config: /fresh/config', 	'install->config' );
-$f3->route( 'POST /fresh/config', 			'install->saveConfig' );
+$f3->route( 'GET @freshconfig: /fresh/config', 	'install->config' );
+$f3->route( 'POST /fresh/config', 				'install->saveConfig' );
 
 // chapter storage
 $f3->route( 'GET /upgrade/chapters/@where', 'upgrade->storage' );

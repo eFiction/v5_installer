@@ -46,6 +46,7 @@ class upgrade {
 			$this->fw->set('content', Template::instance()->render('resume.htm'));
 			return TRUE;
 		}
+		
 		// See if the DB connection has been set up and checked, if not force to config
 		if
 		( 
@@ -55,8 +56,9 @@ class upgrade {
 			OR @$this->fw['installerCFG.test.db5']<2	// can't connect to db5
 			OR @$this->fw['installerCFG.test.db5']>3 	// prefix conflict
 		)
-			$this->fw->reroute('@config');
-		// Say Hi and show, which storage for chapter data is available and offer advise
+		$this->fw->reroute('@config');
+		
+		// Say Hi and show which storage for chapter data is available and offer advise
 		$this->fw->set('scenario', commontools::storageSelect() );
 		$this->fw->set('content', Template::instance()->render('upgrade/storage.htm'));
 	}
