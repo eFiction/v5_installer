@@ -35,7 +35,6 @@ class upgrade {
 			// Tell about the current step and let user decide to continue or restart from scratch
 			$this->fw->set('content', "Already done, reset?");
 			$this->fw->set('resume', $step_remembered);
-			//$this->fw->reroute('@steps(@step='.$step_remembered.')');
 		}
 	}
 	
@@ -72,7 +71,6 @@ class upgrade {
 	{
 		$this->fw->set('error', $error);
 		$this->fw->set('content', Template::instance()->render('error.htm'));
-		//echo "ugly error: ".$error;exit;
 	}
 	
 	function steps ()

@@ -56,11 +56,11 @@ class configtools {
 				}
 				elseif($fw['POST.new.dbdriver']=="pgsql")
 				{
-					
+					// not yet
 				}
 				elseif($fw['POST.new.dbdriver']=="mssql")
 				{
-					
+					// not yet
 				}
 			}
 		}
@@ -111,17 +111,6 @@ class configtools {
 										);
 						if ( sizeof($probe)>0 )
 							$test[$server] = 3;
-						/*
-						try {
-							$dbTest->exec( 'SELECT 1 FROM `'.$fw['POST.new.db5.dbname'].'`.`'.$fw['POST.new.db5.prefix'].'config`' );
-							//echo $dbTest->count()."xxxx";
-							$test[$server] = 3;
-						} catch (PDOException $e) {
-								//echo "nichts";
-								//$test[$server] = 2;
-								$fw['POST.new.db5.error'] = $e->getMessage();
-						}
-						*/
 					}
 					elseif ( $server == "db3" )
 					{
@@ -197,8 +186,6 @@ class configtools {
 				}
 				catch (PDOException $e)
 				{
-					//echo $server;
-
 					$test[$server] = 0;
 					$fw["POST.new.error.{$server}"] = $e->getMessage();
 					$fw["POST.new.{$server}.charset"] = "";

@@ -49,13 +49,13 @@ class upgradetools {
 		}
 		if( empty( $version ) OR version_compare($version, 4, ">") )
 		{
-			$error = 
+			$warning = 
 			[
 				"No eFiction 3.5.x version file found!",
 				" ",
 				"This upgrade might possibly fail.",
 			];
-			$fw->set('error', implode("\n", $error) );
+			$fw->set('warning', implode("\n", $warning) );
 			$fw->set('link', [
 				'step'		=> 1,
 				'sub'			=> '',
@@ -417,20 +417,8 @@ class upgradetools {
 				if(is_file("../".$move)) rename("../".$move, "../{$backup}/{$move}");
 			}
 
+			// probe for remaining files and tell the user
 			$efi3root = opendir("../");
-			/*
-			while (false !== ($entry = readdir($efi3root)))
-			{
-				if ( !in_array($entry, [".", ".." ] ) )
-				{
-					//if ( ($tmp = pathinfo($entry, PATHINFO_EXTENSION)) && $tmp=="php" OR $tmp=="html"  )
-					//rename("../{$entry}", "./backup/{$entry}");
-				}
-			}
-			*/
-		
-			// probe for remaining files
-			rewinddir ($efi3root);
 			while (false !== ($entry = readdir($efi3root)))
 			{
 				if ( !in_array($entry, [".", "..", "data", "install", $backup ] ) )
@@ -438,9 +426,15 @@ class upgradetools {
 					if(is_dir("../".$entry)) $remaining['folders'][] =  $entry;
 					else $remaining['files'][] =  $entry;
 				}
-				
 			}
-			if(isset($remaining)) $fw->set('remaining', $remaining);
+			if(isset($remaining))
+			{
+				$rem = fopen ( "../data/remaining_files.txt", "w" );
+				fwrite( $rem, implode("\n", $remaining) );
+				fclose( $rem );
+				
+				$fw->set('remaining', $remaining);
+			}
 
 			// old script was moved away, put new files in place
 			// Scan source folder for zip files
@@ -519,6 +513,9 @@ class upgradetools {
 		
 		// lock the installer
 		touch('lock.file');
+		
+		// tell the user that we are done
+		
 	}
 
 	public static function getChapterFile($item)
@@ -603,12 +600,12 @@ function jobStart($job)
 	$step = $fw->db5->exec ( "SELECT * FROM `{$new}process` WHERE step > 0 AND success < 2 AND joborder = :joborder ORDER BY step ASC LIMIT 0,1", [ ':joborder' => $job['joborder'] ]);
 	if ( sizeof($step)>0 )
 	{
-		/*
-		PHP 7 style:
 		($job['job'].'_'.$step[0]['step_function'])($job, $step[0]);
-		*/
+		/*
+		PHP 5 style:
 		$func = $job['job'].'_'.$step[0]['step_function'];
 		$func($job, $step[0]);
+		*/
 	}
 	
 	$stepReports = $fw->db5->exec ( "SELECT * FROM `{$new}process` WHERE step > 0 AND joborder = :joborder ORDER BY step ASC", [ ':joborder' => $job['joborder'] ]);

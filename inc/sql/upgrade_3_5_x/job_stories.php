@@ -233,7 +233,7 @@ function stories_tags($job, $step)
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}classes`C ON (FIND_IN_SET(C.class_id,S.classes)>0);")[0]['found'];
+		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}classes`C ON (FIND_IN_SET(C.class_id,S.classes)>0);")[0]['found'];
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 	
@@ -278,7 +278,7 @@ function stories_characters($job, $step)
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}characters`Ch ON (FIND_IN_SET(Ch.charid,S.charid)>0);")[0]['found'];
+		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}stories`S INNER JOIN `{$fw->dbOld}characters`Ch ON (FIND_IN_SET(Ch.charid,S.charid)>0);")[0]['found'];
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 	

@@ -86,12 +86,12 @@ class commontools {
 		$step = $fw->db5->exec ( "SELECT * FROM `{$new}process` WHERE step > 0 AND success < 2 AND joborder = :joborder ORDER BY step ASC LIMIT 0,1", [ ':joborder' => $job['joborder'] ]);
 		if ( sizeof($step)>0 )
 		{
+			($job['job'].'_'.$step[0]['step_function'])($job, $step[0]);
 			/*
 			PHP 7 style:
-			($job['job'].'_'.$step[0]['step_function'])($job, $step[0]);
-			*/
 			$func = $job['job'].'_'.$step[0]['step_function'];
 			$func($job, $step[0]);
+			*/
 		}
 		
 		$stepReports = $fw->db5->exec ( "SELECT * FROM `{$new}process` WHERE step > 0 AND joborder = :joborder ORDER BY step ASC", [ ':joborder' => $job['joborder'] ]);

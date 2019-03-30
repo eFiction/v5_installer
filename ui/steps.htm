@@ -15,6 +15,11 @@
 					{{ nl2br(@error)}}<br />
 				</div>
 			</check>
+			<check if="{{ isset(@warning) }}">
+				<div class="gb-full alert-box warning">
+					{{ nl2br(@warning)}}<br />
+				</div>
+			</check>
 			<check if="{{ isset(@link) }}">
 				<div class="gb-full">
 					<a href='{{ @BASE }}{{ "stepsub", "step={@link.step},sub={@link.sub}" | alias }}'>->Click here<-</a> to {{ @link.message }}

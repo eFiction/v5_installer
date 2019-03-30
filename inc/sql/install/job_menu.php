@@ -108,12 +108,13 @@ function menu_user($job, $step)
 
 $sql = <<<EOF
 INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `child_of`, `active`, `evaluate`) VALUES
-('UserMenu_Settings',					1, 'settings',						'{ICON:settings}',	NULL, 1, NULL),
-('UserMenu_Message',					2, 'messaging',						'{ICON:mail}',		NULL, 1, NULL),
-('UserMenu_Authoring',					3, 'author',						'{ICON:keyboard}',	NULL, 1, NULL),
-('UserMenu_MyLibrary',					4, 'library',						'{ICON:book}',		NULL, 1, NULL),
-('UserMenu_Feedback',					5, 'feedback',						'{ICON:comments}',	NULL, 1, NULL),
-('UserMenu_Shoutbox%%SB%%SB',			6, 'shoutbox',						'{ICON:text}',		NULL, 1, 'shoutbox'),
+('UserMenu_Start',						1, '',								'{ICON:home}',	NULL, 1, NULL),
+('UserMenu_Settings',					2, 'settings',						'{ICON:settings}',	NULL, 1, NULL),
+('UserMenu_Message',					3, 'messaging',						'{ICON:mail}',		NULL, 1, NULL),
+('UserMenu_Authoring',					4, 'author',						'{ICON:keyboard}',	NULL, 1, NULL),
+('UserMenu_MyLibrary',					5, 'library',						'{ICON:book}',		NULL, 1, NULL),
+('UserMenu_Feedback',					6, 'feedback',						'{ICON:comments}',	NULL, 1, NULL),
+('UserMenu_Shoutbox%%SB%%SB',			7, 'shoutbox',						'{ICON:text}',		NULL, 1, 'shoutbox'),
 --
 ('%%AUTHORS',							1, 'author/uid=%ID%',				'{ICON:member}', 'author', 1, NULL),
 ('UserMenu_Curator',					2, 'author/curator',				'{ICON:member}', 'author', 1, NULL),
@@ -138,8 +139,7 @@ INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `chi
 ('UserMenu_CommentsReceived%%FB%%CR',	4, 'feedback/comments/received',	'{ICON:arrow-left}',	'feedback', 1, NULL),
 --
 ('UserMenu_Profile',					1, 'settings/profile',				'{ICON:member}',	'settings', 1, NULL),
-('UserMenu_Preferences',				2, 'settings/preferences',			'{ICON:visible}',	'settings', 1, NULL),
-('ChangePW',							3, 'settings/changepw',				'{ICON:key}',		'settings', 1, NULL);
+('ChangePW',							2, 'settings/changepw',				'{ICON:key}',		'settings', 1, NULL);
 EOF;
 
 	$fw->db5->exec($sql);
