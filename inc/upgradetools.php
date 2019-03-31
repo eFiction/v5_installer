@@ -429,8 +429,17 @@ class upgradetools {
 			}
 			if(isset($remaining))
 			{
-				$rem = fopen ( "../data/remaining_files.txt", "w" );
-				fwrite( $rem, implode("\n", $remaining) );
+				$rem = fopen ( "../data/remaining.txt", "w" );
+				if(isset($remaining['folders']))
+				{
+					fwrite( $rem, "Folders:\n" );
+					fwrite( $rem, implode("\n", $remaining['folders'])."\n\n" );
+				}
+				if(isset($remaining['files']))
+				{
+					fwrite( $rem, "Files:\n" );
+					fwrite( $rem, implode("\n", $remaining['files']) );
+				}
 				fclose( $rem );
 				
 				$fw->set('remaining', $remaining);
@@ -515,7 +524,7 @@ class upgradetools {
 		touch('lock.file');
 		
 		// tell the user that we are done
-		
+		return Template::instance()->render('upgrade/finished.htm');
 	}
 
 	public static function getChapterFile($item)

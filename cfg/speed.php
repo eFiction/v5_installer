@@ -5,7 +5,7 @@
 	
 	They are split into categories, based on their "weight"
 	
-	If experiencing timeouts, these values can be lowered to throttle the speed down
+	When experiencing timeouts, these values can be lowered to throttle the speed
 */
 
 $f3->set("limit.xlight", 500); /*
