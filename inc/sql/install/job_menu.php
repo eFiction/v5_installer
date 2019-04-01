@@ -87,7 +87,9 @@ INSERT INTO `{$fw->dbNew}menu_adminpanel` (`label`, `child_of`, `order`, `link`,
 ('Icons',		'settings/layout',	2, 'settings/layout/icons', '{ICON:blank}', 1, 128, NULL),
 ('Pending',		'stories',			1, 'stories/pending', '{ICON:waiting}', 1, 32, NULL),
 ('Edit',		'stories',			2, 'stories/edit', '{ICON:edit}', 1, 32, NULL),
-('Add',			'stories',			3, 'stories/add', '{ICON:document-new}', 1, 64, NULL);
+('Add',			'stories',			3, 'stories/add', '{ICON:document-new}', 1, 64, NULL),
+('Series',		'stories',			3, 'stories/series', '{ICON:numlist}', 1, 32, NULL),
+('Collections',	'stories',			3, 'stories/collections', '{ICON:list}', 1, 32, NULL);
 EOF;
 
 	$fw->db5->exec($sql);
