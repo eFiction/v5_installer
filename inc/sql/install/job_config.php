@@ -82,6 +82,8 @@ INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `valu
 ('epub_domain',					'archive_general', 9,			'', 											'text//small', 1),
 ('story_intro_items',			'archive_intro', 1,				'5', 											'text//numeric', 1),
 ('story_intro_order',			'archive_intro', 2,				'modified', 									'select//__modified=modified//__published=published', 1),
+('author_overview_columns', 	'archive_authors', 1,			'5',											'text//numeric', 1),
+('author_letter_columns', 		'archive_authors', 2,			'3',											'text//numeric', 1),
 ('author_self', 				'archive_submit', 1,			"{$fw['installerCFG.data.author_self']}", 		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('story_validation', 			'archive_submit', 2,			"{$fw['installerCFG.data.story_validation']}",	'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('stories_min_words',			'archive_submit', 3,			"{$fw['installerCFG.data.minwords']}", 			'text//numeric', 1),
