@@ -46,9 +46,14 @@ $tables = array (
 	"tracker"		=>	"Story tracker (new feature)",
 );
 
+// running an upgrade?
 if(!empty($upgrade))
+	// add the upgrades to the jobs
 	$jobs = array_merge($jobs, $jobs_upgrade);
+
+// fresh install
 else
+	// only create the upgrades tables
 	$tables = array_merge($tables, $jobs_upgrade);
 
 $_SESSION['skipped'] = array();
@@ -720,6 +725,27 @@ CREATE TABLE `{$new}user_friends` (
   PRIMARY KEY (`link_id`), UNIQUE KEY `relation` (`user_id`,`friend_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for friend relations';
 --NOTE--User friends
+--SPLIT--
+
+DROP TABLE IF EXISTS `{$new}authors`;
+CREATE TABLE `{$new}authors` (
+  `aid` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `info` text NOT NULL,
+  PRIMARY KEY (`aid`), KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for actual authors';
+--NOTE--Authors
+--SPLIT--
+
+DROP TABLE IF EXISTS `{$new}user_authors`;
+CREATE TABLE `{$new}user_authors` (
+  `lid` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `uid` mediumint(8) UNSIGNED NOT NULL,
+  `aid` mediumint(8) UNSIGNED NOT NULL,
+  `visibility` tinyint(1) NOT NULL DEFAULT '2'
+  PRIMARY KEY (`lid`), UNIQUE KEY `link` (`uid`,`aid`), KEY `visibility` (`visibility`)
+) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for user author relations';
+--NOTE--User Author relations
 EOF;
 
 
