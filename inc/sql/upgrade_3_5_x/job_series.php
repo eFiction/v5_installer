@@ -136,7 +136,7 @@ function series_cache($job, $step)
 							SELECT 
 							Ser.seriesid,
 							MAX(Ra.rid) as max_rating_id,
-										GROUP_CONCAT(DISTINCT U.uid,',',U.nickname ORDER BY nickname ASC SEPARATOR '||' ) as authorblock,
+										GROUP_CONCAT(DISTINCT A.aid,',',A.name ORDER BY name ASC SEPARATOR '||' ) as authorblock,
 										GROUP_CONCAT(DISTINCT Chara.charid,',',Chara.charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
 										GROUP_CONCAT(DISTINCT C.cid,',',C.category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
 										GROUP_CONCAT(DISTINCT T.tid,',',T.label,',',TG.description ORDER BY TG.order,TG.tgid,T.label ASC SEPARATOR '||') AS tagblock
@@ -157,7 +157,7 @@ function series_cache($job, $step)
 												LEFT JOIN `{$fw->dbNew}stories_categories`rSC ON ( rSC.sid = S.sid )
 													LEFT JOIN `{$fw->dbNew}categories`C ON ( rSC.cid = C.cid )
 												LEFT JOIN `{$fw->dbNew}stories_authors`rSA ON ( rSA.sid = S.sid )
-													LEFT JOIN `{$fw->dbNew}users` U ON ( rSA.aid = U.uid )
+													LEFT JOIN `{$fw->dbNew}authors`A ON ( rSA.aid = A.aid )
 									GROUP BY Ser.seriesid
 							) AS SERIES
 							LEFT JOIN `{$fw->dbNew}ratings`R ON (R.rid = max_rating_id);");

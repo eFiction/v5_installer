@@ -742,7 +742,7 @@ CREATE TABLE `{$new}user_authors` (
   `lid` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
   `uid` mediumint(8) UNSIGNED NOT NULL,
   `aid` mediumint(8) UNSIGNED NOT NULL,
-  `visibility` tinyint(1) NOT NULL DEFAULT '2'
+  `visibility` tinyint(1) NOT NULL DEFAULT '2',
   PRIMARY KEY (`lid`), UNIQUE KEY `link` (`uid`,`aid`), KEY `visibility` (`visibility`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for user author relations';
 --NOTE--User Author relations

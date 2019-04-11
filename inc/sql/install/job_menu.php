@@ -19,12 +19,12 @@ function menu_page($job, $step)
 $sql = <<<EOF
 INSERT INTO `{$fw->dbNew}menu` (`label`, `order`, `link`) VALUES
 ('Home', 1, ''),
-('Authors', 5, 'authors'),
-('Fandoms', 1, 'story/categories'),
-('Updates', 3, 'story/updates'),
-('Archive', 2, 'story'),
+('Authors', 2, 'authors'),
+('Categories', 3, 'story/categories'),
+('Updates', 4, 'story/updates'),
+('Contests', 5, 'story/contests'),
 ('Search', 6, 'story/search'),
-('Challenges', 6, 'story/contests');
+('Help', 7, '/page/help');
 EOF;
 
 	$fw->db5->exec($sql);
@@ -52,16 +52,16 @@ INSERT INTO `{$fw->dbNew}menu_adminpanel` (`label`, `child_of`, `order`, `link`,
 ('Archive',		NULL,				4, 'archive', '{ICON:archive}', 1, 64, NULL),
 ('Stories',		NULL,				5, 'stories', '{ICON:book}', 1, 64, NULL),
 ('Submission',	'archive',			1, 'archive/submit', '{ICON:submissions}', 1, 64, NULL),
-('Featured',	'archive',			2, 'archive/featured', '{ICON:features}', 1, 64, NULL),
-('Contests',	'archive',			3, 'archive/contests', '{ICON:blank}', 1, 64, '[\'optional_modules\'][\'contests\']'),
+('Featured',	'archive',			2, 'archive/featured', '{ICON:feature}', 1, 64, NULL),
+('Contests',	'archive',			3, 'archive/contests', '{ICON:contest}', 1, 64, '[\'optional_modules\'][\'contests\']'),
 ('Characters',	'archive',			4, 'archive/characters', '{ICON:members}', 1, 64, NULL),
 ('Tags',		'archive',			5, 'archive/tags', '{ICON:tags}', 1, 64, NULL),
 ('Categories',	'archive',			6, 'archive/categories', '{ICON:categories}', 1, 64, NULL),
 ('Ratings',		'archive',			7, 'archive/ratings', '{ICON:rating}', 1, 64, NULL),
-('Settings',	'archive/featured', 1, 'archive/featured', '{ICON:blank}', 1, 64, NULL),
-('Current',		'archive/featured', 2, 'archive/featured/select=current', '{ICON:blank}', 1, 64, NULL),
-('Future',		'archive/featured', 3, 'archive/featured/select=future', '{ICON:blank}', 1, 64, NULL),
-('Past',		'archive/featured', 4, 'archive/featured/select=past', '{ICON:blank}', 1, 64, NULL),
+('Settings',	'archive/featured', 1, 'archive/featured', '{ICON:fa-cogs}', 1, 64, NULL),
+('Current',		'archive/featured', 2, 'archive/featured/select=current', '{ICON:feature}', 1, 64, NULL),
+('Upcoming',	'archive/featured', 3, 'archive/featured/select=upcoming', '{ICON:feature-upcoming}', 1, 64, NULL),
+('Past',		'archive/featured', 4, 'archive/featured/select=past', '{ICON:feature-off}', 1, 64, NULL),
 ('Edit',		'archive/tags',		1, 'archive/tags/edit', '{ICON:tag}', 1, 64, NULL),
 ('Taggroups',	'archive/tags',		2, 'archive/tags/groups', '{ICON:tags}', 1, 128, NULL),
 ('Tagcloud',	'archive/tags',		3, 'archive/tags/cloud', '{ICON:cloud}', 1, 128, NULL),

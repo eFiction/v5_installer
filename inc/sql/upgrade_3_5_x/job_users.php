@@ -76,6 +76,19 @@ function users_copy($job, $step)
 
 		foreach($dataIn as $data)
 		{
+			/*
+			Session mask (bit-wise)
+
+			- admin			   128
+			- super mod			64
+			- story mod 		32
+			- lector			16
+			- author (trusted)	 8
+			- author (regular)	 4
+			- user (trusted)	 2
+			- user (active)		 1
+			- guest				 0
+			*/
 			// groups
 			if ( $data['level']==1 )
 				$data['groups'] = 255;
