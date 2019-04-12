@@ -659,6 +659,7 @@ CREATE TABLE `{$new}users` (
   `email` varchar(256) CHARACTER SET utf8 NOT NULL,
   `registered` datetime NOT NULL,
   `groups` mediumint(8) unsigned DEFAULT NULL,
+  `curator` mediumint(8) unsigned DEFAULT NULL,
   `about` text CHARACTER SET utf8 NULL,
   `moderation` mediumint(8) DEFAULT NULL,
   `alert_feedback` BOOLEAN NOT NULL DEFAULT FALSE,
