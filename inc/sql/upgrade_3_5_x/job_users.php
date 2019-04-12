@@ -12,7 +12,6 @@ $fw->jobSteps = array(
 		"fields"		=> "Copy user fields",
 		"info"			=> "Copy and adapt user info",
 		"favourites"	=> "Copy favourites",
-		"authors"		=> "Create authors",
 );		
 		
 function users_guest($job, $step)
@@ -20,7 +19,7 @@ function users_guest($job, $step)
 	$fw = \Base::instance();
 	
 	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}users`
-							(`login`, `nickname`, `realname`, `password`, `email`, `registered` )
+							(`login`, `username`, `realname`, `password`, `email`, `registered` )
 							VALUES
 							('Guest', 'Guest', '', '', '', '0000-00-00 00:00:00');" );
 							
@@ -48,7 +47,7 @@ function users_copy($job, $step)
 	$dataIn = $fw->db3->exec("SELECT
 								A.uid,
 								A.penname as login,
-								A.penname as nickname,
+								A.penname as username,
 								A.realname,
 								IF(CAST(A.password AS CHAR(32))='0',NULL,A.password) as password,
 								replace(A.email , ' ','') as email,
@@ -257,63 +256,6 @@ function users_favourites($job, $step)
 			$newdata->copyfrom($data);
 			$newdata->save();
 			$newdata->reset();
-			
-			$tracking->items++;
-		}
-
-		$tracking->save();
-	}
-
-	if ( $count == 0 OR $tracking->items>=$tracking->total )
-	{
-		// There was either nothing to be done, or there are no elements left for the next run
-		$tracking->success = 2;
-		$tracking->save();
-	}
-}
-
-function users_authors($job, $step)
-{
-	$fw = \Base::instance();
-	$limit = $fw->get("limit.medium");
-	$i = 0;
-	
-	if ( $step['success'] == 0 )
-	{
-		$total = $fw->db3->exec("SELECT COUNT(DISTINCT A.uid) as found FROM `{$fw->dbOld}authors`A 
-			LEFT JOIN `{$fw->dbOld}stories`S ON ( S.uid = A.uid )
-			LEFT JOIN `{$fw->dbOld}coauthors`C ON ( C.uid = A.uid )
-		WHERE S.sid IS NOT NULL OR C.sid IS NOT NULL;")[0]['found'];
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
-	}
-
-	$dataIn = $fw->db3->exec("SELECT A.uid, A.penname, A.bio, S.sid FROM `{$fw->dbOld}authors`A 
-								LEFT JOIN `{$fw->dbOld}stories`S ON ( S.uid = A.uid )
-								LEFT JOIN `{$fw->dbOld}coauthors`C ON ( C.uid = A.uid )
-							WHERE S.sid IS NOT NULL OR C.sid IS NOT NULL
-							GROUP BY A.uid
-							ORDER BY A.uid ASC, C.sid DESC LIMIT {$step['items']},{$limit};");
-
-	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
-	$tracking->load(['id = ?', $step['id'] ]);
-
-	if ( 0 < $count = sizeof($dataIn) )
-	{
-		$newauthor = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."authors" );
-		$newlink =	new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."user_authors" );
-
-		foreach($dataIn as $data)
-		{
-			$newauthor->name = $data['penname'];
-			$newauthor->info = $data['bio'];
-			$newauthor->save();
-			// link the newly created author entry to the user
-				$newlink->aid = $newauthor->_id;
-				$newlink->uid = $data['uid'];
-				$newlink->save();
-				$newlink->reset();
-			// and link
-			$newauthor->reset();
 			
 			$tracking->items++;
 		}

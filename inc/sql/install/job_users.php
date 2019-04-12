@@ -16,7 +16,7 @@ function users_guest($job, $step)
 	$fw = \Base::instance();
 	
 	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}users`
-							(`login`, `nickname`, `realname`, `password`, `email`, `registered` )
+							(`login`, `username`, `realname`, `password`, `email`, `registered` )
 							VALUES
 							('Guest', 'Guest', '', '', '', '0000-00-00 00:00:00');" );
 							
@@ -37,12 +37,12 @@ function users_admin($job, $step)
 	$passwordhash = password_hash( $fw['installerCFG.admin.pass1'], PASSWORD_DEFAULT );
 
 	$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}users`
-							(`login`, `nickname`, `realname`, `password`, `email`, `registered`, `groups` )
+							(`login`, `username`, `realname`, `password`, `email`, `registered`, `groups` )
 							VALUES
-							(:login, :nickname, '', '{$passwordhash}', :email, NOW(), 255);", 
+							(:login, :username, '', '{$passwordhash}', :email, NOW(), 255);", 
 						[ 
 							':login'	=> $fw['installerCFG.admin.username'],
-							':nickname'	=> $fw['installerCFG.admin.username'],
+							':username'	=> $fw['installerCFG.admin.username'],
 							':email'	=> $fw['installerCFG.admin.mail'],
 						]
 					);

@@ -116,7 +116,7 @@ function contests_cache($job, $step)
 
 	$dataIn = $fw->db5->exec("SELECT 
 								Con.conid,
-								GROUP_CONCAT(DISTINCT S.sid,',',S.title,',',A.aid,',',A.name ORDER BY title ASC SEPARATOR '||') AS storyblock,
+								GROUP_CONCAT(DISTINCT S.sid,',',S.title,',',U.uid,',',U.username ORDER BY title ASC SEPARATOR '||') AS storyblock,
 								GROUP_CONCAT(DISTINCT Chara.charid,',',Chara.charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
 								GROUP_CONCAT(DISTINCT C.cid,',',C.category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
 								GROUP_CONCAT(DISTINCT T.tid,',',T.label,',',TG.description ORDER BY TG.order,TG.tgid,T.label ASC SEPARATOR '||') AS tagblock
@@ -130,7 +130,7 @@ function contests_cache($job, $step)
 										LEFT JOIN `{$fw->dbNew}contest_relations`rC ON ( rC.conid = Con.conid )
 											LEFT JOIN `{$fw->dbNew}stories`S ON ( S.sid = rC.relid and rC.type='ST' )
 												LEFT JOIN `{$fw->dbNew}stories_authors`rSA ON ( rSA.sid = S.sid )
-													LEFT JOIN `{$fw->dbNew}authors`A ON ( A.aid = rSA.aid )
+													LEFT JOIN `{$fw->dbNew}users`U ON ( U.uid = rSA.aid )
 											LEFT JOIN `{$fw->dbNew}tags`T ON ( T.tid = rC.relid AND rC.type = 'T' )
 												LEFT JOIN `{$fw->dbNew}tag_groups`TG ON ( TG.tgid = T.tgid )
 											LEFT JOIN `{$fw->dbNew}characters`Chara ON ( Chara.charid = rC.relid AND rC.type = 'CH' )

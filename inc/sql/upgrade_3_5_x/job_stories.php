@@ -162,9 +162,6 @@ function stories_authors($job, $step)
 							ON DUPLICATE KEY UPDATE type=type; " );
 		// the ON DUPLICATE may look useless, but it makes sure that when an author is both author and co-author, the later is dropped
 		$count = $fw->db5->count();
-		// replace the old user id (uid) with the new author id (aid) value
-		// aid = 0 will be orphan stories
-		$fw->db5->exec ( "UPDATE `{$fw->dbNew}stories_authors`S LEFT JOIN `{$fw->dbNew}user_authors`A ON ( S.aid = A.uid ) SET S.aid = A.aid;" );
 	}
 	else $count = 0;
 	
@@ -446,14 +443,14 @@ function stories_cache($job, $step)
 	$dataIn = $fw->db5->exec("SELECT SELECT_OUTER.sid,
 						GROUP_CONCAT(DISTINCT tid,',',tag,',',description,',',tgid ORDER BY `order`,tgid,tag ASC SEPARATOR '||') AS tagblock,
 						GROUP_CONCAT(DISTINCT charid,',',charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
-						GROUP_CONCAT(DISTINCT aid,',',name ORDER BY name ASC SEPARATOR '||' ) as authorblock,
+						GROUP_CONCAT(DISTINCT uid,',',username ORDER BY username ASC SEPARATOR '||' ) as authorblock,
 						GROUP_CONCAT(DISTINCT cid,',',category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
 						GROUP_CONCAT(DISTINCT ratingid,',',rating_name,',',ratingwarning,',',rating_image SEPARATOR '||' ) as rating
 						FROM
 						(
 							SELECT S.sid,
 								S.ratingid, Ra.rating as rating_name, ratingwarning, IF(Ra.rating_image,Ra.rating_image,'') as rating_image,
-								A.aid, A.name,
+								U.uid, U.username,
 								Cat.cid, Cat.category,
 								TG.description,TG.order,TG.tgid,T.label as tag,T.tid,
 								Ch.charid, Ch.charname
@@ -466,7 +463,7 @@ function stories_cache($job, $step)
 								) AS S
 								LEFT JOIN `{$fw->dbNew}ratings` Ra ON ( Ra.rid = S.ratingid )
 								LEFT JOIN `{$fw->dbNew}stories_authors`rSA ON ( rSA.sid = S.sid )
-									LEFT JOIN `{$fw->dbNew}authors`A ON ( rSA.aid = A.aid )
+									LEFT JOIN `{$fw->dbNew}users` U ON ( rSA.aid = U.uid )
 								LEFT JOIN `{$fw->dbNew}stories_tags`rST ON ( rST.sid = S.sid )
 									LEFT JOIN `{$fw->dbNew}tags` T ON ( T.tid = rST.tid AND rST.character = 0 )
 										LEFT JOIN `{$fw->dbNew}tag_groups` TG ON ( TG.tgid = T.tgid )

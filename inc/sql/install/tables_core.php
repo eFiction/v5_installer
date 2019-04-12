@@ -653,13 +653,12 @@ DROP TABLE IF EXISTS `{$new}users`;
 CREATE TABLE `{$new}users` (
   `uid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `login` varchar(128) CHARACTER SET utf8 NOT NULL,
-  `nickname` varchar(128) CHARACTER SET utf8 NOT NULL,
+  `username` varchar(128) CHARACTER SET utf8 NOT NULL,
   `realname` text CHARACTER SET utf8 NOT NULL,
   `password` varchar(140) CHARACTER SET utf8 NOT NULL,
   `email` varchar(256) CHARACTER SET utf8 NOT NULL,
   `registered` datetime NOT NULL,
   `groups` mediumint(8) unsigned DEFAULT NULL,
-  `curator` mediumint(8) unsigned DEFAULT NULL,
   `about` text CHARACTER SET utf8 NULL,
   `moderation` mediumint(8) DEFAULT NULL,
   `alert_feedback` BOOLEAN NOT NULL DEFAULT FALSE,
@@ -668,7 +667,7 @@ CREATE TABLE `{$new}users` (
   `preferences` text NOT NULL,
   `cache_feedback` text NOT NULL,
   `cache_messaging` text NOT NULL,
-  PRIMARY KEY (`uid`), UNIQUE KEY `name1` (`login`), KEY `pass1` (`password`), KEY `moderation` (`moderation`), KEY `curator` (`curator`)
+  PRIMARY KEY (`uid`), UNIQUE KEY `name1` (`login`), KEY `pass1` (`password`), KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='New table for users';
 --SPLIT--
 
@@ -725,27 +724,6 @@ CREATE TABLE `{$new}user_friends` (
   PRIMARY KEY (`link_id`), UNIQUE KEY `relation` (`user_id`,`friend_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for friend relations';
 --NOTE--User friends
---SPLIT--
-
-DROP TABLE IF EXISTS `{$new}authors`;
-CREATE TABLE `{$new}authors` (
-  `aid` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `info` text NOT NULL,
-  PRIMARY KEY (`aid`), KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for actual authors';
---NOTE--Authors
---SPLIT--
-
-DROP TABLE IF EXISTS `{$new}user_authors`;
-CREATE TABLE `{$new}user_authors` (
-  `lid` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `uid` mediumint(8) UNSIGNED NOT NULL,
-  `aid` mediumint(8) UNSIGNED NOT NULL,
-  `visibility` tinyint(1) NOT NULL DEFAULT '2',
-  PRIMARY KEY (`lid`), UNIQUE KEY `link` (`uid`,`aid`), KEY `visibility` (`visibility`)
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): New table for user author relations';
---NOTE--User Author relations
 EOF;
 
 
