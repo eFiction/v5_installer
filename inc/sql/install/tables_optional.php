@@ -1,8 +1,10 @@
 <?php
 /*
-SQL create tables
-Optional modules
-Used for new installs and upgrades from eFiction 3.5.x to 5.x (current)
+	SQL create tables
+	Optional modules
+	Used for new installs and upgrades from eFiction 3.5.x to 5.x (current)
+
+	2019-04-26: Add vote to the relation table, add contest status defaults
 */
 
 
@@ -20,8 +22,10 @@ CREATE TABLE `{$new}contests` (
   `uid` int(11) NOT NULL DEFAULT '0',
   `title` varchar(250) NOT NULL DEFAULT '',
   `summary` text NOT NULL,
+  `active` enum('date','preparing','active','closed') NOT NULL DEFAULT 'preparing' COMMENT 'preparing is invisible',
   `date_open` datetime DEFAULT NULL,
   `date_close` datetime DEFAULT NULL,
+  `votable` enum('date','active','closed') NOT NULL DEFAULT 'closed',
   `vote_closed` datetime DEFAULT NULL,
   `concealed` BOOLEAN NOT NULL DEFAULT FALSE,
   `cache_tags` text,
@@ -40,7 +44,7 @@ CREATE TABLE `{$new}contest_relations` (
   `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `conid` int(10) unsigned NOT NULL,
   `relid` int(10) unsigned NOT NULL,
-  `type` ENUM('CA','CH','ST','T') NOT NULL COMMENT 'CA = category, CH = character, ST = story, T = tag',
+  `type` ENUM('CA','CH','T','V','ST','CO') NOT NULL COMMENT 'CA = category, CH = character, T = tag, V = vote, ST = story, CO = collection',
   PRIMARY KEY (`lid`),
   UNIQUE KEY `UNIQUE` (`relid`,`type`,`conid`),
   KEY `conid` (`conid`),

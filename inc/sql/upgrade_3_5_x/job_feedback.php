@@ -35,7 +35,7 @@ function feedback_reviews($job, $step)
 									SUBSTRING_INDEX(review, '{$review_split}', 1) as text, 
 									date as datetime, 
 									rating, 
-									type 
+									IF(type='SE','SC',type) as type
 								FROM `{$fw->dbOld}reviews` Rv ORDER BY Rv.reviewid LIMIT {$step['items']},{$limit};");
 				
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');

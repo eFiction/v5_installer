@@ -23,7 +23,7 @@ $jobs_upgrade = array
 	"feedback"		=>	"Feedback (former: reviews & comments)",
 	"descriptors"	=>	"Story descriptors",	// This is a meta job
 	"stories"		=>	"Stories",
-	"series"		=>	"Series",
+	"collections"	=>	"Collections (former: series)",
 //	"layout",		=>	"Layout",
 );
 
@@ -206,7 +206,7 @@ CREATE TABLE `{$new}feedback` (
   `text` text NOT NULL,
   `datetime` timestamp NULL DEFAULT NULL,
   `rating` tinyint(1) DEFAULT NULL,
-  `type` ENUM('C','N','RC','SE','ST') NOT NULL COMMENT 'C = comment, N = news, RC = recommendation, SE = series, ST = story',
+  `type` ENUM('C','N','RC','SC','ST') NOT NULL COMMENT 'C = comment, N = news, RC = recommendation, SC = series/collection, ST = story',
   `moderation` mediumint(8) DEFAULT NULL,
   PRIMARY KEY (`fid`), KEY `sub_ref` (`reference_sub`), KEY `moderation` (`moderation`), KEY `by_uid` (`writer_uid`,`reference`,`type`), KEY `alias_story_chapter` (`reference`,`reference_sub`)
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
@@ -410,23 +410,22 @@ EOF;
 
 
 /* --------------------------------------------------------------------------------------------
-* SERIES *
+* COLLECTIONS *
 	requires: -
 -------------------------------------------------------------------------------------------- */
-$core['series'] = <<<EOF
-DROP TABLE IF EXISTS `{$new}series`;
-CREATE TABLE `{$new}series` (
-  `seriesid` mediumint(8) NOT NULL AUTO_INCREMENT,
-  `parent_series` mediumint(8) unsigned DEFAULT NULL,
-  `type` SET('S','C') NOT NULL DEFAULT 'S' COMMENT '\'S\' - Series, \'C\' - Collection',
+$core['collections'] = <<<EOF
+DROP TABLE IF EXISTS `{$new}collections`;
+CREATE TABLE `{$new}collections` (
+  `collid` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `parent_collection` mediumint(8) unsigned DEFAULT NULL,
+  `ordered` tinyint(1) NOT NULL DEFAULT '0',
   `title` varchar(200) NOT NULL DEFAULT '',
   `summary` text NOT NULL,
   `uid` mediumint(8) NOT NULL DEFAULT '0',
   `open` tinyint(1) NOT NULL DEFAULT '0',
-  `status` SET('H','P','A') NOT NULL DEFAULT 'P' COMMENT 'Applies only to collections (Hidden, Public, Archive)',
+  `status` SET('H','P','A') NOT NULL DEFAULT 'P' COMMENT 'Hidden, Public, Archive',
   `rating` tinyint(3) NOT NULL DEFAULT '0',
   `reviews` smallint(6) NOT NULL DEFAULT '0',
-  `contests` varchar(200) NOT NULL DEFAULT '',
   `max_rating` varchar(64) NOT NULL,
   `chapters` smallint(5) unsigned NOT NULL,
   `words` mediumint(8) unsigned DEFAULT NULL,
@@ -434,22 +433,22 @@ CREATE TABLE `{$new}series` (
   `cache_tags` text,
   `cache_characters` text,
   `cache_categories` text,
-  PRIMARY KEY (`seriesid`),
+  PRIMARY KEY (`collid`),
   KEY `owner` (`uid`,`title`)
 ) ENGINE=MyISAM  DEFAULT CHARSET={$characterset};
---NOTE--Series
+--NOTE--Collections
 --SPLIT--
 
-DROP TABLE IF EXISTS `{$new}series_stories`;
-CREATE TABLE `{$new}series_stories` (
-  `seriesid` mediumint(8) NOT NULL DEFAULT '0',
-  `sid` mediumint(8) NOT NULL DEFAULT '0',
-  `confirmed` mediumint(8) NOT NULL DEFAULT '0',
-  `inorder` mediumint(8) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`sid`,`seriesid`),
-  KEY `seriesid` (`seriesid`,`inorder`)
+DROP TABLE IF EXISTS `{$new}collection_stories`;
+CREATE TABLE `{$new}collection_stories` (
+  `collid` mediumint(8) UNSIGNED NOT NULL DEFAULT '0',
+  `sid` mediumint(8) UNSIGNED NOT NULL DEFAULT '0',
+  `confirmed` tinyint(1) NOT NULL DEFAULT '0',
+  `inorder` mediumint(8) UNSIGNED DEFAULT NULL,
+  PRIMARY KEY (`sid`,`collid`),
+  KEY `collid` (`collid`,`inorder`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
---NOTE--Stories <-> Series relations
+--NOTE--Story <-> Collection relations
 EOF;
 
 

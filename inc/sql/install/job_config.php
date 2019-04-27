@@ -27,9 +27,10 @@ function config_create($job, $step)
 		$fw['installerCFG.data.story_validation']	= 'TRUE';
 		$fw['installerCFG.data.minwords']			= 100;
 		$fw['installerCFG.data.maxwords']			= 0;
-		$fw['installerCFG.data.tinyMCE']			= 'FALSE';
+		$fw['installerCFG.data.tinyMCE']			= 'TRUE';
 		$fw['installerCFG.data.coauthallowed']		= 'TRUE';
 		$fw['installerCFG.data.allowseries']		= 'FALSE';
+		$fw['installerCFG.data.allowcollections']	= 'FALSE';
 		$fw['installerCFG.data.roundrobins']		= 'FALSE';
 		$fw['installerCFG.data.imageupload']		= 'FALSE';
 		$fw['installerCFG.data.imageheight']		= 200;
@@ -91,8 +92,9 @@ INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `valu
 ('advanced_editor', 			'archive_submit', 5,			"{$fw['installerCFG.data.tinyMCE']}",			'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('allow_co_author', 			'archive_submit', 6,			"{$fw['installerCFG.data.coauthallowed']}",		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('stories_min_tags',			'archive_submit', 7,			'0', 											'text//numeric', 1),
-('allow_series', 				'archive_submit', 8,			"{$fw['installerCFG.data.allowseries']}",		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
-('allow_roundrobin', 			'archive_submit', 9,			"{$fw['installerCFG.data.roundrobins']}",		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('allow_collections', 			'archive_submit', 8,			"{$fw['installerCFG.data.allowseries']}",		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('allow_series', 				'archive_submit', 9,			"{$fw['installerCFG.data.allowseries']}",		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
+('allow_roundrobin', 			'archive_submit', 10,			"{$fw['installerCFG.data.roundrobins']}",		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('images_allowed', 				'archive_images', 1,			"{$fw['installerCFG.data.imageupload']}",		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('images_height',				'archive_images', 2,			"{$fw['installerCFG.data.imageheight']}",		'text//numeric', 1),
 ('images_width',				'archive_images', 3,			"{$fw['installerCFG.data.imagewidth']}",		'text//numeric', 1),

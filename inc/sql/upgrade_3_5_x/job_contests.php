@@ -33,7 +33,7 @@ function contests_data($job, $step)
 									`chalid` as conid,
 									`uid`,
 									`title`,
-									`summary` 
+									`summary`
 								FROM `{$fw->dbOld}challenges`
 								ORDER BY `chalid` ASC LIMIT {$step['items']},{$limit};");
 
@@ -47,6 +47,8 @@ function contests_data($job, $step)
 		foreach($dataIn as $data)
 		{
 			$newdata->copyfrom($data);
+			$newdata->active = 4;
+			$newdata->votable= 3;
 			$newdata->save();
 			$newdata->reset();
 			
@@ -83,6 +85,11 @@ function contests_relations($job, $step)
 	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT C.chalid, S.sid as `relid`,'ST' AS `type` 
 				FROM `{$fw->dbOld}challenges`C
 					INNER JOIN `{$fw->dbOld}stories`S ON (FIND_IN_SET(C.chalid, S.challenges));") );
+
+	// get series
+	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT C.chalid, S.seriesid as `relid`,'CO' AS `type` 
+				FROM `{$fw->dbOld}challenges`C
+					INNER JOIN `{$fw->dbOld}series`S ON (FIND_IN_SET(C.chalid, S.challenges));") );
 
 	if ( !empty($dataIn) )
 	{

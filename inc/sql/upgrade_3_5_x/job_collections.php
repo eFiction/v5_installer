@@ -13,13 +13,13 @@
 */
 
 $fw->jobSteps = array(
-		"data"					=> "Copy series table",
+		"data"					=> "Copy series table into collections",
 		"stories"				=> "Series <-> Story relations",
 		"cache"					=> "Build cache fields",
 	);
 
 
-function series_data($job, $step)
+function collections_data($job, $step)
 {
 	$fw = \Base::instance();
 	$limit = $fw->get("limit.medium");
@@ -32,8 +32,9 @@ function series_data($job, $step)
 	}
 
 	$dataIn = $fw->db3->exec("SELECT
-						Ser.seriesid, 
+						Ser.seriesid as collid, 
 						inS2.seriesid as parent_series, 
+						1 as ordered,
 						Ser.title,
 						Ser.summary,
 						Ser.uid,
@@ -55,11 +56,12 @@ function series_data($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."series" );
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."collections" );
 
 		foreach($dataIn as $data)
 		{
 			// eFiction 3 can have weird series-challenge relations (like ",26" or "Array,26")
+			/*
 			if ( $data['contests']!="" )
 			{
 				$c_new = [];
@@ -70,6 +72,9 @@ function series_data($job, $step)
 					
 				$data['contests'] = implode(",",$c_new);
 			}
+			*/
+			$data['summary'] = stripslashes($data['summary']);
+			
 			$newdata->copyfrom($data);
 			$newdata->save();
 			$newdata->reset();
@@ -88,11 +93,11 @@ function series_data($job, $step)
 	}
 }
 
-function series_stories($job, $step)
+function collections_stories($job, $step)
 {
 	$fw = \Base::instance();
 
-	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$fw->dbOld}inseries` WHERE `subseriesid` = 0;");
+	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$fw->dbOld}inseries` WHERE `subseriesid` = 0 AND `sid` > 0;");
 
 	// build the insert values, only numeric, so bulk-insert
 	if ( sizeof($dataIn)>0 )
@@ -100,7 +105,7 @@ function series_stories($job, $step)
 		foreach($dataIn as $data)
 			$values[] = "( '{$data['seriesid']}', '{$data['sid']}', '{$data['confirmed']}', '{$data['inorder']}' )";
 
-		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}series_stories` ( `seriesid`, `sid`, `confirmed`, `inorder` ) VALUES ".implode(", ",$values)."; " );
+		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}collection_stories` ( `collid`, `sid`, `confirmed`, `inorder` ) VALUES ".implode(", ",$values)."; " );
 		$count = $fw->db5->count();
 	}
 	else $count = 0;
@@ -113,28 +118,28 @@ function series_stories($job, $step)
 					);
 }
 
-function series_cache($job, $step)
+function collections_cache($job, $step)
 {
 	$fw = \Base::instance();
 	$limit = $fw->get("limit.xheavy");
 	
 	if ( $step['success'] == 0 )
 	{
-		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbNew}series`;")[0]['found'];
+		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbNew}collections`;")[0]['found'];
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
 	$dataIn = $fw->db5->exec("SELECT 
-								SERIES.seriesid, 
-								SERIES.tagblock, 
-								SERIES.characterblock, 
-								SERIES.authorblock, 
-								SERIES.categoryblock, 
+								COLLECTION.collid, 
+								COLLECTION.tagblock, 
+								COLLECTION.characterblock, 
+								COLLECTION.authorblock, 
+								COLLECTION.categoryblock, 
 								CONCAT(rating,'||',max_rating_id) as max_rating
 							FROM
 							(
 							SELECT 
-							Ser.seriesid,
+							Coll.collid,
 							MAX(Ra.rid) as max_rating_id,
 										GROUP_CONCAT(DISTINCT U.uid,',',U.username ORDER BY username ASC SEPARATOR '||' ) as authorblock,
 										GROUP_CONCAT(DISTINCT Chara.charid,',',Chara.charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
@@ -142,13 +147,13 @@ function series_cache($job, $step)
 										GROUP_CONCAT(DISTINCT T.tid,',',T.label,',',TG.description ORDER BY TG.order,TG.tgid,T.label ASC SEPARATOR '||') AS tagblock
 									FROM 
 									(
-										SELECT Ser1.seriesid
-											FROM `{$fw->dbNew}series`Ser1
-											WHERE Ser1.cache_authors IS NULL
+										SELECT C1.collid
+											FROM `{$fw->dbNew}collections`C1
+											WHERE C1.cache_authors IS NULL
 											LIMIT 0,{$limit}
-									) AS Ser
-										LEFT JOIN `{$fw->dbNew}series_stories`TrS ON ( Ser.seriesid = TrS.seriesid )
-											LEFT JOIN `{$fw->dbNew}stories`S ON ( TrS.sid = S.sid )
+									) AS Coll
+										LEFT JOIN `{$fw->dbNew}collection_stories`rCS ON ( Coll.collid = rCS.collid )
+											LEFT JOIN `{$fw->dbNew}stories`S ON ( rCS.sid = S.sid )
 												LEFT JOIN `{$fw->dbNew}ratings`Ra ON ( Ra.rid = S.ratingid )
 												LEFT JOIN `{$fw->dbNew}stories_tags`rST ON ( rST.sid = S.sid )
 													LEFT JOIN `{$fw->dbNew}tags`T ON ( T.tid = rST.tid AND rST.character = 0 )
@@ -158,8 +163,8 @@ function series_cache($job, $step)
 													LEFT JOIN `{$fw->dbNew}categories`C ON ( rSC.cid = C.cid )
 												LEFT JOIN `{$fw->dbNew}stories_authors`rSA ON ( rSA.sid = S.sid )
 													LEFT JOIN `{$fw->dbNew}users`U ON ( rSA.aid = U.uid )
-									GROUP BY Ser.seriesid
-							) AS SERIES
+									GROUP BY Coll.collid
+							) AS COLLECTION
 							LEFT JOIN `{$fw->dbNew}ratings`R ON (R.rid = max_rating_id);");
 
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
@@ -167,16 +172,16 @@ function series_cache($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		$seriesMap = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."series" );
+		$collectionsMap = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."collections" );
 		foreach ( $dataIn as $item)
 		{
-			$seriesMap->load(array("seriesid=?",$item['seriesid']));
-			$seriesMap->cache_authors		= json_encode(upgradetools::cleanResult($item['authorblock']));
-			$seriesMap->cache_tags			= json_encode(upgradetools::cleanResult($item['tagblock']));
-			$seriesMap->cache_characters	= json_encode(upgradetools::cleanResult($item['characterblock']));
-			$seriesMap->cache_categories	= json_encode(upgradetools::cleanResult($item['categoryblock']));
-			$seriesMap->max_rating			= json_encode(explode(",",$item['max_rating']));
-			$seriesMap->save();
+			$collectionsMap->load(array("collid=?",$item['collid']));
+			$collectionsMap->cache_authors		= json_encode(upgradetools::cleanResult($item['authorblock']));
+			$collectionsMap->cache_tags			= json_encode(upgradetools::cleanResult($item['tagblock']));
+			$collectionsMap->cache_characters	= json_encode(upgradetools::cleanResult($item['characterblock']));
+			$collectionsMap->cache_categories	= json_encode(upgradetools::cleanResult($item['categoryblock']));
+			$collectionsMap->max_rating			= json_encode(explode(",",$item['max_rating']));
+			$collectionsMap->save();
 
 			$tracking->items++;
 		}

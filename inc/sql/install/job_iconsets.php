@@ -1,17 +1,17 @@
 <?php
 /*
-	Job definition for 'chapters'
+	Job definition for 'iconsets'
 	eFiction upgrade from version 3.5.x
 */
 
 $fw->jobSteps = array(
-		"create"	=> "Create config table",
+		"create"	=> "Create iconset data",
 	);
 
 
 function iconsets_create($job, $step)
 {
-	// Chapters copy is a 1-pass module, doing the entire chapter relocation
+	// Iconset creation is a 1-pass module
 	$fw = \Base::instance();
 
 $sql = <<<EOF
@@ -89,6 +89,7 @@ INSERT INTO `{$fw->dbNew}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, 'reader', 'fas fa-book-reader'),
 (1, 'register', 'fas fa-sign-in-alt'),
 (1, 'remove', 'fas fa-times'),
+(1, 'save', 'fas fa-save'),
 (1, 'sbox', 'far fa-comment-alt'),
 (1, 'search', 'fas fa-search'),
 (1, 'settings', 'fas fa-cogs'),
@@ -113,9 +114,11 @@ INSERT INTO `{$fw->dbNew}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, 'time', 'far fa-clock'),
 (1, 'trash', 'fas fa-trash'),
 (1, 'twitter', 'fab fa-twitter'),
+(1, 'undo', 'fas fa-undo-alt'),
 (1, 'unlock', 'fas fa-unlock'),
 (1, 'user-edit', 'fas fa-user-edit'),
 (1, 'user-friend', 'fas fa-user-plus'),
+(1, 'user-friend-remove', 'fas fa-user-minus'),
 (1, 'visible', 'far fa-eye'),
 (1, 'waiting', 'fas fa-spinner fa-spin'),
 (1, 'wrench', 'fas fa-wrench');
