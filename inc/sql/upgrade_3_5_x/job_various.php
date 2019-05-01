@@ -102,6 +102,7 @@ function various_news($job, $step)
 		foreach($dataIn as $data)
 		{
 			$newdata->copyfrom($data);
+			$newdata->newstext = nl2br(stripcslashes($data['newstext']));
 			$newdata->save();
 			$newdata->reset();
 			
