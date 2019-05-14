@@ -163,13 +163,22 @@ $core['characters'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}characters`;
 CREATE TABLE `{$new}characters` (
   `charid` mediumint(8) NOT NULL AUTO_INCREMENT,
-  `catid` mediumint(8) NOT NULL DEFAULT '0',
+--  `catid` mediumint(8) NOT NULL DEFAULT '0',
   `charname` varchar(255) NOT NULL,
   `biography` mediumtext NOT NULL,
   `image` varchar(255) NOT NULL,
   `count` mediumint(8) UNSIGNED DEFAULT NULL,
   PRIMARY KEY (`charid`), KEY `charname` (`charname`(64))
 ) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table';
+--SPLIT--
+
+DROP TABLE IF EXISTS `{$new}character_categories`;
+CREATE TABLE `{$new}character_categories` (
+  `lid` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `charid` mediumint(8) NOT NULL,
+  `catid` mediumint(8) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`lid`), UNIQUE KEY `CC` (`charid`,`catid`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table for character-category relations';
 EOF;
 
 

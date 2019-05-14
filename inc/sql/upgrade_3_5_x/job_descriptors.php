@@ -13,11 +13,12 @@
 */
 
 $fw->jobSteps = array(
-		"characters"	=> "Copy characters",
-		"categories"	=> "Copy categories",
-		"ratings"		=> "Copy (age) rating",
-		"tag_groups"	=> "Import tag groups from class types",
-		"tags"			=> "Import tags from classes",
+		"characters"			=> "Copy characters",
+		"categories"			=> "Copy categories",
+		"character_category"	=> "Character <-> category relations",
+		"ratings"				=> "Copy (age) rating",
+		"tag_groups"			=> "Import tag groups from class types",
+		"tags"					=> "Import tags from classes",
 	);
 
 
@@ -114,6 +115,39 @@ function descriptors_categories($job, $step)
 						]
 					);
 
+}
+
+function descriptors_character_category($job, $step)
+{
+	$fw = \Base::instance();
+
+	$dataIn = $fw->db3->exec("SELECT
+						`charid`, `catid`
+						FROM `{$fw->dbOld}characters`
+						WHERE `catid` != -1;");
+	
+	$count = 0;
+
+	if ( sizeof($dataIn)>0 )
+	{
+		$newdata = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."character_categories" );
+
+		foreach($dataIn as $data)
+		{
+			$newdata->copyfrom($data);
+			$newdata->save();
+			$newdata->reset();
+			
+			$count++;
+		}
+	}
+
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
+						[ 
+							':items' => $count,
+							':id' 	 => $step['id']
+						]
+					);
 }
 
 function descriptors_ratings($job, $step)

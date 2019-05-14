@@ -26,7 +26,7 @@ CREATE TABLE `{$new}contests` (
   `date_open` datetime DEFAULT NULL,
   `date_close` datetime DEFAULT NULL,
   `votable` enum('date','active','closed') NOT NULL DEFAULT 'closed',
-  `vote_closed` datetime DEFAULT NULL,
+  `vote_close` datetime DEFAULT NULL,
   `concealed` BOOLEAN NOT NULL DEFAULT FALSE,
   `cache_tags` text,
   `cache_characters` text,
