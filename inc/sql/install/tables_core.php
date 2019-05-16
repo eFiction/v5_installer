@@ -375,6 +375,7 @@ $core['poll'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}poll`;
 CREATE TABLE `{$new}poll` (
   `poll_id` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `uid` mediumint(8) UNSIGNED DEFAULT NULL,
   `question` varchar(250) NOT NULL,
   `options` text NOT NULL,
   `start_date` datetime NOT NULL,
