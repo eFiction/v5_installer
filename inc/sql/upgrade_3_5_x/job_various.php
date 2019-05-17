@@ -319,10 +319,11 @@ function various_poll_votes($job, $step)
 	if ( 0 < $count = sizeof($dataIn) )
 	{
 		foreach($dataIn as $data)
-			$values[] = "( '{$data['vote_id']}', 
+			$values[] = "(	'{$data['vote_id']}', 
+							'{$data['vote_poll']}',
 							'{$data['vote_user']}',
-							'{$data['vote_opt']}',
-							'{$data['vote_poll']}' )";
+							'{$data['vote_opt']}'
+							 )";
 
 		// only numeric values
 		$fw->db5->exec ( "INSERT INTO `{$fw->dbNew}poll_votes` (`vote_id`, `poll_id`, `uid`, `option`) VALUES ".implode(", ",$values)."; " );

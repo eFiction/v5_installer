@@ -381,6 +381,7 @@ CREATE TABLE `{$new}poll` (
   `start_date` datetime NOT NULL,
   `end_date` datetime DEFAULT NULL,
   `results` varchar(250) DEFAULT NULL,
+  `cache` text,
   PRIMARY KEY (`poll_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET={$characterset};
 --NOTE--Poll main table
