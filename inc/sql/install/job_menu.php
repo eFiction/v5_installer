@@ -24,7 +24,7 @@ INSERT INTO `{$fw->dbNew}menu` (`label`, `order`, `link`) VALUES
 ('Updates',		4, 'story/updates'),
 ('Contests',	5, 'story/contests'),
 ('Search',		6, 'story/search'),
-('Help',		7, '/page/help');
+('Help',		7, 'home/page/help');
 EOF;
 
 	$fw->db5->exec($sql);

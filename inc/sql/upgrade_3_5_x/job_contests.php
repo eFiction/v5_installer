@@ -33,7 +33,7 @@ function contests_data($job, $step)
 									`chalid` as conid,
 									`uid`,
 									`title`,
-									`summary`
+									`summary` as description
 								FROM `{$fw->dbOld}challenges`
 								ORDER BY `chalid` ASC LIMIT {$step['items']},{$limit};");
 

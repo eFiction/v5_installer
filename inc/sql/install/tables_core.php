@@ -376,10 +376,11 @@ DROP TABLE IF EXISTS `{$new}poll`;
 CREATE TABLE `{$new}poll` (
   `poll_id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `uid` mediumint(8) UNSIGNED DEFAULT NULL,
-  `question` varchar(250) NOT NULL,
+  `question` text NOT NULL,
   `options` text NOT NULL,
   `start_date` datetime NOT NULL,
   `end_date` datetime DEFAULT NULL,
+  `open_voting` BOOLEAN NOT NULL DEFAULT FALSE,
   `results` varchar(250) DEFAULT NULL,
   `cache` text,
   PRIMARY KEY (`poll_id`)
@@ -389,10 +390,10 @@ CREATE TABLE `{$new}poll` (
 
 DROP TABLE IF EXISTS `{$new}poll_votes`;
 CREATE TABLE `{$new}poll_votes` (
-  `vote_id` mediumint(8) NOT NULL AUTO_INCREMENT,
-  `poll_id` mediumint(8) NOT NULL DEFAULT '0',
-  `uid` mediumint(8) NOT NULL DEFAULT '0',
-  `option` mediumint(8) NOT NULL DEFAULT '0',
+  `vote_id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `poll_id` mediumint(8) UNSIGNED NOT NULL DEFAULT '0',
+  `uid` mediumint(8) UNSIGNED NOT NULL DEFAULT '0',
+  `option` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`vote_id`),
   KEY `vote_user` (`uid`,`poll_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
