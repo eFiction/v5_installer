@@ -118,6 +118,7 @@ INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `chi
 ('UserMenu_MyLibrary',					5, 'library',						'{ICON:book}',		NULL, 1, NULL),
 ('UserMenu_Feedback',					6, 'feedback',						'{ICON:comments}',	NULL, 1, NULL),
 ('UserMenu_Shoutbox%%SB%%SB',			7, 'shoutbox',						'{ICON:text}',		NULL, 1, 'shoutbox'),
+('UserMenu_Polls%%PL%%PL',				8, 'polls',							'{ICON:poll}',		NULL, 1, NULL),
 --
 ('%%AUTHORS',							1, 'author/uid=%ID%',				'{ICON:member}', 'author', 1, NULL),
 ('UserMenu_Curator',					2, 'author/curator',				'{ICON:member}', 'author', 1, NULL),

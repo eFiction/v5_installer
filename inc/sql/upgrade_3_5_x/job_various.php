@@ -34,7 +34,7 @@ $fw->jobSteps += array(
 function various_logs($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = $fw->get("limit.light");
+	$limit = $fw->get("limit.xlight");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )

@@ -20,12 +20,12 @@ $f3->set("limit.xlight", 500); /*
  Various - News
          - Tracker
 		 - Shoutbox
+		 - Logs
 */
 
 $f3->set("limit.light",  250); /*
  used in:
  
- Various - Logs
 */
 
 $f3->set("limit.medium", 100); /*

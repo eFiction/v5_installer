@@ -22,7 +22,7 @@ CREATE TABLE `{$new}contests` (
   `uid` int(11) NOT NULL DEFAULT '0',
   `title` varchar(250) NOT NULL DEFAULT '',
   `summary` tinytext DEFAULT NULL,
-  `decription` text NOT NULL,
+  `description` text NOT NULL,
   `active` enum('date','preparing','active','closed') NOT NULL DEFAULT 'preparing' COMMENT 'preparing is invisible',
   `date_open` datetime DEFAULT NULL,
   `date_close` datetime DEFAULT NULL,

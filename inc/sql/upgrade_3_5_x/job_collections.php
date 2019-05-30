@@ -42,7 +42,7 @@ function collections_data($job, $step)
 						COUNT(DISTINCT R.reviewid) as reviews,
 						Ser.challenges as contests,
 						COUNT(DISTINCT Ch.chapid) as chapters,
-						SUM(Ch.wordcount) as words
+						SUM(Ch.wordcount) as wordcount
 					FROM `{$fw->dbOld}series`Ser
 					LEFT JOIN `{$fw->dbOld}inseries`inS ON ( Ser.seriesid = inS.seriesid AND inS.subseriesid = 0 )
 						LEFT JOIN `{$fw->dbOld}chapters`Ch ON ( Ch.sid = inS.sid )
@@ -73,7 +73,10 @@ function collections_data($job, $step)
 				$data['contests'] = implode(",",$c_new);
 			}
 			*/
-			$data['summary'] = stripslashes($data['summary']);
+			
+			$data['title'] =  stripslashes( $data['title'] );
+			// eFiction 3 has a way of messing up the line breaks here, could have been the old editor
+			$data['summary'] =  stripslashes( str_replace( ['\r\n','\n\r','\n','\r'], '<br />', $data['summary']) );
 			
 			$newdata->copyfrom($data);
 			$newdata->save();
@@ -180,7 +183,7 @@ function collections_cache($job, $step)
 			$collectionsMap->cache_tags			= json_encode(upgradetools::cleanResult($item['tagblock']));
 			$collectionsMap->cache_characters	= json_encode(upgradetools::cleanResult($item['characterblock']));
 			$collectionsMap->cache_categories	= json_encode(upgradetools::cleanResult($item['categoryblock']));
-			$collectionsMap->max_rating			= json_encode(explode(",",$item['max_rating']));
+			$collectionsMap->max_rating			= json_encode(explode("||",$item['max_rating']));
 			$collectionsMap->save();
 
 			$tracking->items++;
