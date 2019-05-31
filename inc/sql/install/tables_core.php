@@ -550,7 +550,7 @@ CREATE TABLE `{$new}stories` (
 
 CREATE TABLE `{$new}stories_authors` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `sid` mediumint(8) NOT NULL,
+  `sid` mediumint(8) unsigned NOT NULL,
   `aid` mediumint(8) unsigned NOT NULL,
   `type` ENUM('M','S','T') NOT NULL DEFAULT 'M' COMMENT 'M = main, S = supporting, T = translator',
   PRIMARY KEY (`lid`), UNIQUE KEY `fullrelation` (`sid`,`aid`,`type`), UNIQUE KEY `relation` (`sid`,`aid`) USING BTREE
@@ -560,7 +560,7 @@ CREATE TABLE `{$new}stories_authors` (
 
 CREATE TABLE `{$new}stories_categories` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `sid` mediumint(8) NOT NULL,
+  `sid` mediumint(8) unsigned NOT NULL,
   `cid` mediumint(8) unsigned NOT NULL,
   PRIMARY KEY (`lid`), UNIQUE KEY `relation` (`sid`,`cid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='(eFI5): new table for story-category relations';
@@ -582,7 +582,7 @@ CREATE TABLE `{$new}featured` (
 
 CREATE TABLE `{$new}stories_tags` (
   `lid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `sid` mediumint(8) NOT NULL,
+  `sid` mediumint(8) unsigned NOT NULL,
   `tid` mediumint(8) unsigned NOT NULL,
   `character` BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`lid`), KEY `relation` (`sid`,`tid`,`character`)
