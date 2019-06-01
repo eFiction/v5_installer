@@ -265,10 +265,9 @@ function various_poll($job, $step)
 	{
 		foreach($dataIn as $data)
 		{
-			$data['options'] = json_encode(explode("|#|",$data['options']));
+			$options = explode("|#|",$data['options']);
 			if ($data['results']!=NULL)
 			{
-				$options = json_decode($data['options'],TRUE);
 				// put options into cache array
 				foreach ( $options as $key => $opt )
 					$data['cache'][$key]["opt"] = $opt;
@@ -277,11 +276,14 @@ function various_poll($job, $step)
 				// add to cache array
 				foreach ( $results as $key => $res )
 					$data['cache'][$key]["res"] = $res;
+
 				// encode for storage
 				$data['cache'] = json_encode($data['cache']);
+				$data['results'] = json_encode($results);
 				// count votes for graph normalization
-				$data['results'] = array_sum($results);
+				$data['votes'] = array_sum($results);
 			}			
+			$data['options'] = json_encode($options);
 
 			$newdata->copyfrom($data);
 			$newdata->save();
