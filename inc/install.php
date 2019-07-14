@@ -119,7 +119,7 @@ class install {
 		//save data and return to form
 		$this->fw->dbCFG->write('config.json',$this->fw['POST.new']);
 
-		$this->fw->reroute('config',false);
+		$this->fw->reroute('freshconfig',false);
 	}
 	
 }

@@ -268,14 +268,20 @@ function various_poll($job, $step)
 			$options = explode("|#|",$data['options']);
 			if ($data['results']!=NULL)
 			{
-				// put options into cache array
+				// put options into temp cache array
 				foreach ( $options as $key => $opt )
-					$data['cache'][$key]["opt"] = $opt;
-				// unpack results
+					$cache[$key]["opt"] = $opt;
+				// unpack results ...
 				$results = explode("#",$data['results']);
-				// add to cache array
+				// ... and add to temp cache array
 				foreach ( $results as $key => $res )
-					$data['cache'][$key]["res"] = $res;
+					$cache[$key]["res"] = $res;
+					
+				// compact the temp cache array ...
+				foreach ( $cache as $c )
+					$data['cache'][$c['opt']] = $c['res'];
+				// ... and sort by votes
+				arsort( $data['cache'], SORT_NUMERIC  );
 
 				// encode for storage
 				$data['cache'] = json_encode($data['cache']);
@@ -288,6 +294,8 @@ function various_poll($job, $step)
 			$newdata->copyfrom($data);
 			$newdata->save();
 			$newdata->reset();
+			
+			unset($options, $results, $cache);
 
 			$tracking->items++;
 		}

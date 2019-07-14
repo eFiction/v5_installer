@@ -233,6 +233,8 @@ class configtools {
 			// Only remember 'good' password
 			if ( $test['admin']['pass'] > 0 )
 				unset($fw['POST.admin.pass1'], $fw['POST.admin.pass2']);
+			
+			$test['admin']['check'] = ( $test['admin']['username'] AND $test['admin']['mail'] AND $test['admin']['pass'] == 0 );
 		}
 		
 		return $test;
