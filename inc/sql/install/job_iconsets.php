@@ -118,8 +118,8 @@ INSERT INTO `{$fw->dbNew}iconsets` (`set_id`, `name`, `value`) VALUES
 (1, 'undo', 'fas fa-undo-alt'),
 (1, 'unlock', 'fas fa-unlock'),
 (1, 'user-edit', 'fas fa-user-edit'),
-(1, 'user-friend', 'fas fa-user-plus'),
-(1, 'user-friend-remove', 'fas fa-user-minus'),
+(1, 'user-add,user-friend', 'fas fa-user-plus'),
+(1, 'user-delete,user-friend-remove', 'fas fa-user-minus'),
 (1, 'visible', 'far fa-eye'),
 (1, 'waiting', 'fas fa-spinner fa-spin'),
 (1, 'wrench', 'fas fa-wrench');
