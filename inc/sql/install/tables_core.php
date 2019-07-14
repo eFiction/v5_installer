@@ -669,7 +669,7 @@ CREATE TABLE `{$new}users` (
   `realname` text CHARACTER SET utf8 NOT NULL,
   `password` varchar(140) CHARACTER SET utf8 NOT NULL,
   `email` varchar(256) CHARACTER SET utf8 NOT NULL,
-  `registered` datetime NOT NULL,
+  `registered` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `groups` mediumint(8) unsigned DEFAULT NULL,
   `curator` mediumint(8) unsigned DEFAULT NULL,
   `about` text CHARACTER SET utf8 NULL,
