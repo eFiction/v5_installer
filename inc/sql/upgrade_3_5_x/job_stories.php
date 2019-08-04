@@ -404,7 +404,12 @@ function stories_recount_categories($job, $step)
 				foreach( $sub_categories as $key => $value )
 				{
 					$item['counted'] += $sub_stats[$key]->count;
-					$sub[$value] = $sub_stats[$key]->count;
+					$sub[] =
+					[ 
+						'id' 	=> $sub_stats[$key]->cid,
+						'count' => $sub_stats[$key]->count,
+						'name'	=> $value,
+					];
 				}
 			}
 			$stats = json_encode([ "count" => (int)$item['counted'], "cid" => $item['cid'], "sub" => $sub ]);
