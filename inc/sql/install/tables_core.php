@@ -464,8 +464,8 @@ CREATE TABLE `{$new}collection_stories` (
 --NOTE--Story <-> Collection relations
 --SPLIT--
 
-DROP TABLE IF EXISTS `{$new}collection_relations`;
-CREATE TABLE `{$new}collection_relations` (
+DROP TABLE IF EXISTS `{$new}collection_properties`;
+CREATE TABLE `{$new}collection_properties` (
   `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `collid` int(10) unsigned NOT NULL,
   `relid` int(10) unsigned NOT NULL,
@@ -474,7 +474,7 @@ CREATE TABLE `{$new}collection_relations` (
   UNIQUE KEY `UNIQUE` (`relid`,`type`,`collid`),
   KEY `collid` (`collid`),
   KEY `JOIN` (`relid`,`type`)
-) ENGINE=InnoDB  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table for collection relations';
+) ENGINE=InnoDB  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table for collection properties';
 --NOTE--Collection relation table
 EOF;
 

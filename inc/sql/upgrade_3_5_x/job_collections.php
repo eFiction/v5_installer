@@ -109,7 +109,7 @@ function collections_relations($job, $step)
 
 	if ( 0 < $count = sizeof($dataIn) )
 	{
-		$relations = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."collection_relations" );
+		$relations = new \DB\SQL\Mapper( $fw->db5, $fw['installerCFG.db5.prefix']."collection_properties" );
 
 		foreach($dataIn as $data)
 		{
@@ -259,12 +259,12 @@ function collections_cache($job, $step)
 											WHERE C1.cache_authors IS NULL
 											LIMIT 0,{$limit}
 									) AS Coll
-										LEFT JOIN `{$fw->dbNew}collection_relations`rCR ON ( Coll.collid = rCR.collid )
-											LEFT JOIN `{$fw->dbNew}tags`T ON ( T.tid = rCR.relid AND rCR.type = 'T' )
+										LEFT JOIN `{$fw->dbNew}collection_properties`pColl ON ( Coll.collid = pColl.collid )
+											LEFT JOIN `{$fw->dbNew}tags`T ON ( T.tid = pColl.relid AND pColl.type = 'T' )
 												LEFT JOIN `{$fw->dbNew}tag_groups`TG ON ( TG.tgid = T.tgid )
-											LEFT JOIN `{$fw->dbNew}characters`Chara ON ( Chara.charid = rCR.relid AND rCR.type = 'CH' )
-											LEFT JOIN `{$fw->dbNew}categories`C ON ( C.cid = rCR.relid and rCR.type= 'CA' )
-											LEFT JOIN `{$fw->dbNew}users`U ON ( U.uid = rCR.relid and rCR.type = 'A' )
+											LEFT JOIN `{$fw->dbNew}characters`Chara ON ( Chara.charid = pColl.relid AND pColl.type = 'CH' )
+											LEFT JOIN `{$fw->dbNew}categories`C ON ( C.cid = pColl.relid and pColl.type= 'CA' )
+											LEFT JOIN `{$fw->dbNew}users`U ON ( U.uid = pColl.relid and pColl.type = 'A' )
 										LEFT JOIN `{$fw->dbNew}collection_stories`rCS ON ( Coll.collid = rCS.collid )
 											LEFT JOIN `{$fw->dbNew}stories`S ON ( rCS.sid = S.sid )
 												LEFT JOIN `{$fw->dbNew}ratings`Ra ON ( Ra.rid = S.ratingid )
