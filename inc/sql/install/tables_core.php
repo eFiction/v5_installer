@@ -462,6 +462,20 @@ CREATE TABLE `{$new}collection_stories` (
   KEY `collid` (`collid`,`inorder`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 --NOTE--Story <-> Collection relations
+--SPLIT--
+
+DROP TABLE IF EXISTS `{$new}collection_relations`;
+CREATE TABLE `{$new}collection_relations` (
+  `lid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `collid` int(10) unsigned NOT NULL,
+  `relid` int(10) unsigned NOT NULL,
+  `type` ENUM('A', 'CA','CH','T') NOT NULL COMMENT 'A = author, CA = category, CH = character, T = tag',
+  PRIMARY KEY (`lid`),
+  UNIQUE KEY `UNIQUE` (`relid`,`type`,`collid`),
+  KEY `collid` (`collid`),
+  KEY `JOIN` (`relid`,`type`)
+) ENGINE=InnoDB  DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table for collection relations';
+--NOTE--Collection relation table
 EOF;
 
 
