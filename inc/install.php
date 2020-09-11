@@ -222,6 +222,7 @@ class installtools {
 		$upgrade = FALSE;
 		include('inc/sql/install/tables_core.php');
 		include('inc/sql/install/tables_optional.php');
+		include('inc/sql/install/tables_views.php');
 
 		$modulesDB = [];
 		foreach ($fw['installerCFG.optional'] as $module => $setting )
@@ -272,7 +273,7 @@ class installtools {
 			$reports=[];
 			$fw->set('currently', "Creating tables");
 
-			foreach ( array_merge($jobs, $tables) as $create => $label )
+			foreach ( array_merge($jobs, $tables, $views) as $create => $label )
 			{
 				if(isset($core[$create]))
 				{

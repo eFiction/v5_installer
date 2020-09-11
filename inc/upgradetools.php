@@ -136,6 +136,7 @@ class upgradetools {
 		$path = realpath ( "./inc/sql/" );
 		include( $path.'/install/tables_core.php');
 		include( $path.'/install/tables_optional.php');
+		include( $path.'/install/tables_views.php');
 		if ( file_exists ( $path."/upgrade_3_5_x/job_custom.php" ) )
 			require_once( $path."/upgrade_3_5_x/job_custom.php" );
 
@@ -195,7 +196,7 @@ class upgradetools {
 			$errors=0;
 			$reports=[];
 			$fw->set('currently', "Creating tables");
-			foreach ( array_merge($jobs, $tables) as $create => $label )
+			foreach ( array_merge($jobs, $tables, $views) as $create => $label )
 			{
 				if(isset($core[$create]))
 				{

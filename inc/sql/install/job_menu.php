@@ -134,6 +134,8 @@ INSERT INTO `{$fw->dbNew}menu_userpanel` (`label`, `order`, `link`, `icon`, `chi
 ('Library_Bookmarks%%LIB%%BMS',			1, 'library/bookmark',				'{ICON:bookmark}',	'library', 1, NULL),
 ('Library_Favourites%%LIB%%FAVS',		2, 'library/favourite',				'{ICON:favourite}', 'library', 1, NULL),
 ('Library_Recommendations%%LIB%%RECS',	3, 'library/recommendation',		'{ICON:star}',		'library', 1, 'recommendations'),
+('Library_Series%%LIB%%SER', 			4, 'library/series', 				'{ICON:numlist}',	'library', 1, NULL),
+('Library_Collections%%LIB%%COLL', 		5, 'library/collections',			'{ICON:list}',		'library', 1, NULL),
 --
 ('UserMenu_PMInbox%%MSG%%UN',			1, 'messaging/inbox',				'{ICON:inbox}',		'messaging', 1, NULL),
 ('UserMenu_PMWrite',					2, 'messaging/write',				'{ICON:edit}',		'messaging', 1, NULL),

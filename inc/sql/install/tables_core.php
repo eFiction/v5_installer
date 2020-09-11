@@ -5,6 +5,7 @@ Used for new installs and upgrades from eFiction 3.5.x to 5.x (current)
 */
 
 $new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
+$view = "v_";
 $characterset = $fw['installerCFG.db5.charset'];
 
 $jobs = array
@@ -684,7 +685,7 @@ CREATE TABLE `{$new}users` (
   `password` varchar(140) CHARACTER SET utf8 NOT NULL,
   `email` varchar(256) CHARACTER SET utf8 NOT NULL,
   `registered` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `groups` mediumint(8) unsigned DEFAULT NULL,
+  `groups` smallint(4) unsigned DEFAULT NULL,
   `curator` mediumint(8) unsigned DEFAULT NULL,
   `about` text CHARACTER SET utf8 NULL,
   `moderation` mediumint(8) DEFAULT NULL,
