@@ -78,7 +78,7 @@ $sql = <<<EOF
 INSERT INTO `{$fw->dbNew}config` (`name`, `admin_module`, `section_order`, `value`, `form_type`, `can_edit`) VALUES
 ('stories_per_page',			'archive_general', 1,			"{$fw['installerCFG.data.itemsperpage']}", 		'text//numeric', 1),
 ('stories_recent',				'archive_general', 2,			"{$fw['installerCFG.data.recentdays']}", 		'text//numeric', 1),
-('stories_default_order',		'archive_general', 3,			"{$fw['installerCFG.data.defaultsort']}", 		'select//{{@CFG_stories_default_order_date}}=date//{{@CFG_stories_default_order_title}}=title', 1),
+('stories_default_order',		'archive_general', 3,			"{$fw['installerCFG.data.defaultsort']}", 		'select//{{@LN__CFG_stories_default_order_date}}=date//{{@LN__CFG_stories_default_order_title}}=title', 1),
 ('story_toc_default',			'archive_general', 3,			"{$fw['installerCFG.data.displayindex']}", 		'select//{{@LN__yes}}=TRUE//{{@LN__no}}=FALSE', 1),
 ('story_intro_items',			'archive_intro', 1,				'5', 											'text//numeric', 1),
 ('story_intro_order',			'archive_intro', 2,				'modified', 									'select//{{@LN__CFG_story_intro_order_modified}}=modified//{{@LN__CFG_story_intro_order_published}}=published', 1),
