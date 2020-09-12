@@ -62,6 +62,13 @@ function various_db_keys($job, $step)
 						ON DELETE CASCADE 
 						ON UPDATE NO ACTION;";
 
+	// add foreign key restriction to drop all collection_stories relations when a story gets deleted
+	$sql[] = "ALTER TABLE `{$fw->dbNew}collection_stories`
+						ADD CONSTRAINT `{$FK_prefix}rCollS_drop` FOREIGN KEY (`sid`) 
+						REFERENCES `{$fw->dbNew}stories` (`sid`) 
+						ON DELETE CASCADE 
+						ON UPDATE NO ACTION;";
+
 	foreach ( $sql as $addKey )
 	{
 		try

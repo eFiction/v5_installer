@@ -522,7 +522,7 @@ EOF;
 	requires: tags, categories, characters, rating
 -------------------------------------------------------------------------------------------- */
 $core['stories'] = <<<EOF
--- remove relation tables first to deal with the foreign keys (currently not used)
+-- remove relation tables first to deal with the foreign keys
 DROP TABLE IF EXISTS `{$new}stories_tags`;
 DROP TABLE IF EXISTS `{$new}stories_authors`;
 DROP TABLE IF EXISTS `{$new}stories_categories`;

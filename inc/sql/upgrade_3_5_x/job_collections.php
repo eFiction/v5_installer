@@ -204,7 +204,11 @@ function collections_stories($job, $step)
 {
 	$fw = \Base::instance();
 
-	$dataIn = $fw->db3->exec("SELECT `seriesid`, `sid`, `confirmed`, `inorder` FROM `{$fw->dbOld}inseries` WHERE `subseriesid` = 0 AND `sid` > 0;");
+	$dataIn = $fw->db3->exec("SELECT 
+						`seriesid`, I.`sid`, `confirmed`, `inorder` 
+						FROM `{$fw->dbOld}inseries`I
+							INNER JOIN `{$fw->dbOld}stories`S ON ( I.sid = S.sid )
+						WHERE `subseriesid` = 0 AND I.`sid` > 0;");
 
 	// build the insert values, only numeric, so bulk-insert
 	if ( sizeof($dataIn)>0 )
