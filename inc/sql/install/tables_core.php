@@ -461,7 +461,7 @@ CREATE TABLE `{$new}collection_stories` (
   `inorder` mediumint(8) UNSIGNED DEFAULT NULL,
   PRIMARY KEY (`sid`,`collid`),
   KEY `collid` (`collid`,`inorder`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 --NOTE--Story <-> Collection relations
 --SPLIT--
 
