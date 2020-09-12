@@ -518,6 +518,22 @@ EOF;
 
 
 /* --------------------------------------------------------------------------------------------
+* TRACKER *
+	requires: -
+-------------------------------------------------------------------------------------------- */
+$core['tracker'] = <<<EOF
+DROP TABLE IF EXISTS `{$new}tracker`;
+CREATE TABLE `{$new}tracker` (
+  `sid` mediumint(8) unsigned NOT NULL,
+  `uid` mediumint(8) NOT NULL DEFAULT '0',
+  `last_chapter` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `last_read` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sid`,`uid`), KEY `uid` (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+EOF;
+
+
+/* --------------------------------------------------------------------------------------------
 * STORIES *
 	requires: tags, categories, characters, rating
 -------------------------------------------------------------------------------------------- */
@@ -652,22 +668,6 @@ CREATE TABLE `{$new}textblocks` (
   PRIMARY KEY (`id`),
   KEY `label` (`label`)
 ) ENGINE=InnoDB  DEFAULT CHARSET={$characterset};
-EOF;
-
-
-/* --------------------------------------------------------------------------------------------
-* TRACKER *
-	requires: -
--------------------------------------------------------------------------------------------- */
-$core['tracker'] = <<<EOF
-DROP TABLE IF EXISTS `{$new}tracker`;
-CREATE TABLE `{$new}tracker` (
-  `sid` mediumint(8) NOT NULL DEFAULT '0',
-  `uid` mediumint(8) NOT NULL DEFAULT '0',
-  `last_chapter` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `last_read` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`sid`,`uid`), KEY `uid` (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 EOF;
 
 
