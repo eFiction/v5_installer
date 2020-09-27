@@ -76,6 +76,13 @@ function various_db_keys($job, $step)
 						ON DELETE CASCADE 
 						ON UPDATE NO ACTION;";
 
+	// add foreign key restriction to drop all chapters when a story gets deleted
+	$sql[] = "ALTER TABLE `{$fw->dbNew}chapters`
+						ADD CONSTRAINT `{$FK_prefix}chapter_drop` FOREIGN KEY (`sid`) 
+						REFERENCES `{$fw->dbNew}stories` (`sid`) 
+						ON DELETE CASCADE 
+						ON UPDATE NO ACTION;";
+
 	foreach ( $sql as $addKey )
 	{
 		try

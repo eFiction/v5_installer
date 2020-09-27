@@ -137,7 +137,7 @@ $core['chapters'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}chapters`;
 CREATE TABLE `{$new}chapters` (
   `chapid` mediumint(8) NOT NULL AUTO_INCREMENT,
-  `sid` mediumint(8) NOT NULL DEFAULT '0',
+  `sid` mediumint(8) UNSIGNED NOT NULL DEFAULT '0',
   `title` varchar(250) NOT NULL DEFAULT '',
   `inorder` mediumint(8) NOT NULL DEFAULT '0',
   `created` datetime DEFAULT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE `{$new}chapters` (
   `reviews` smallint(6) NOT NULL DEFAULT '0',
   `count` mediumint(8) NOT NULL DEFAULT '0',
   PRIMARY KEY (`chapid`), KEY `sid` (`sid`), KEY `inorder` (`inorder`), KEY `title` (`title`), KEY `validated` (`validated`), KEY `forstoryblock` (`sid`,`validated`)
-) ENGINE=MyISAM DEFAULT CHARSET={$characterset};
+) ENGINE=InnoDB DEFAULT CHARSET={$characterset};
 EOF;
 
 

@@ -33,7 +33,6 @@ function recommendations_data($job, $step)
 	$dataIn = $fw->db3->exec("SELECT
 					Rec.recid,
 					IF(Rec.uid>0,Rec.uid,0) as uid,
-					IF(Rec.uid>0,NULL,Rec.recname) as guestname,
 					`url`, 
 					`title`, 
 					`author`, 
@@ -41,7 +40,7 @@ function recommendations_data($job, $step)
 					`comments` as comment, 
 					`rid` as ratingid, 
 					Rec.date, 
-					`validated`, 
+					`validated` as public, 
 					`completed`,
 					(10*SUM(R1.rating)/COUNT(R1.reviewid)) as ranking,
 					COUNT(R.reviewid) as reviews
@@ -60,6 +59,7 @@ function recommendations_data($job, $step)
 
 		foreach($dataIn as $data)
 		{
+			$data['public'] *= 2;
 			$newdata->copyfrom($data);
 			$newdata->save();
 			$newdata->reset();

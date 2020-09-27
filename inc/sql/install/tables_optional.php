@@ -66,8 +66,7 @@ DROP TABLE IF EXISTS `{$new}recommendations`;
 CREATE TABLE `{$new}recommendations` (
   `recid` int(11) NOT NULL AUTO_INCREMENT,
   `uid` int(11) NOT NULL,
-  `guestname` varchar(50) DEFAULT NULL,
-  `internal` int(11) DEFAULT NULL COMMENT'story ID or NULL for external',
+--  `guestname` varchar(50) DEFAULT NULL,
   `url` varchar(255) NOT NULL DEFAULT 'broken',
   `title` varchar(200) NOT NULL DEFAULT 'Untitled',
   `author` varchar(200) NOT NULL,
@@ -75,7 +74,7 @@ CREATE TABLE `{$new}recommendations` (
   `comment` text,
   `ratingid` varchar(25) NOT NULL DEFAULT '0',
   `date` datetime DEFAULT NULL,
-  `validated` BOOLEAN NOT NULL DEFAULT FALSE,
+  `public` TINYINT(1) NOT NULL DEFAULT '0',
   `completed` BOOLEAN NOT NULL DEFAULT FALSE,
   `ranking` tinyint(3) DEFAULT NULL COMMENT 'user rating, but name was ambigious with the age rating',
   `reviews` smallint(6) DEFAULT NULL,
@@ -85,9 +84,9 @@ CREATE TABLE `{$new}recommendations` (
   `cache_rating` tinytext NOT NULL,
   PRIMARY KEY (`recid`),
   KEY `title` (`title`),
-  KEY `validated` (`validated`),
+  KEY `validated` (`public`),
   KEY `completed` (`completed`)
-) ENGINE=InnoDB  DEFAULT CHARSET={$characterset};
+) DEFAULT CHARSET={$characterset};
 --NOTE--Recommendations main table (optional module)
 --SPLIT--
 
@@ -98,7 +97,7 @@ CREATE TABLE `{$new}recommendation_relations` (
   `relid` int(10) unsigned NOT NULL,
   `type` ENUM('CA','CH','T') NOT NULL DEFAULT 'T' COMMENT 'CA = category, CH = character, T = tag',
   PRIMARY KEY (`lid`), KEY `relation` (`recid`,`relid`)
-) ENGINE=InnoDB DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table for recommendation relations';
+) DEFAULT CHARSET={$characterset} COMMENT='(eFI5): new table for recommendation relations';
 --NOTE--Recommendation relations table
 EOF;
 
