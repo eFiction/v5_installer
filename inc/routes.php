@@ -5,7 +5,7 @@ $f3->route( 'GET @upgrade: /upgrade', 		'upgrade->base' );
 $f3->route( 'GET /fresh', 					'install->base' );
 
 // upgrade config
-$f3->route( 'GET @config: /upgrade/config', 'upgrade->config' );
+$f3->route( 'GET @upconfig: /upgrade/config', 'upgrade->config' );
 $f3->route( 'POST /upgrade/config', 		'upgrade->saveConfig' );
 
 // fresh config
