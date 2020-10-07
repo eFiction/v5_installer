@@ -44,7 +44,7 @@ class install {
 			return TRUE;
 		}
 		// See if the DB connection has been set up and checked, if not force to config
-		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@config');
+		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@freshconfig');
 
 		// $this->fw->get('PARAMS.step')
 		$options = array(

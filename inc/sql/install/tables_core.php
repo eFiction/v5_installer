@@ -91,7 +91,7 @@ DROP TABLE IF EXISTS `{$new}bad_behavior`;
 CREATE TABLE `{$new}bad_behavior` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `ip` text NOT NULL,
-  `date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `date` datetime NOT NULL,
   `request_method` text NOT NULL,
   `request_uri` text NOT NULL,
   `server_protocol` text NOT NULL,
@@ -490,7 +490,7 @@ CREATE TABLE `{$new}sessions` (
   `session` char(32) NOT NULL,
   `user` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `lastvisited` timestamp NOT NULL,
+  `lastvisited` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ip` int(10) unsigned DEFAULT NULL,
   `admin` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`session`),

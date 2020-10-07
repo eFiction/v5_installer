@@ -55,7 +55,7 @@ class upgrade {
 			OR @$this->fw['installerCFG.test.db5']<2	// can't connect to db5
 			OR @$this->fw['installerCFG.test.db5']>3 	// prefix conflict
 		)
-		$this->fw->reroute('@config');
+		$this->fw->reroute('@upconfig');
 		
 		// Say Hi and show which storage for chapter data is available and offer advise
 		$this->fw->set('scenario', commontools::storageSelect() );
@@ -81,7 +81,7 @@ class upgrade {
 			return TRUE;
 		}
 		// See if the DB connection has been set up and checked, if not force to config
-		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@config');
+		if(empty($this->fw['installerCFG.test']))	$this->fw->reroute('@upconfig');
 
 		// $this->fw->get('PARAMS.step')
 		$options = array(
