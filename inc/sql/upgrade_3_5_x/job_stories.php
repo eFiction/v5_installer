@@ -29,7 +29,7 @@ $fw->jobSteps = array(
 function stories_data($job, $step)
 {
 	$fw = \Base::instance();
-	$limit = $fw->get("limit.medium");
+	$limit = $fw->get("limit.light");
 	$i = 0;
 	
 	if ( $step['success'] == 0 )

@@ -5,7 +5,7 @@ Used for new installs and upgrades from eFiction 3.5.x to 5.x (current)
 */
 
 $new = "{$fw['installerCFG.db5.dbname']}`.`{$fw['installerCFG.db5.prefix']}";
-$view = "v_";
+$view = "{$fw['installerCFG.db5.dbname']}`.`v_{$fw['installerCFG.db5.prefix']}";
 $characterset = $fw['installerCFG.db5.charset'];
 
 $jobs = array
