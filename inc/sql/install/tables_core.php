@@ -248,7 +248,7 @@ CREATE TABLE `{$new}log` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `action` text,
   `uid` mediumint(8) NOT NULL DEFAULT '0',
-  `ip` int(10) unsigned DEFAULT NULL,
+  `ip` varbinary(16) NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `type` ENUM('AM','BL','DL','EB','ED','LP','RE','RG','VS') NOT NULL,
   `subtype` char(1) DEFAULT NULL,
@@ -488,10 +488,10 @@ $core['sessions'] = <<<EOF
 DROP TABLE IF EXISTS `{$new}sessions`;
 CREATE TABLE `{$new}sessions` (
   `session` char(32) NOT NULL,
-  `user` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `user` mediumint(8) UNSIGNED NOT NULL DEFAULT '0',
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `lastvisited` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `ip` int(10) unsigned DEFAULT NULL,
+  `lastvisited` timestamp NULL DEFAULT NULL,
+  `ip` varbinary(16) NOT NULL,
   `admin` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`session`),
   KEY `user` (`user`),

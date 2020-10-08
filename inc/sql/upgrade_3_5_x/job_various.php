@@ -43,7 +43,7 @@ function various_logs($job, $step)
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
-	$dataIn = $fw->db3->exec("SELECT L.log_id as id, L.log_action as action, L.log_uid as uid, L.log_ip as ip, L.log_timestamp as timestamp, L.log_type as type FROM `{$fw->dbOld}log`L LIMIT {$step['items']},{$limit};");
+	$dataIn = $fw->db3->exec("SELECT L.log_id as id, L.log_action as action, L.log_uid as uid, INET6_ATON(IF(INET6_NTOA(L.log_ip) IS NULL,INET_NTOA(L.log_ip),INET6_NTOA(L.log_ip))) as ip, L.log_timestamp as timestamp, L.log_type as type FROM `{$fw->dbOld}log`L LIMIT {$step['items']},{$limit};");
 				
 	$tracking = new DB\SQL\Mapper($fw->db5, $fw->get('installerCFG.db5.prefix').'process');
 	$tracking->load(['id = ?', $step['id'] ]);
