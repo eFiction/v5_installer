@@ -27,7 +27,7 @@ $core['contestsList'] = <<<EOF
 DROP VIEW IF EXISTS `{$view}contestsList`;
 CREATE VIEW `{$view}contestsList` AS
 	SELECT SQL_CALC_FOUND_ROWS
-		C.conid, C.title, C.summary, C.concealed,
+		C.conid, C.title, C.summary, C.description, C.concealed,
 		IF
 		(
 			C.active='date',
@@ -91,7 +91,7 @@ DROP VIEW IF EXISTS `{$view}ACPlogData`;
 CREATE VIEW `{$view}ACPlogData` AS
 	SELECT
 		U.uid, U.username, 
-		L.uid as uid_reg, L.id, L.action, L.ip, UNIX_TIMESTAMP(L.timestamp) as timestamp, L.type, L.subtype, L.version, L.new
+		L.uid as uid_reg, L.id, L.action, INET6_NTOA(L.ip) as ip, UNIX_TIMESTAMP(L.timestamp) as timestamp, L.type, L.subtype, L.version, L.new
 	FROM `{$new}log`L
 		LEFT JOIN `{$new}users`U ON L.uid=U.uid
 EOF;
