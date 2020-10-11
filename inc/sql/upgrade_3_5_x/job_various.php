@@ -102,7 +102,11 @@ function various_news($job, $step)
 		foreach($dataIn as $data)
 		{
 			$newdata->copyfrom($data);
-			$newdata->newstext = nl2br(stripcslashes($data['newstext']));
+			// eFiction3 wouldn't show \n line breaks in news output, forcing the use of <br> tags.
+			// To account for this, we remove all line breaks and convert <br> to line breaks afterwards.
+			// If this does not work for you, swap commenting on the lines below:
+			//$newdata->newstext = nl2br(stripcslashes($data['newstext']));
+			$newdata->newstext = preg_replace( ['/(?:\R|\r|\n)+/', '/<br\s*\/*>/'] , ['', "\n"] , $data['newstext'] );
 			$newdata->save();
 			$newdata->reset();
 			
