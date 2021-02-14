@@ -32,7 +32,6 @@ CREATE TABLE `{$new}contests` (
   `cache_tags` text,
   `cache_characters` text,
   `cache_categories` text,
-  `cache_stories` text,
   PRIMARY KEY (`conid`),
   KEY `uid` (`uid`),
   KEY `title` (`title`)

@@ -250,7 +250,7 @@ CREATE TABLE `{$new}log` (
   `uid` mediumint(8) NOT NULL DEFAULT '0',
   `ip` varbinary(16) NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `type` ENUM('AM','BL','DL','EB','ED','LP','RE','RG','VS') NOT NULL,
+  `type` ENUM('AM','BL','DL','EB','ED','LP','RE','RG','RJ','VS') NOT NULL,
   `subtype` char(1) DEFAULT NULL,
   `version` tinyint(1) NOT NULL,
   `new` BOOLEAN NOT NULL DEFAULT TRUE,
@@ -710,8 +710,8 @@ CREATE TABLE `{$new}user_favourites` (
   `visibility` tinyint(1) UNSIGNED NOT NULL DEFAULT '2',
   `comments` text NOT NULL,
   `changed` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`fid`), 
-  UNIQUE KEY `byitem` (`item`,`type`,`bookmark`,`uid`) USING BTREE, 
+  PRIMARY KEY (`fid`),
+  UNIQUE KEY `byitem` (`item`,`type`,`bookmark`,`uid`) USING BTREE,
   UNIQUE KEY `byuid` (`uid`,`type`,`bookmark`,`item`) USING BTREE,
   KEY `byuidlist` (`uid`,`type`,`bookmark`) USING BTREE
 ) ENGINE=MyISAM DEFAULT CHARSET={$characterset};

@@ -14,7 +14,7 @@ $views = array
 $core['newsOverview'] = <<<EOF
 DROP VIEW IF EXISTS `{$view}newsOverview`;
 CREATE VIEW `{$view}newsOverview` AS
-	SELECT N.nid, N.headline, N.newstext, N.comments, N.datetime, UNIX_TIMESTAMP(N.datetime) as timestamp, 
+	SELECT N.nid, N.headline, N.newstext, N.comments, N.datetime, UNIX_TIMESTAMP(N.datetime) as timestamp,
 --	COUNT(DISTINCT F.fid) as comments,
 	U.uid,U.username
 	FROM `{$new}news`N
@@ -42,9 +42,25 @@ CREATE VIEW `{$view}contestsList` AS
 				),
 			C.active
 		) as active,
-        IF(C.votable='date',IF(C.date_close<NOW() OR C.date_close IS NULL,IF(C.vote_close>NOW() OR C.vote_close IS NULL,'active','closed'),'preparing'),C.votable) as votable,
-		UNIX_TIMESTAMP(C.date_open) as date_open, UNIX_TIMESTAMP(C.date_close) as date_close, UNIX_TIMESTAMP(C.vote_close) as vote_close, 
-		C.cache_tags, C.cache_characters, C.cache_categories, C.cache_stories,
+		C.active as activesetting,
+    IF
+		(
+			C.votable='date',
+			IF
+			(
+				C.date_close<NOW() OR C.date_close IS NULL,
+				IF
+				(
+					C.vote_close>NOW() OR C.vote_close IS NULL,
+					'active',
+					'closed'
+				),
+				'preparing'
+			)
+			,C.votable
+		) as votable,
+		UNIX_TIMESTAMP(C.date_open) as date_open, UNIX_TIMESTAMP(C.date_close) as date_close, UNIX_TIMESTAMP(C.vote_close) as vote_close,
+		C.cache_tags, C.cache_characters, C.cache_categories,
 		U.username, COUNT(R.lid) as count
 	FROM `{$new}contests`C
 		LEFT JOIN `{$new}users`U ON ( C.uid = U.uid )
@@ -55,16 +71,16 @@ EOF;
 $core['loadStoryReviews'] = <<<EOF
 DROP VIEW IF EXISTS `{$view}loadStoryReviews`;
 CREATE VIEW `{$view}loadStoryReviews` AS
-	SELECT 
-		F.fid as review_id, 
+	SELECT
+		F.fid as review_id,
 		Ch.inorder,
-		F.text as review_text, 
-		F.reference as review_story, 
-		F.reference_sub as review_chapter, 
-		IF(F.writer_uid>0,U.username,F.writer_name) as review_writer_name, 
-		F.writer_uid as review_writer_uid, 
+		F.text as review_text,
+		F.reference as review_story,
+		F.reference_sub as review_chapter,
+		IF(F.writer_uid>0,U.username,F.writer_name) as review_writer_name,
+		F.writer_uid as review_writer_uid,
 		UNIX_TIMESTAMP(F.datetime) as date_review
-	FROM `{$new}feedback`F 
+	FROM `{$new}feedback`F
 		LEFT JOIN `{$new}users`U ON ( F.writer_uid = U.uid )
 		LEFT JOIN `{$new}chapters`Ch ON ( Ch.chapid = F.reference_sub )
 	WHERE F.type='ST'
@@ -73,13 +89,13 @@ EOF;
 $core['loadStoryReviewComments'] = <<<EOF
 DROP VIEW IF EXISTS `{$view}loadStoryReviewComments`;
 CREATE VIEW `{$view}loadStoryReviewComments` AS
-	SELECT 
-		F2.fid as comment_id, 
-		F2.text as comment_text, 
-		F2.reference_sub as parent_item, 
-		IF(F2.writer_uid>0,U2.username,F2.writer_name) as comment_writer_name, 
+	SELECT
+		F2.fid as comment_id,
+		F2.text as comment_text,
+		F2.reference_sub as parent_item,
+		IF(F2.writer_uid>0,U2.username,F2.writer_name) as comment_writer_name,
 		F2.writer_uid as comment_writer_uid,
-		F2.reference as review_id, 
+		F2.reference as review_id,
 		UNIX_TIMESTAMP(F2.datetime) as date_comment
 	FROM `{$new}feedback`F2
 		LEFT JOIN `{$new}users`U2 ON ( F2.writer_uid = U2.uid )
@@ -90,7 +106,7 @@ $core['ACPlogData'] = <<<EOF
 DROP VIEW IF EXISTS `{$view}ACPlogData`;
 CREATE VIEW `{$view}ACPlogData` AS
 	SELECT
-		U.uid, U.username, 
+		U.uid, U.username,
 		L.uid as uid_reg, L.id, L.action, INET6_NTOA(L.ip) as ip, UNIX_TIMESTAMP(L.timestamp) as timestamp, L.type, L.subtype, L.version, L.new
 	FROM `{$new}log`L
 		LEFT JOIN `{$new}users`U ON L.uid=U.uid

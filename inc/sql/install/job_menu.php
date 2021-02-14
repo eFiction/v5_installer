@@ -29,9 +29,9 @@ EOF;
 
 	$fw->db5->exec($sql);
 	$count = $fw->db5->count();
-	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
-						[ 
+
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ",
+						[
 							':items' => $count,
 							':id' => $step['id']
 						]
@@ -61,7 +61,7 @@ INSERT INTO `{$fw->dbNew}menu_adminpanel` (`label`, `child_of`, `order`, `link`,
 ('Edit',			'archive/tags',		1, 'archive/tags/edit',					'{ICON:tag}',				1, 64, NULL),
 ('Taggroups',		'archive/tags',		2, 'archive/tags/groups',				'{ICON:tags}',				1, 128, NULL),
 ('Tagcloud',		'archive/tags',		3, 'archive/tags/cloud',				'{ICON:cloud}',				1, 128, NULL),
-('Manual',			'home',				1, 'home/manual',						'{ICON:manual}',			1, 32, NULL),
+('Manual',			'home',				1, 'home/manual',						'{ICON:manual}',			0, 32, NULL),
 ('Maintenance',		'home',				2, 'home/maintenance',					'{ICON:waiting}',			1, 64, NULL),
 ('CustomPages',		'home',				3, 'home/custompages',					'{ICON:text}',				1, 64, NULL),
 ('News',			'home',				4, 'home/news',							'{ICON:news}',				1, 32, NULL),
@@ -97,9 +97,9 @@ EOF;
 
 	$fw->db5->exec($sql);
 	$count = $fw->db5->count();
-	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
-						[ 
+
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ",
+						[
 							':items' => $count,
 							':id' => $step['id']
 						]
@@ -152,9 +152,9 @@ EOF;
 
 	$fw->db5->exec($sql);
 	$count = $fw->db5->count();
-	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
-						[ 
+
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ",
+						[
 							':items' => $count,
 							':id' => $step['id']
 						]

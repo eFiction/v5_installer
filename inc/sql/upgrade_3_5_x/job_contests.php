@@ -2,7 +2,7 @@
 /*
 	Job definition for 'contests'
 	eFiction upgrade from version 3.5.x
-	
+
 	This is a collection of:
 	- recommendations
 	- recommendations relation tables
@@ -22,7 +22,7 @@ function contests_data($job, $step)
 	$fw = \Base::instance();
 	$limit = $fw->get("limit.medium");
 	$i = 0;
-	
+
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db3->exec("SELECT COUNT(*) as found FROM `{$fw->dbOld}challenges`;")[0]['found'];
@@ -47,11 +47,12 @@ function contests_data($job, $step)
 		foreach($dataIn as $data)
 		{
 			$newdata->copyfrom($data);
+			$newdata->description = preg_replace( ['/(?:\R|\r|\n)+/', '/<br\s*\/*>/'] , ['', "\n"] , $data['description'] );
 			$newdata->active = 4;
 			$newdata->votable= 3;
 			$newdata->save();
 			$newdata->reset();
-			
+
 			$tracking->items++;
 		}
 
@@ -69,7 +70,7 @@ function contests_data($job, $step)
 function contests_relations($job, $step)
 {
 	$fw = \Base::instance();
-	
+
 	// recid, relid, type
 	// get characters
 	$dataIn = $fw->db3->exec("SELECT C.chalid,Ch.charid as `relid`, 'CH' as 'type'
@@ -82,12 +83,12 @@ function contests_relations($job, $step)
 					INNER JOIN `{$fw->dbOld}categories`Cat ON (FIND_IN_SET(Cat.catid,C.catid));") );
 
 	// get stories
-	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT C.chalid, S.sid as `relid`,'ST' AS `type` 
+	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT C.chalid, S.sid as `relid`,'ST' AS `type`
 				FROM `{$fw->dbOld}challenges`C
 					INNER JOIN `{$fw->dbOld}stories`S ON (FIND_IN_SET(C.chalid, S.challenges));") );
 
 	// get series
-	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT C.chalid, S.seriesid as `relid`,'CO' AS `type` 
+	$dataIn = array_merge( $dataIn, $fw->db3->exec("SELECT C.chalid, S.seriesid as `relid`,'CO' AS `type`
 				FROM `{$fw->dbOld}challenges`C
 					INNER JOIN `{$fw->dbOld}series`S ON (FIND_IN_SET(C.chalid, S.challenges));") );
 
@@ -101,9 +102,9 @@ function contests_relations($job, $step)
 		$count = $fw->db5->count();
 	}
 	else $count = 0;
-	
-	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ", 
-						[ 
+
+	$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 2, `items` = :items WHERE `id` = :id ",
+						[
 							':items' => $count,
 							':id' => $step['id']
 						]
@@ -114,20 +115,19 @@ function contests_cache($job, $step)
 {
 	$fw = \Base::instance();
 	$limit = $fw->get("limit.heavy");
-	
+
 	if ( $step['success'] == 0 )
 	{
 		$total = $fw->db5->exec("SELECT COUNT(*) as found FROM `{$fw->dbNew}contests`;")[0]['found'];
 		$fw->db5->exec ( "UPDATE `{$fw->dbNew}process`SET `success` = 1, `total` = :total WHERE `id` = :id ", [ ':total' => $total, ':id' => $step['id'] ] );
 	}
 
-	$dataIn = $fw->db5->exec("SELECT 
+	$dataIn = $fw->db5->exec("SELECT
 								Con.conid,
-								GROUP_CONCAT(DISTINCT S.sid,',',S.title,',',U.uid,',',U.username ORDER BY title ASC SEPARATOR '||') AS storyblock,
 								GROUP_CONCAT(DISTINCT Chara.charid,',',Chara.charname ORDER BY charname ASC SEPARATOR '||') AS characterblock,
 								GROUP_CONCAT(DISTINCT C.cid,',',C.category ORDER BY category ASC SEPARATOR '||' ) as categoryblock,
 								GROUP_CONCAT(DISTINCT T.tid,',',T.label,',',TG.description ORDER BY TG.order,TG.tgid,T.label ASC SEPARATOR '||') AS tagblock
-									FROM 
+									FROM
 									(
 										SELECT Con1.conid
 											FROM `{$fw->dbNew}contests`Con1
@@ -135,9 +135,6 @@ function contests_cache($job, $step)
 											LIMIT 0,{$limit}
 									) AS Con
 										LEFT JOIN `{$fw->dbNew}contest_relations`rC ON ( rC.conid = Con.conid )
-											LEFT JOIN `{$fw->dbNew}stories`S ON ( S.sid = rC.relid and rC.type='ST' )
-												LEFT JOIN `{$fw->dbNew}stories_authors`rSA ON ( rSA.sid = S.sid )
-													LEFT JOIN `{$fw->dbNew}users`U ON ( U.uid = rSA.aid )
 											LEFT JOIN `{$fw->dbNew}tags`T ON ( T.tid = rC.relid AND rC.type = 'T' )
 												LEFT JOIN `{$fw->dbNew}tag_groups`TG ON ( TG.tgid = T.tgid )
 											LEFT JOIN `{$fw->dbNew}characters`Chara ON ( Chara.charid = rC.relid AND rC.type = 'CH' )
@@ -153,14 +150,12 @@ function contests_cache($job, $step)
 		{
 			$fw->db5->exec
 			(
-					"UPDATE `{$fw->dbNew}contests` SET 
-						`cache_stories`		= :storyblock,
+					"UPDATE `{$fw->dbNew}contests` SET
 						`cache_tags`		= :tagblock,
 						`cache_characters`	= :characterblock,
 						`cache_categories`	= :categoryblock
 					WHERE conid = {$item['conid']} ;",
 					[
-						':storyblock'		=> json_encode(upgradetools::cleanResult($item['storyblock'])),
 						':tagblock'			=> json_encode(upgradetools::cleanResult($item['tagblock'])),
 						':characterblock'	=> json_encode(upgradetools::cleanResult($item['characterblock'])),
 						':categoryblock'	=> json_encode(upgradetools::cleanResult($item['categoryblock'])),
